@@ -17,7 +17,7 @@ def addVectors(vec1, vec2):
 def getDistance(vec):
     value = 0
     for component in vec:
-        value += component*component
+        value += component * component
 
     return math.sqrt(value)
 
@@ -30,15 +30,14 @@ def cleanString(string):
     return result
 
 
-def convertTimestamp(timestamp): # turns the Timestring into a Number of milliseconds
+def convertTimestamp(timestamp):  # turns the Timestring into a Number of milliseconds
     global timestampOffset
-    timestamp = str(timestamp).replace(".", "")
     split = timestamp.split(":")
-    result = int(split[2]) + int(split[1])*60*1000 + int(split[0])*60*60*1000
+    split[2] = float(str(split[2])) * 1000 #converting into whole milliseconds
+    hours = int(split[0]) * 60 * 60 * 1000
+    minutes = int(split[1]) * 60 * 1000
+    milliseconds = int(split[2])
+    result = hours + minutes + milliseconds
     if result < timestampOffset:
         timestampOffset = result
     return result
-
-
-def shiftTimestamp(timestamp):
-    return timestamp-timestampOffset
