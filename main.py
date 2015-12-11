@@ -1,5 +1,6 @@
 from libavg import app, avg, player
-from MainDrawer import MainDrawer
+from Draw import main_drawer
+import User
 
 
-app.App().run(MainDrawer(), app_resolution='1920x1080')
+app.App().run(main_drawer(), app_resolution='1920x1080')
