@@ -3,18 +3,18 @@ import database
 users = []
 
 
-class User():
-    headPositions = []
+class User:
+    head_positions = []
     viewpoints = []
     touches = []
     id = -1
     color = "#FF0000"
 
     def addHeadPosition(self, position):
-        self.headPositions.append(position)
+        self.head_positions.append(position)
 
     def clearHeadPositions(self):
-        self.headPositions = []
+        self.head_positions = []
 
     def addViewpoint(self, point):
         self.viewpoints.append(point)
@@ -26,9 +26,7 @@ class User():
         self.id = index
         self.color = color
 
-
-        self.headPositions = database.executeQry("SELECT x, y, z FROM normaltable where user = "+str(index)+" AND HEAD=1;", True)
-        self.touches = database.executeQry("SELECT x, y FROM normaltable where user = "+str(index)+" AND HEAD=0;", True)
+        self.head_positions = database.get_head_positions(index)
+        self.touches = database.get_touch_positions(index)
 
         users.append(self)
-

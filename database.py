@@ -13,21 +13,21 @@ YAW = 6
 ROLL = 7
 TIME = 8
 
-minX = 0
-maxX = 0
-minTouchX = 0
-maxTouchX = 0
+min_x = 0
+max_x = 0
+min_touch_x = 0
+max_touch_x = 0
 
-minY = 0
-maxY = 0
-minTouchY = 0
-maxTouchY = 0
+min_y = 0
+max_y = 0
+min_touch_y = 0
+max_touch_y = 0
 
-minZ = 0
-maxZ = 0
+min_z = 0
+max_z = 0
 
-minTime = 0
-maxTime = 0
+min_time = 0
+max_time = 0
 
 times = []
 
@@ -58,16 +58,16 @@ def insertMany(list, table):
 
 # table: name of the table (string)
 # columns: columns separated by commas (string) i.e. "id INT, value1 FLOAT, value2 VARCHAR..."
-def createTable(table, columns):
+def create_table(table, columns):
     executeQry("DROP TABLE IF EXISTS " + table + ";")
     executeQry("CREATE TABLE " + table + " (" + columns + ");")
 
 
 # laedt alle Dateien, deren Pfade in der filelist.txt vorhanden sind in die Datenbank
-def loadFilesIntoDatabase(filelist):
+def load_files_into_database(filelist):
     filePaths = loadFile('csv/filelist.txt')
     lines = []
-    lastTime = time.time()
+    last_time = time.time()
     for path in filePaths:
         completePath = 'csv/' + path[0]
         print("loading " + str(completePath))
@@ -75,15 +75,15 @@ def loadFilesIntoDatabase(filelist):
         print(
             "(" + str(filePaths.index(path) + 1) + " / " + str(len(filePaths)) + ") loaded csv: " + path[
                 0] + "   " + str(
-                len(file)) + " lines in " + str(time.time() - lastTime) + " seconds")
-        lastTime = time.time()
+                len(file)) + " lines in " + str(time.time() - last_time) + " seconds")
+        last_time = time.time()
 
     return
 
 
 # loads the rows from a csv file and returns a list-hierarchy of it
 def loadCsv(rows):
-    global minTime
+    global min_time
     file = []
     lastline = 0
     for line in rows:
@@ -120,185 +120,200 @@ def loadFile(path):
 
 # create a table where x, y, z and the time are normalized between 0 and 1
 # and equalize the time intervals
-def createNormalTable():
-    createTable("normaltable", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
-                               "user TINYINT NOT NULL,"
-                               "head BOOLEAN NOT NULL,"
-                               "x FLOAT,"
-                               "y FLOAT,"
-                               "z FLOAT,"
-                               "pitch FLOAT,"
-                               "yaw FLOAT,"
-                               "roll FLOAT,"
-                               "time FLOAT NOT NULL")
 
-    # interval in ms (just for calculation, will be normalized between 0 and 1)
-    timeStepSize = 50
+# interval in ms (just for calculation, will be normalized between 0 and 1)
+time_stepSize = 50
+
+
+def createHeadTable():
+    create_table("headtable", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                              "user TINYINT NOT NULL,"
+                              "x FLOAT,"
+                              "y FLOAT,"
+                              "z FLOAT,"
+                              "pitch FLOAT,"
+                              "yaw FLOAT,"
+                              "roll FLOAT,"
+                              "time FLOAT NOT NULL")
 
     # for each user (1-4)
     for userid in range(1, 5):
-        lastData = 0
-        dataList = []
+        last_data = 0
+        datalist = []
 
         con = sqlite3.connect("db")
         cur = con.cursor()
 
-        userStartTime = time.time()
+        user_start_time = time.time()
 
         # two querys, one for head-movement and one for touches
-        qrys = []
-        qrys.append(
-            "SELECT * from raw WHERE user=" + str(userid) + " AND head = 1 AND z != 0 GROUP BY time ORDER BY time;")
-        qrys.append(
-            "SELECT * from raw WHERE user=" + str(userid) + " AND head = 0 OR z == 0 GROUP BY time ORDER BY time;")
+        qry = "SELECT user, x, y, z, pitch, yaw, roll, time from raw WHERE user=" + str(
+            userid) + " AND head = 1 AND z != 0 GROUP BY time ORDER BY time;"
+        COL_X = 1
+        COL_Y = 2
+        COL_Z = 3
+        COL_TIME = 7
+        print "executing " + qry
 
-        for qry in qrys:
-            print "executing " + qry
+        cur.execute(qry)
+        fetch = cur.fetchall()
 
-            cur.execute(qry)
-            fetch = cur.fetchall()
+        last_time_step = -1
 
-            lastTimeStep = -1
+        for row in fetch:
 
-            for row in fetch:
+            if len(datalist) > 5000:  # upload 5000 at a time
+                # upload
+                cur.executemany(
+                    "INSERT INTO headtable (user, x, y, z, pitch, yaw, roll, time) VALUES (?,?,?,?,?,?,?,?);",
+                    datalist)
+                datalist = []  # clear
+                con.commit()
 
-                if (len(dataList) > 500):  # upload 5000 at a time
+            new_data = list(row)
 
-                    # normalize time before upload
-                    for data in dataList:
-                        newTime = (data[TIME]) / float(maxTime - minTime)
-                        if newTime > 1:
-                            print str(data) + " " + str(maxTime) + " " + str(minTime) + " " + str(maxTime - minTime)
+            new_data[COL_X] = new_data[COL_X] * 100
+            new_data[COL_Y] = new_data[COL_Y] * 100
+            new_data[COL_Z] = new_data[COL_Z] * 100
 
-                        data[TIME] = newTime
+            new_data[COL_TIME] -= min_time  # shift time to start at 0
 
-                    # upload
-                    cur.executemany(
-                        "INSERT INTO normaltable (user, head, x, y, z, pitch, yaw, roll, time) VALUES (?,?,?,?,?,?,?,?,?);",
-                        dataList)
-                    dataList = []  # clear
+            # time "rounded" to closest divisible of time_stepSize
+            time_step = int(new_data[COL_TIME] / time_stepSize) * time_stepSize
 
-                data = list(row)
-                data.pop(0)  # remove id
+            # initialize first values
+            if last_data == 0:
+                last_data = list(new_data)
+                new_data[COL_TIME] = time_step
+                datalist.append(new_data)
+                continue
 
-                if qry == qrys[0]:  # if head (has Z-position)
-                    data[X_VALUE] = (data[X_VALUE] - minX) / (maxX - minX)
-                    data[Y_VALUE] = (data[Y_VALUE] - minY) / (maxY - minY)
-                    data[Z_VALUE] = (data[Z_VALUE] - minZ) / (maxZ - minZ)
-                else:  # if touch
-                    data[X_VALUE] = (data[X_VALUE] - minTouchX) / (maxTouchX - minTouchX)
-                    data[Y_VALUE] = (data[Y_VALUE] - minTouchY) / (maxTouchY - minTouchY)
+            if time_step > last_time_step:  # if a new step is reached
 
-                data[TIME] -= minTime  # shift time to start at 0
+                new_data = list(new_data)
 
-                # time "rounded" to closest divisible of timeStepSize
-                timeStep = int(data[TIME] / timeStepSize) * timeStepSize
-
-                # initialize first value
-                if lastData == 0:
-                    lastData = list(data)
-                    data[TIME] = timeStep
-                    dataList.append(data)
-                    continue
-
-                if timeStep > lastTimeStep:  # if a new step is reached
-
-                    newData = list(data)
-
-                    # if at least 1 step would be skipped. calculate the steps between
-                    if data[HEAD] == 1 & lastTimeStep + timeStepSize < timeStep:
-                        lastTime = lastData[TIME]
-                        newestTime = data[TIME]
-                        # for each skipped step
-                        for interpolatedTime in range(lastTimeStep, data[TIME], timeStepSize):
-                            # progress/percentage of the step between the last time and the new time
-                            percentage = min(1, max(0, (interpolatedTime - lastTime) / float(newestTime - lastTime)))
-
-                            # calculate x and y values
-                            newData[X_VALUE] = percentage * float(data[X_VALUE]) + (1 - percentage) * float(
-                                lastData[X_VALUE])
-                            newData[Y_VALUE] = percentage * float(data[Y_VALUE]) + (1 - percentage) * float(
-                                lastData[Y_VALUE])
-
-                            # if this is not a touch
-                            if qry == qrys[0]:
-                                newData[HEAD] = 1
-                                newData[Z_VALUE] = percentage * float(data[Z_VALUE]) + (1 - percentage) * float(
-                                    lastData[Z_VALUE])
-                            else:
-                                newData[HEAD] = 0
-                            newData[TIME] = interpolatedTime  # set time to step
-                            dataList.append(list(newData))  # prepare for upload
-                            lastTimeStep = timeStep
-                    else:
-                        lastTime = lastData[TIME]
-                        newestTime = data[TIME]
+                # if at least 1 step would be skipped. calculate the steps between
+                if last_time_step + time_stepSize < time_step:
+                    last_time = last_data[COL_TIME]
+                    newest_time = new_data[COL_TIME]
+                    # for each skipped step
+                    interpolated_list = []
+                    for interpolated_time in range(last_time_step, new_data[COL_TIME], time_stepSize):
                         # progress/percentage of the step between the last time and the new time
-                        percentage = min(1, max(0, (timeStep - lastTime) / float(newestTime - lastTime)))
+                        percentage = min(1, max(0, (interpolated_time - last_time) / float(newest_time - last_time)))
 
                         # calculate x and y values
-                        newData[X_VALUE] = percentage * float(data[X_VALUE]) + (1 - percentage) * float(
-                            lastData[X_VALUE])
-                        newData[Y_VALUE] = percentage * float(data[Y_VALUE]) + (1 - percentage) * float(
-                            lastData[Y_VALUE])
+                        new_data[COL_X] = percentage * float(new_data[COL_X]) + (1 - percentage) * float(
+                            last_data[COL_X])
+                        new_data[COL_Y] = percentage * float(new_data[COL_Y]) + (1 - percentage) * float(
+                            last_data[COL_Y])
+                        new_data[COL_Z] = percentage * float(new_data[COL_Z]) + (1 - percentage) * float(
+                            last_data[COL_Z])
+                        new_data[COL_TIME] = interpolated_time  # set time to step
+                        interpolated_list.append(list(new_data))
+                        last_time_step = time_step
 
-                        # if this is not a touch
-                        if qry == qrys[0]:
-                            newData[HEAD] = 1
-                            newData[Z_VALUE] = percentage * float(data[Z_VALUE]) + (1 - percentage) * float(
-                                lastData[Z_VALUE])
-                        else:
-                            newData[HEAD] = 0
-                        newData[TIME] = timeStep  # set time to step
-                        dataList.append(newData)  # prepare for upload
-                        lastTimeStep = timeStep
+                    for new_data in interpolated_list:
+                        datalist.append(new_data)  # prepare for upload
 
-                lastData = data
+                else:
+                    last_time = last_data[COL_TIME]
+                    newest_time = new_data[COL_TIME]
+                    # progress/percentage of the step between the last time and the new time
+                    percentage = min(1, max(0, (time_step - last_time) / float(newest_time - last_time)))
 
-        # normalize time before upload
-        for data in dataList:
-            newTime = (data[TIME]) / float(maxTime - minTime)
-            data[TIME] = newTime
-            if newTime > 1:
-                print data
+                    # calculate x and y values
+                    new_data[COL_X] = percentage * float(new_data[COL_X]) + (1 - percentage) * float(
+                        last_data[COL_X])
+                    new_data[COL_Y] = percentage * float(new_data[COL_Y]) + (1 - percentage) * float(
+                        last_data[COL_Y])
+                    new_data[COL_Z] = percentage * float(new_data[COL_Z]) + (1 - percentage) * float(
+                        last_data[COL_Z])
+
+                    new_data[COL_TIME] = time_step  # set time to step
+                    datalist.append(new_data)  # prepare for upload
+                    last_time_step = time_step
+
+            last_data = new_data
 
         # upload
-        cur.executemany(
-            "INSERT INTO normaltable (user, head, x, y, z, pitch, yaw, roll, time) VALUES (?,?,?,?,?,?,?,?,?);",
-            dataList)
-
+        if len(datalist) > 0:
+            query = "INSERT INTO headtable (user, x, y, z, pitch, yaw, roll, time) VALUES (?,?,?,?,?,?,?,?);"
+            print "  " + query + "  first Element: " + str(datalist[0])
+            cur.executemany(query, datalist)
         con.commit()
 
-        print "done in " + str(time.time() - userStartTime)
+
+    print "done in " + str(time.time() - user_start_time)
 
     con.close()
 
 
-def initValues():
-    global minX, maxX, minTouchX, maxTouchX, minY, maxY, minTouchY, maxTouchY, minZ, maxZ, minTime, maxTime, times
-    minX = executeQry("SELECT min(x) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
-    maxX = executeQry("SELECT max(x) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
+def create_touch_table(wall_screen_resolution):
+    create_table("touchtable", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                               "user TINYINT NOT NULL,"
+                               "x FLOAT,"
+                               "y FLOAT,"
+                               "time FLOAT NOT NULL")
 
-    minY = executeQry("SELECT min(y) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
-    maxY = executeQry("SELECT max(y) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
+    # for each user (1-4)
+    for userid in range(1, 5):
+        datalist = []
 
-    minZ = executeQry("SELECT min(z) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
-    maxZ = executeQry("SELECT max(z) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
+        con = sqlite3.connect("db")
+        cur = con.cursor()
 
-    minTouchX = executeQry("SELECT min(x) FROM raw WHERE z = '' OR HEAD = 0;", True)[0][0]
-    maxTouchX = executeQry("SELECT max(x) FROM raw WHERE z = '' OR HEAD = 0;", True)[0][0]
+        user_start_time = time.time()
 
-    minTouchY = executeQry("SELECT min(y) FROM raw WHERE z = '' OR HEAD = 0;", True)[0][0]
-    maxTouchY = executeQry("SELECT max(y) FROM raw WHERE z = '' OR HEAD = 0;", True)[0][0]
+        # two querys, one for head-movement and one for touches
+        qry = "SELECT user, x, y, time from raw WHERE user=" + str(
+            userid) + " AND head = 0 GROUP BY time ORDER BY time;"
 
-    minTime = executeQry("SELECT min(time) FROM raw;", True)[0][0]
-    maxTime = executeQry("SELECT max(time) FROM raw;", True)[0][0]
+        COL_X = 1
+        COL_Y = 2
+        COL_TIME = 3
 
-    times = executeQry("SELECT time FROM normaltable GROUP BY time ORDER BY time;", True)
+        print "executing " + qry
+        cur.execute(qry)
+        fetch = cur.fetchall()
+
+        print "uploading " + str(len(fetch))
+        for row in fetch:
+
+            if len(datalist) >= 500:  # upload 500 at a time
+                # upload
+                cur.executemany(
+                    "INSERT INTO touchtable (user, x, y, time) VALUES (?,?,?,?);",
+                    datalist)
+                con.commit()
+                datalist = []  # clear
+
+            data = list(row)
+
+            data[COL_X] = data[COL_X] * 490 / wall_screen_resolution[0]
+
+            data[COL_Y] = 40 + (wall_screen_resolution[1] - data[COL_Y]) * 206 / wall_screen_resolution[1]
+
+            data[COL_TIME] -= min_time  # shift time to start at 0
+
+            new_data = list(data)
+            datalist.append(new_data)  # prepare for upload
+
+        if len(datalist) > 0:
+            # upload
+            cur.executemany(
+                "INSERT INTO touchtable (user, x, y, time) VALUES (?,?,?,?);",
+                datalist)
+            con.commit()
+            datalist = []
+
+    print "done in " + str(time.time() - user_start_time)
+
+    con.close()
 
 
-def setupRawTable():
-    rawColumns = "id INTEGER PRIMARY KEY AUTOINCREMENT, " \
+def setup_raw_table():
+    raw_olumns = "id INTEGER PRIMARY KEY AUTOINCREMENT, " \
                  "user TINYINT NOT NULL, " \
                  "head BOOLEAN NOT NULL, " \
                  "x FLOAT, " \
@@ -309,14 +324,66 @@ def setupRawTable():
                  "roll FLOAT, " \
                  "time INT"
 
-    createTable("raw", rawColumns)
-    loadFilesIntoDatabase("csv/filelist.txt")
+    create_table("raw", raw_olumns)
+    load_files_into_database("csv/filelist.txt")
 
 
-def setupDatabase():
-    setupRawTable()
-    createNormalTable()
+def init_raw_values():
+    global min_x, max_x, min_touch_x, max_touch_x, min_y, max_y, min_touch_y, max_touch_y, min_z, max_z, min_time, max_time, times
+    min_x = executeQry("SELECT min(x) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
+    max_x = executeQry("SELECT max(x) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
+
+    min_y = executeQry("SELECT min(y) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
+    max_y = executeQry("SELECT max(y) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
+
+    min_z = executeQry("SELECT min(z) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
+    max_z = executeQry("SELECT max(z) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
+
+    min_touch_x = executeQry("SELECT min(x) FROM raw WHERE z = '' OR HEAD = 0;", True)[0][0]
+    max_touch_x = executeQry("SELECT max(x) FROM raw WHERE z = '' OR HEAD = 0;", True)[0][0]
+
+    min_touch_y = executeQry("SELECT min(y) FROM raw WHERE z = '' OR HEAD = 0;", True)[0][0]
+    max_touch_y = executeQry("SELECT max(y) FROM raw WHERE z = '' OR HEAD = 0;", True)[0][0]
+
+    min_time = executeQry("SELECT min(time) FROM raw;", True)[0][0]
+    max_time = executeQry("SELECT max(time) FROM raw;", True)[0][0]
 
 
-initValues()
-# setupDatabase()
+def init_values():
+    global min_x, max_x, min_touch_x, max_touch_x, min_y, max_y, min_touch_y, max_touch_y, min_z, max_z, min_time, max_time, times
+    min_x = executeQry("SELECT min(x) FROM headtable;", True)[0][0]
+    max_x = executeQry("SELECT max(x) FROM headtable;", True)[0][0]
+
+    min_y = executeQry("SELECT min(y) FROM headtable;", True)[0][0]
+    max_y = executeQry("SELECT max(y) FROM headtable;", True)[0][0]
+
+    min_z = executeQry("SELECT min(z) FROM headtable;", True)[0][0]
+    max_z = executeQry("SELECT max(z) FROM headtable;", True)[0][0]
+
+    min_touch_x = executeQry("SELECT min(x) FROM touchtable;", True)[0][0]
+    max_touch_x = executeQry("SELECT max(x) FROM touchtable;", True)[0][0]
+
+    min_touch_y = executeQry("SELECT min(y) FROM touchtable;", True)[0][0]
+    max_touch_y = executeQry("SELECT max(y) FROM touchtable;", True)[0][0]
+
+    min_time = executeQry("SELECT min(time) FROM headtable;", True)[0][0]
+    max_time = executeQry("SELECT max(time) FROM headtable;", True)[0][0]
+
+
+def get_head_positions(userid):
+    return executeQry("SELECT x,y,z FROM headtable WHERE user = " + str(userid) + ";", True)
+
+
+def get_touch_positions(userid):
+    return executeQry("SELECT x,y,time FROM touchtable WHERE user = " + str(userid) + ";", True)
+
+
+def setup_database(wall_screen_resolution):
+    init_raw_values()
+    # setup_raw_table()
+    createHeadTable()
+    # create_touch_table(wall_screen_resolution)
+
+
+init_values()
+#setup_database((1920 * 4, 1080 * 3))
