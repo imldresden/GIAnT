@@ -1,6 +1,9 @@
-import sqlite3, csv
+import sqlite3
+import csv
 import time
 import Util
+import DouglasPeucker
+
 
 # Positions in the database
 HEAD = 0
@@ -46,12 +49,19 @@ def executeQry(qry, doFetch=False):
 
 # table: name of the table (string)
 # list: a list of tuples containing the data to insert
-def insertMany(list, table):
+def insert_many(list, table, valuenames):
     con = sqlite3.connect("db")
     cur = con.cursor()
-    cur.executemany(
-        "INSERT INTO " + str(table) + " (user, head, x, y, z, pitch, yaw, roll, time) VALUES (?,?,?,?,?,?,?,?,?);",
-        list)
+    qry = "INSERT INTO " + str(table) + " ("
+    for name in valuenames:
+        qry = qry + str(name) + ", "
+    qry = qry[:-2]
+    qry = qry + ") VALUES ("
+    for name in valuenames:
+        qry = qry + "?,"
+    qry = qry[:-1] + ");"
+    # cur.executemany("INSERT INTO " + str(table) + " (user, head, x, y, z, pitch, yaw, roll, time) VALUES (?,?,?,?,?,?,?,?,?);", list)
+    cur.executemany(qry, list)
     con.commit()
     con.close()
 
@@ -72,10 +82,7 @@ def load_files_into_database(filelist):
         completePath = 'csv/' + path[0]
         print("loading " + str(completePath))
         file = loadCsv(loadFile(completePath))
-        print(
-            "(" + str(filePaths.index(path) + 1) + " / " + str(len(filePaths)) + ") loaded csv: " + path[
-                0] + "   " + str(
-                len(file)) + " lines in " + str(time.time() - last_time) + " seconds")
+        print("(" + str(filePaths.index(path) + 1) + " / " + str(len(filePaths)) + ") loaded csv: " + path[0] + "   " + str(len(file)) + " lines in " + str(time.time() - last_time) + " seconds")
         last_time = time.time()
 
     return
@@ -97,12 +104,11 @@ def loadCsv(rows):
 
             for i in range(len(split)):
                 split[i] = Util.cleanString(split[i])
-            lineTuple = (split[USER], head == 'head', split[X_VALUE], split[Y_VALUE], split[Z_VALUE], split[PITCH],
-                         split[YAW], split[ROLL], Util.convertTimestamp(split[13]))
+            lineTuple = (split[USER], head == 'head', split[X_VALUE], split[Y_VALUE], split[Z_VALUE], split[PITCH], split[YAW], split[ROLL], Util.convertTimestamp(split[13]))
             # if len(file)==0 or file[len(file)-1] != lineTuple):
             file.append(lineTuple)
 
-    insertMany(file, "raw")
+    insert_many(file, "raw", ["user", "head", "x", "y", "z", "pitch", "yaw", "roll", "time"])
     return file
 
 
@@ -125,7 +131,7 @@ def loadFile(path):
 time_stepSize = 50
 
 
-def createHeadTable():
+def create_head_table():
     create_table("headtable", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
                               "user TINYINT NOT NULL,"
                               "x FLOAT,"
@@ -147,8 +153,7 @@ def createHeadTable():
         user_start_time = time.time()
 
         # two querys, one for head-movement and one for touches
-        qry = "SELECT user, x, y, z, pitch, yaw, roll, time from raw WHERE user=" + str(
-            userid) + " AND head = 1 AND z != 0 GROUP BY time ORDER BY time;"
+        qry = "SELECT user, x, y, z, pitch, yaw, roll, time from raw WHERE user=" + str(userid) + " AND head = 1 AND z != 0 GROUP BY time ORDER BY time;"
         COL_X = 1
         COL_Y = 2
         COL_Z = 3
@@ -164,9 +169,7 @@ def createHeadTable():
 
             if len(datalist) > 5000:  # upload 5000 at a time
                 # upload
-                cur.executemany(
-                    "INSERT INTO headtable (user, x, y, z, pitch, yaw, roll, time) VALUES (?,?,?,?,?,?,?,?);",
-                    datalist)
+                cur.executemany("INSERT INTO headtable (user, x, y, z, pitch, yaw, roll, time) VALUES (?,?,?,?,?,?,?,?);", datalist)
                 datalist = []  # clear
                 con.commit()
 
@@ -203,12 +206,9 @@ def createHeadTable():
                         percentage = min(1, max(0, (interpolated_time - last_time) / float(newest_time - last_time)))
 
                         # calculate x and y values
-                        new_data[COL_X] = percentage * float(new_data[COL_X]) + (1 - percentage) * float(
-                            last_data[COL_X])
-                        new_data[COL_Y] = percentage * float(new_data[COL_Y]) + (1 - percentage) * float(
-                            last_data[COL_Y])
-                        new_data[COL_Z] = percentage * float(new_data[COL_Z]) + (1 - percentage) * float(
-                            last_data[COL_Z])
+                        new_data[COL_X] = percentage * float(new_data[COL_X]) + (1 - percentage) * float(last_data[COL_X])
+                        new_data[COL_Y] = percentage * float(new_data[COL_Y]) + (1 - percentage) * float(last_data[COL_Y])
+                        new_data[COL_Z] = percentage * float(new_data[COL_Z]) + (1 - percentage) * float(last_data[COL_Z])
                         new_data[COL_TIME] = interpolated_time  # set time to step
                         interpolated_list.append(list(new_data))
                         last_time_step = time_step
@@ -223,12 +223,9 @@ def createHeadTable():
                     percentage = min(1, max(0, (time_step - last_time) / float(newest_time - last_time)))
 
                     # calculate x and y values
-                    new_data[COL_X] = percentage * float(new_data[COL_X]) + (1 - percentage) * float(
-                        last_data[COL_X])
-                    new_data[COL_Y] = percentage * float(new_data[COL_Y]) + (1 - percentage) * float(
-                        last_data[COL_Y])
-                    new_data[COL_Z] = percentage * float(new_data[COL_Z]) + (1 - percentage) * float(
-                        last_data[COL_Z])
+                    new_data[COL_X] = percentage * float(new_data[COL_X]) + (1 - percentage) * float(last_data[COL_X])
+                    new_data[COL_Y] = percentage * float(new_data[COL_Y]) + (1 - percentage) * float(last_data[COL_Y])
+                    new_data[COL_Z] = percentage * float(new_data[COL_Z]) + (1 - percentage) * float(last_data[COL_Z])
 
                     new_data[COL_TIME] = time_step  # set time to step
                     datalist.append(new_data)  # prepare for upload
@@ -243,10 +240,97 @@ def createHeadTable():
             cur.executemany(query, datalist)
         con.commit()
 
-
     print "done in " + str(time.time() - user_start_time)
 
     con.close()
+
+
+def create_head_table_integral():
+    create_table("headtableintegral", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                      "user TINYINT NOT NULL,"
+                                      "x FLOAT,"
+                                      "y FLOAT,"
+                                      "z FLOAT,"
+                                      "pitch FLOAT,"
+                                      "yaw FLOAT,"
+                                      "roll FLOAT,"
+                                      "time FLOAT NOT NULL")
+    for userid in range(1, 5):
+        user_head_data = executeQry("SELECT user, x, y, z, pitch, yaw, roll, time FROM headtable WHERE user = " + str(userid) + " GROUP BY time ORDER BY time;", True)
+        for i in range(1, len(user_head_data)):
+            for column in range(1, 4):
+                as_list = list(user_head_data[i])
+                as_list[column] += user_head_data[i - 1][column]
+                user_head_data[i] = tuple(as_list)
+
+        insert_many(user_head_data, "headtableintegral", ["user", "x", "y", "z", "pitch", "yaw", "roll", "time"])
+
+
+def create_head_table_optimized():
+    create_table("headtableoptimized", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                       "user TINYINT NOT NULL,"
+                                       "x FLOAT,"
+                                       "y FLOAT,"
+                                       "z FLOAT,"
+                                       "pitch FLOAT,"
+                                       "yaw FLOAT,"
+                                       "roll FLOAT,"
+                                       "time FLOAT NOT NULL")
+
+    values = []
+
+    for i in range(1, 5):
+        head_positions = get_head_positions(i)
+        head_positions = optimize_positions(head_positions)
+        viewpoints = get_view_points(i)
+        viewpoints = align_viewpoints_to_head_positions(viewpoints, head_positions)
+        for k in range(len(head_positions)):
+            position = head_positions[k]
+            direction = viewpoints[k]
+            values.append((i, position[0], position[1], position[2], direction[0], direction[1], direction[2], position[3]))
+
+    insert_many(values, "headtableoptimized", ["user", "x", "y", "z", "pitch", "yaw", "roll", "time"])
+
+
+def align_viewpoints_to_head_positions(viewpoints, head_positions):
+    head_index = 0
+    result = []
+    for viewpoint in viewpoints:
+        if len(head_positions) < head_index + 1:
+            break
+        head_position = head_positions[head_index]
+        if viewpoint[3] >= head_position[3]:
+            result.append(viewpoint)
+            head_index += 1
+
+    return result
+
+
+def optimize_positions(original_positions):
+    result = []
+    times = []
+
+    for i in range(3):
+        optimized_positions = []
+        for position in original_positions:
+            optimized_positions.append((position[i], position[3]))
+        optimized_positions = DouglasPeucker.rdp(optimized_positions, 5)
+        for position in optimized_positions:
+            for ind in range(2):
+                if isinstance(position[ind], tuple):
+                    print "an expected float value is somehow a tuple"
+                    for point in position[ind]:
+                        if not times.__contains__(point[3]):
+                            times.append(point[3])
+            if not times.__contains__(position[1]):
+                times.append(position[1])
+
+    times.sort()
+    if len(times) > 1:
+        for time in times:
+            result.append(original_positions[int(time / original_positions[1][3])])
+        return result
+    return optimized_positions
 
 
 def create_touch_table(wall_screen_resolution):
@@ -266,8 +350,7 @@ def create_touch_table(wall_screen_resolution):
         user_start_time = time.time()
 
         # two querys, one for head-movement and one for touches
-        qry = "SELECT user, x, y, time from raw WHERE user=" + str(
-            userid) + " AND head = 0 GROUP BY time ORDER BY time;"
+        qry = "SELECT user, x, y, time from raw WHERE user=" + str(userid) + " AND head = 0 GROUP BY time ORDER BY time;"
 
         COL_X = 1
         COL_Y = 2
@@ -282,9 +365,7 @@ def create_touch_table(wall_screen_resolution):
 
             if len(datalist) >= 500:  # upload 500 at a time
                 # upload
-                cur.executemany(
-                    "INSERT INTO touchtable (user, x, y, time) VALUES (?,?,?,?);",
-                    datalist)
+                cur.executemany("INSERT INTO touchtable (user, x, y, time) VALUES (?,?,?,?);", datalist)
                 con.commit()
                 datalist = []  # clear
 
@@ -301,9 +382,7 @@ def create_touch_table(wall_screen_resolution):
 
         if len(datalist) > 0:
             # upload
-            cur.executemany(
-                "INSERT INTO touchtable (user, x, y, time) VALUES (?,?,?,?);",
-                datalist)
+            cur.executemany("INSERT INTO touchtable (user, x, y, time) VALUES (?,?,?,?);", datalist)
             con.commit()
             datalist = []
 
@@ -371,19 +450,37 @@ def init_values():
 
 
 def get_head_positions(userid):
-    return executeQry("SELECT x,y,z FROM headtable WHERE user = " + str(userid) + ";", True)
+    return executeQry("SELECT x, y, z, time FROM headtable WHERE user = " + str(userid) + " GROUP BY time ORDER BY time;", True)
+
+
+def get_head_positions_integral(userid):
+    return executeQry("SELECT x, y, z, time FROM headtableintegral WHERE user = " + str(userid) + " GROUP BY time ORDER BY time;", True)
+
+
+def get_head_positions_optimized(userid):
+    return executeQry("SELECT x, y, z, time FROM headtableoptimized WHERE user = " + str(userid) + " ORDER BY time;", True)
 
 
 def get_touch_positions(userid):
-    return executeQry("SELECT x,y,time FROM touchtable WHERE user = " + str(userid) + ";", True)
+    return executeQry("SELECT x, y, time FROM touchtable WHERE user = " + str(userid) + ";", True)
+
+
+def get_view_points(userid):
+    return executeQry("SELECT pitch, yaw, roll, time FROM headtable WHERE user = " + str(userid) + " GROUP BY time ORDER BY time;", True)
+
+
+def get_view_points_optimized(userid):
+    return executeQry("SELECT pitch, yaw, roll, time FROM headtableoptimized WHERE user = " + str(userid) + " ORDER BY time;", True)
 
 
 def setup_database(wall_screen_resolution):
-    init_raw_values()
     # setup_raw_table()
-    createHeadTable()
+    # init_raw_values()
+    # create_head_table()
+    # create_head_table_optimized()
+    create_head_table_integral()
     # create_touch_table(wall_screen_resolution)
 
 
+# setup_database((1920 * 4, 1080 * 3))
 init_values()
-#setup_database((1920 * 4, 1080 * 3))
