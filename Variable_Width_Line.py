@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from libavg import player, app, avg
-import math
 import Draw
 
 
