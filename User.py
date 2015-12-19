@@ -1,5 +1,4 @@
 import database
-import DouglasPeucker
 import global_values
 
 users = []
