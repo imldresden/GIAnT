@@ -2,7 +2,6 @@ import sqlite3
 import csv
 import time
 import Util
-import DouglasPeucker
 
 
 # Positions in the database
