@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import libavg
-from global_values import global_values
+import database
 from libavg import avg
 
 
@@ -12,7 +12,7 @@ class AxisNode(avg.DivNode):
 
     __div_size = avg.DivNode.size
 
-    def __init__(self, horizontal=True, parent=None, **kwargs):
+    def __init__(self, vertical=False, parent=None, **kwargs):
         super(AxisNode, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
@@ -21,20 +21,20 @@ class AxisNode(avg.DivNode):
         """
         self.__x_pos = self.width / 2   # default vertical positioning of main axis line inside AxisNode area
         self.__y_pos = self.height / 2  # default horizontal positioning of main axis line inside AxisNode area
-        self.values = global_values()   # has total and interval time data
+        # self.values = global_values()   # has total and interval time data
 
         # temp rect to visualize div area
         self.rect = avg.RectNode(size=self.size, fillopacity=.1, fillcolor="FFFFFF", color="000000", parent=self)
 
         # create horizontal or vertical main axis line
-        if horizontal:
-            libavg.LineNode(strokewidth=1, pos1=(0, self.__y_pos), pos2=(self.width, self.__y_pos), parent=self)
-        else:
+        if vertical:
             self.size = (self.size[1], self.size[0])
             libavg.LineNode(strokewidth=1, pos1=(self.__x_pos, self.height), pos2=(self.__x_pos, 0), parent=self)
+        else:
+            libavg.LineNode(strokewidth=1, pos1=(0, self.__y_pos), pos2=(self.width, self.__y_pos), parent=self)
 
     def time_to_pixel(self, time):
-        return time / ((self.values.total_end_time - self.values.total_start_time) / self.width)
+        return time / ((database.max_time - database.min_time) / self.width)
 
     def __r_pretty(self, min, max, classes):
         """
