@@ -1,5 +1,6 @@
 from libavg import app, avg
 import libavg
+import axis
 import User
 import Util
 import Visualization
@@ -35,6 +36,10 @@ class main_drawer(app.MainDiv):
         self.subscribe(avg.Node.MOUSE_WHEEL, self.onMouseWheel)
         app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward)
         app.keyboardmanager.bindKeyDown(keyname='Left', handler=self.shift_back)
+
+        # axes
+        axis.AxisNode(size=(self.width, 50), pos=(0, 0), parent=self)
+        axis.AxisNode(size=(self.width, 50), pos=(0, 0), parent=self, vertical=True)
 
     def onFrame(self):
         # print 1 / (time.time() - self.last_time)  # FPS
