@@ -60,4 +60,87 @@ def line_intersection(line1, line2):
     y = det(d, ydiff) / div
     return x, y
 
+
+def r_pretty(dmin, dmax, n):
+    """
+    TODO
+    """
+
+    min_n = int(n / 3)
+    shrink_small = 0.75
+    high_unit_bias = 1.5
+    unit5_bias = 0.5 + 1.5 * high_unit_bias
+
+    h = high_unit_bias
+    h5 = unit5_bias
+    ndiv = n
+
+    dx = dmax - dmin
+
+    if dx is 0 and dmax is 0:
+        cell = 1.0
+        i_small = True
+        u = 1
+    else:
+        cell = max(abs(dmin), abs(dmax))
+        if h5 >= 1.5 * h + 0.5:
+            u = 1 + (1.0 / (1 + h))
+        else:
+            u = 1 + (1.5 / (1 + h5))
+        i_small = dx < (cell * u * max(1.0, ndiv) * 1e-07 * 3.0)
+
+    if i_small:
+        if cell > 10:
+            cell = 9 + cell / 10
+            cell = cell * shrink_small
+        if min_n > 1:
+            cell = cell / min_n
+    else:
+        cell = dx
+        if ndiv > 1:
+            cell = cell / ndiv
+    if cell < 20 * 1e-07:
+        cell = 20 * 1e-07
+
+    base = 10.00**math.floor(math.log10(cell))
+    unit = base
+    if (2 * base) - cell < h * (cell - unit):
+        unit = 2.0 * base
+        if (5 * base) - cell < h5 * (cell - unit):
+            unit = 5.0 * base
+            if (10 * base) - cell < h * (cell - unit):
+                unit = 10.0 * base
+
+    ns = math.floor(dmin / unit + 1e-07)
+    nu = math.ceil(dmax / unit - 1e-07)
+
+    while ns * unit > dmin + (1e-07 * unit):
+        ns -= 1
+    while nu * unit < dmax - (1e-07 * unit):
+        nu += 1
+
+    k = math.floor(0.5 + nu-ns)
+    if k < min_n:
+        k = min_n - k
+        if ns >= 0:
+            nu = nu + k / 2
+            ns = ns - k / 2 + k % 2
+        else:
+            ns = ns - k / 2
+            nu = nu + k / 2 + k % 2
+        ndiv = min_n
+    else:
+        ndiv = k
+
+    graphmin = ns * unit
+    graphmax = nu * unit
+    count = int(math.ceil(graphmax - graphmin) / unit)
+    res = [graphmin + k * unit for k in range(count + 1)]
+    if res[0] < dmin:
+        res[0] = dmin
+    if res[-1] > dmax:
+        res[-1] = dmax
+    return res
+
+
 #calculate_line_intersection((0,0),(0,1),(1,1),0.1, 0.3, 0.1)
