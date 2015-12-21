@@ -4,6 +4,7 @@ import axis
 import User
 import Util
 import Visualization
+import database
 import time
 import math
 
@@ -38,8 +39,8 @@ class main_drawer(app.MainDiv):
         app.keyboardmanager.bindKeyDown(keyname='Left', handler=self.shift_back)
 
         # axes
-        axis.AxisNode(size=(self.width, 50), pos=(0, 0), parent=self)
-        axis.AxisNode(size=(self.width, 50), pos=(0, 0), parent=self, vertical=True)
+        self.x_axis = axis.AxisNode(size=(self.width - 50, 50), pos=(25, self.height - 50), parent=self)
+        #self.y_axis = axis.AxisNode(size=(self.width, 50), pos=(0, 0), parent=self, vertical=True)
 
     def onFrame(self):
         # print 1 / (time.time() - self.last_time)  # FPS
@@ -70,6 +71,9 @@ class main_drawer(app.MainDiv):
                 visualization.start = (self.zoom_current - 1) * self.shift_current
                 visualization.end = 1 - (self.zoom_current - 1) * (1 - self.shift_current)
                 visualization.createLine()
+
+            self.x_axis.update(visualization.start * (database.max_time - database.min_time), visualization.end * (database.max_time - database.min_time))
+            #self.y_axis.update(database.min_x, database.max_x)
 
     def draw_line(self, p1, p2, color, thickness, last_thickness, opacity):
         return libavg.LineNode(pos1=p1, pos2=p2, color=color, strokewidth=thickness, parent=self)
