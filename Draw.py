@@ -29,7 +29,8 @@ class main_drawer(app.MainDiv):
     shift_change_starttime = 0
 
     def onInit(self):
-        self.resolution = libavg.app.instance._resolution
+        # self.resolution = libavg.app.instance._resolution
+        self.resolution = (libavg.app.instance._resolution[0], libavg.app.instance._resolution[1] - 100)
         libavg.RectNode(pos=(0, 0), size=self.resolution, fillcolor='ffffff', parent=self)
         for userid in range(1, 5):
             user = User.User(userid)
@@ -39,8 +40,14 @@ class main_drawer(app.MainDiv):
         app.keyboardmanager.bindKeyDown(keyname='Left', handler=self.shift_back)
 
         # axes
-        self.x_axis = axis.AxisNode(size=(self.width - 50, 50), pos=(25, self.height - 50), parent=self)
-        #self.y_axis = axis.AxisNode(size=(self.width, 50), pos=(0, 0), parent=self, vertical=True)
+        self.x_axis = axis.AxisNode(size=(self.width - 100, 50), pos=(50, self.height - 100), parent=self,
+                                    data_range=(database.min_time, database.max_time),
+                                    unit="ms")
+        self.time_axis = axis.TimeAxisNode(size=(self.width - 100, 50), pos=(50, self.height - 50), parent=self,
+                                           data_range=(database.min_time, database.max_time),
+                                           unit="ms")
+        self.y_axis = axis.AxisNode(size=(libavg.app.instance._resolution[1] - 100, 50), pos=(0, 0), parent=self, vertical=True,
+                                    data_range=(database.min_x, database.max_x))
 
     def onFrame(self):
         # print 1 / (time.time() - self.last_time)  # FPS
@@ -72,8 +79,10 @@ class main_drawer(app.MainDiv):
                 visualization.end = 1 - (self.zoom_current - 1) * (1 - self.shift_current)
                 visualization.createLine()
 
-            self.x_axis.update(visualization.start * (database.max_time - database.min_time), visualization.end * (database.max_time - database.min_time))
-            #self.y_axis.update(database.min_x, database.max_x)
+            true_range = database.max_time - database.min_time
+            offset = self.shift_current * true_range
+            self.x_axis.update(visualization.start * true_range, visualization.end * true_range, offset)
+            self.time_axis.update(database.min_time, database.max_time, visualization.start * true_range, visualization.end * true_range)
 
     def draw_line(self, p1, p2, color, thickness, last_thickness, opacity):
         return libavg.LineNode(pos1=p1, pos2=p2, color=color, strokewidth=thickness, parent=self)
