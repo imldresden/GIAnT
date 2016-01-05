@@ -63,7 +63,7 @@ def line_intersection(line1, line2):
 
 def r_pretty(dmin, dmax, n):
     """
-    TODO
+    calculates "nice" ticks for axis
     """
 
     min_n = int(n / 3)
