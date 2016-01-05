@@ -42,6 +42,10 @@ class AxisNode(avg.DivNode):
         self.__update(self.__start, self.__end)
 
     def update(self, start, end, offset=0):
+        """
+        updates position of ticks and labels, and value of labels
+        needs to be called whenever corresponding data is changing (e.g. in onFrame())
+        """
         self.__start = start
         self.__end = end
 
@@ -53,11 +57,12 @@ class AxisNode(avg.DivNode):
         offset = self._value_to_pixel(offset, 0, self.__end - self.__start)
         self.__label_pos = [self._value_to_pixel(t, 0, self.__end - self.__start) - offset for t in self.__label_values]
 
-        #print "offset: {}".format(offset)
-
         self.__draw_ticks()
 
     def __draw_ticks(self):
+        """
+        draw each tick and the corresponding tick label on the position at the axis line
+        """
         # delete old axis ticks
         for tick in self.__ticks:
             tick.unlink()
@@ -68,6 +73,7 @@ class AxisNode(avg.DivNode):
             label.unlink()
         self.__label_nodes = [None] * len(self.__label_pos)
 
+        # for each tick create new tick-line and value label at position on axis line
         for i, pos in enumerate(self.__label_pos):
             if type(self.__ticks[i]) is not "libavg.avg.LineNode":
                 # create new axis tick and label at pos
@@ -90,6 +96,9 @@ class AxisNode(avg.DivNode):
                 self.__label_nodes[i].pos = (pos - center, 30)
 
     def _value_to_pixel(self, value, start, end):
+        """
+        calculate pixel position on axis line of label value
+        """
         if self.__vertical:
             a = (end - start) / self.height
         else:
@@ -209,7 +218,7 @@ class AxisNode(avg.DivNode):
     def __get_end(self):
         return self.__end
 
-    size = property(__getSize, __setSize, doc="Size of axis")
+    size = property(__getSize, __setSize)
     x_pos = property(__get_x_pos, __set_x_pos)
     y_pos = property(__get_y_pos, __set_y_pos)
     label_values = property(__get_label_values)
@@ -221,12 +230,18 @@ class AxisNode(avg.DivNode):
 
 
 class TimeAxisNode(AxisNode):
+    """
+    Custom TimeAxisNode with axis lines and labeling. Derived from AxisNode. Additional interval markings.
+    """
 
     def __init__(self, parent=None, **kwargs):
         # pass arguments to super and initialize C++ class
         super(TimeAxisNode, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
+        """
+        attributes
+        """
         self.__i_start = self._value_to_pixel(self.start, self.start, self.end)   # interval start
         self.__i_end = self._value_to_pixel(self.start, self.start, self.end)     # interval end
         self.__i_start_line = None                                                # LineNode for begin of interval
@@ -243,6 +258,10 @@ class TimeAxisNode(AxisNode):
         self.update(self.start, self.end, self.start, self.end)
 
     def update(self, start, end, interval_start, interval_end):
+        """
+        updates position of interval start and interval end
+        needs to be called whenever corresponding data is changing (e.g. in onFrame())
+        """
         # set new interval start and end
         self.__i_start = self._value_to_pixel(interval_start, start, end)
         self.__i_end = self._value_to_pixel(interval_end, start, end)
