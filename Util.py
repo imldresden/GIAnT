@@ -61,15 +61,17 @@ def line_intersection(line1, line2):
     return x, y
 
 
-def r_pretty(dmin, dmax, n):
+def r_pretty(dmin, dmax, n, time=False):
     """
     calculates "nice" ticks for axis
     """
 
-    min_n = int(n / 3)
-    shrink_small = 0.75
-    high_unit_bias = 1.5
-    unit5_bias = 0.5 + 1.5 * high_unit_bias
+    min_n = int(n / 3)                          # non-negative integer giving minimal number of intervals n
+    shrink_small = 0.75                         # positive numeric by which a default scale is shrunk
+    high_unit_bias = 1.5                        # non-negative numeric, typically > 1
+                                                # the interval unit is determined as {1,2,5,10} * b, a power of 10
+                                                # larger high_unit_bias favors larger units
+    unit5_bias = 0.5 + 1.5 * high_unit_bias     # non-negative numeric multiplier favoring factor 5 over 2
 
     h = high_unit_bias
     h5 = unit5_bias
@@ -104,21 +106,35 @@ def r_pretty(dmin, dmax, n):
 
     base = 10.00**math.floor(math.log10(cell))
     unit = base
-    if (2 * base) - cell < h * (cell - unit):
-        unit = 2.0 * base
-        if (5 * base) - cell < h5 * (cell - unit):
-            unit = 5.0 * base
-            if (10 * base) - cell < h * (cell - unit):
-                unit = 10.0 * base
+
+    # time values have different preferred values
+    if time:
+        if (2 * base) - cell < h * (cell - unit):
+            unit = 2.0 * base
+            if (3 * base) - cell < h * (cell - unit):
+                unit = 3.0 * base
+                if (6 * base) - cell < h5 * (cell - unit):
+                    unit = 6.0 * base
+                    if (10 * base) - cell < h * (cell - unit):
+                        unit = 10.0 * base
+    else:
+        if (2 * base) - cell < h * (cell - unit):
+            unit = 2.0 * base
+            if (5 * base) - cell < h5 * (cell - unit):
+                unit = 5.0 * base
+                if (10 * base) - cell < h * (cell - unit):
+                    unit = 10.0 * base
 
     ns = math.floor(dmin / unit + 1e-07)
     nu = math.ceil(dmax / unit - 1e-07)
 
+    # extend range out beyond the data
     while ns * unit > dmin + (1e-07 * unit):
         ns -= 1
     while nu * unit < dmax - (1e-07 * unit):
         nu += 1
 
+    # if not enough labels, extend range out to make more (labels beyond data!)
     k = math.floor(0.5 + nu-ns)
     if k < min_n:
         k = min_n - k
@@ -142,5 +158,4 @@ def r_pretty(dmin, dmax, n):
         res[-1] = dmax
     return res
 
-
-#calculate_line_intersection((0,0),(0,1),(1,1),0.1, 0.3, 0.1)
+# calculate_line_intersection((0,0),(0,1),(1,1),0.1, 0.3, 0.1)
