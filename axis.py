@@ -50,7 +50,10 @@ class AxisNode(avg.DivNode):
         self.__end = end
 
         # calculate tick marks with R's pretty algorithm and format numbers
-        self.__label_values = Util.r_pretty(dmin=self.__start, dmax=self.__end, n=5)
+        if self.__unit is "ms":
+            self.__label_values = Util.r_pretty(dmin=self.__start, dmax=self.__end, n=5, time=True)
+        else:
+            self.__label_values = Util.r_pretty(dmin=self.__start, dmax=self.__end, n=5)
         self.__labels = [self.__format_label_value(v) for v in self.__label_values]
 
         # calculate positions of ticks within AxisNode
