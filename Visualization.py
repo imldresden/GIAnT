@@ -22,12 +22,13 @@ class Visualization(libavg.DivNode):
         self.parent = parent
         self.createLine()
 
-    def zoom_time(self, start, end):
-        self.start = start
-        self.end = end
+    # make start and end values in 0..1
+    def update_timeframe(self):
+        self.start = global_values.get_interval_range()[0] / (global_values.total_range[1] - global_values.total_range[0])
+        self.end = global_values.get_interval_range()[1] / (global_values.total_range[1] - global_values.total_range[0])
 
-    # start and end should be between 0 and 1
     def createLine(self):
+        self.update_timeframe()
         userid = -1
         for user in User.users:
             userid += 1
@@ -48,14 +49,14 @@ class Visualization(libavg.DivNode):
                 # touch_x = (user.touches[posindex][0]-database.min_touch_x)/float(database.max_touch_x-database.min_touch_x)
                 # touch_y = (user.touches[posindex][1]-database.min_touch_y)/float(database.max_touch_y-database.min_touch_y)
                 # touch_time = (user.touches[posindex][2]-database.min_time)/float(database.max_time-database.min_time)
-
+                time = i / float(global_values.samples_per_pixel)
 
                 # x value of the visualization
-                current_position.append(i / float(global_values.samples_per_pixel))
+                current_position.append(time)
                 # y value of the visualization
                 current_position.append(head_x * self.size[1])
 
-                thickness = pow(head_z, 3) * ((pow(self.parent.zoom_current - 1, 5)) * 100 + 40)
+                thickness = pow(head_z, 3) * 60
                 opacity = (1 - head_z)
                 points.append(current_position)
                 widths.append(thickness)

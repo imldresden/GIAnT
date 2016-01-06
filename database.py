@@ -33,6 +33,8 @@ max_time = 0
 
 times = []
 
+# interval in ms (just for calculation, will be normalized between 0 and 1)
+time_stepSize = 50
 
 # qry: the query to execute (string)
 # doFetch: whether data should be fetched and returned
@@ -48,15 +50,15 @@ def executeQry(qry, doFetch=False):
 
 # table: name of the table (string)
 # list: a list of tuples containing the data to insert
-def insert_many(list, table, valuenames):
+def insert_many(list, table, value_names):
     con = sqlite3.connect("db")
     cur = con.cursor()
     qry = "INSERT INTO " + str(table) + " ("
-    for name in valuenames:
+    for name in value_names:
         qry = qry + str(name) + ", "
     qry = qry[:-2]
     qry = qry + ") VALUES ("
-    for name in valuenames:
+    for name in value_names:
         qry = qry + "?,"
     qry = qry[:-1] + ");"
     # cur.executemany("INSERT INTO " + str(table) + " (user, head, x, y, z, pitch, yaw, roll, time) VALUES (?,?,?,?,?,?,?,?,?);", list)
@@ -121,13 +123,6 @@ def loadFile(path):
             my_list.append(row)
 
         return my_list
-
-
-# create a table where x, y, z and the time are normalized between 0 and 1
-# and equalize the time intervals
-
-# interval in ms (just for calculation, will be normalized between 0 and 1)
-time_stepSize = 50
 
 
 def create_head_table():
@@ -263,73 +258,6 @@ def create_head_table_integral():
                 user_head_data[i] = tuple(as_list)
 
         insert_many(user_head_data, "headtableintegral", ["user", "x", "y", "z", "pitch", "yaw", "roll", "time"])
-
-
-def create_head_table_optimized():
-    create_table("headtableoptimized", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                       "user TINYINT NOT NULL,"
-                                       "x FLOAT,"
-                                       "y FLOAT,"
-                                       "z FLOAT,"
-                                       "pitch FLOAT,"
-                                       "yaw FLOAT,"
-                                       "roll FLOAT,"
-                                       "time FLOAT NOT NULL")
-
-    values = []
-
-    for i in range(1, 5):
-        head_positions = get_head_positions(i)
-        head_positions = optimize_positions(head_positions)
-        viewpoints = get_view_points(i)
-        viewpoints = align_viewpoints_to_head_positions(viewpoints, head_positions)
-        for k in range(len(head_positions)):
-            position = head_positions[k]
-            direction = viewpoints[k]
-            values.append((i, position[0], position[1], position[2], direction[0], direction[1], direction[2], position[3]))
-
-    insert_many(values, "headtableoptimized", ["user", "x", "y", "z", "pitch", "yaw", "roll", "time"])
-
-
-def align_viewpoints_to_head_positions(viewpoints, head_positions):
-    head_index = 0
-    result = []
-    for viewpoint in viewpoints:
-        if len(head_positions) < head_index + 1:
-            break
-        head_position = head_positions[head_index]
-        if viewpoint[3] >= head_position[3]:
-            result.append(viewpoint)
-            head_index += 1
-
-    return result
-
-
-def optimize_positions(original_positions):
-    result = []
-    times = []
-
-    for i in range(3):
-        optimized_positions = []
-        for position in original_positions:
-            optimized_positions.append((position[i], position[3]))
-        optimized_positions = DouglasPeucker.rdp(optimized_positions, 5)
-        for position in optimized_positions:
-            for ind in range(2):
-                if isinstance(position[ind], tuple):
-                    print "an expected float value is somehow a tuple"
-                    for point in position[ind]:
-                        if not times.__contains__(point[3]):
-                            times.append(point[3])
-            if not times.__contains__(position[1]):
-                times.append(position[1])
-
-    times.sort()
-    if len(times) > 1:
-        for time in times:
-            result.append(original_positions[int(time / original_positions[1][3])])
-        return result
-    return optimized_positions
 
 
 def create_touch_table(wall_screen_resolution):

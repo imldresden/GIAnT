@@ -1,48 +1,88 @@
 import colorsys
 import database
+import time
 
 colors_hsv = [[35 / float(360), 0.41, 1], [0, 0.50, 1], [287 / float(360), 0.34, 1], [205 / float(360), 0.33, 1]]
-samples_per_pixel = 0.3
+samples_per_pixel = 0.1
 averaging_count = 500
-start_time = 0
-end_time = database.max_time
-zoom_strength = 0.1
+total_range = [database.min_time, database.max_time]
+__interval_range = [total_range[0], total_range[1]]
+__interval_range_last = [total_range[0], total_range[1]]
+__interval_range_target = [total_range[0], total_range[1]]
+__animation_start_time = -1
+__animation_duration = 1
+__zoom_strength = 0.1
 
 
-def zoom_in_at(percentage_in_timeframe):
-    global start_time, end_time
-    point = start_time + percentage_in_timeframe * (end_time - start_time)
-    start_time = point - (point - start_time) * (1 - zoom_strength)
-    end_time = point + (end_time - point) * (1 - zoom_strength)
+# updates the current interval to the interpolated value for the animation
+def update_interval_range():
+    global __animation_start_time, __animation_duration, __interval_range_target, __interval_range, __interval_range_last
+    if __animation_start_time == -1:
+        return False
+
+    progress = (time.time() - __animation_start_time) / __animation_duration
+    if progress >= 1:
+        __interval_range = list(__interval_range_target)
+
+        __animation_start_time = -1
+        return True
+    __interval_range[0] = progress * __interval_range_target[0] + (1 - progress) * __interval_range_last[0]
+    __interval_range[1] = progress * __interval_range_target[1] + (1 - progress) * __interval_range_last[1]
+    return True
 
 
-def zoom_out_at(percentage_in_timeframe):
-    global start_time, end_time
-
-    point = start_time + percentage_in_timeframe * (end_time - start_time)
-    start_time -= (point - start_time) * 1 / ((1 / zoom_strength) - 1)
-    end_time += (end_time - point) * 1 / ((1 / zoom_strength) - 1)
-
-    if start_time < database.min_time:
-        start_time = database.min_time
-
-    if end_time > database.max_time:
-        end_time = database.max_time
+# gets the interval for the current animation step
+def get_interval_range():
+    global __interval_range
+    update_interval_range()
+    return __interval_range
 
 
+# zooms in around the mouse (sets the target interval, which is later animated using update_interval_range())
+def zoom_in_at(fraction_in_timeframe):
+    global __interval_range, __animation_start_time, __interval_range_last, __interval_range_target
+    __interval_range_last = list(__interval_range)
+    __animation_start_time = time.time()
+    update_interval_range()
+
+    point = __interval_range_target[0] + fraction_in_timeframe * (__interval_range_target[1] - __interval_range_target[0])
+    __interval_range_target[0] = point - (point - __interval_range_target[0]) * (1 - __zoom_strength)
+    __interval_range_target[1] = point + (__interval_range_target[1] - point) * (1 - __zoom_strength)
+
+# zooms out around the mouse (sets the target interval, which is later animated using update_interval_range())
+def zoom_out_at(fraction_in_timeframe):
+    global __interval_range, total_range, __animation_start_time, __interval_range_last, __interval_range_target
+    __interval_range_last = list(__interval_range)
+    __animation_start_time = time.time()
+    update_interval_range()
+    point = __interval_range_target[0] + fraction_in_timeframe * (__interval_range_target[1] - __interval_range_target[0])
+    __interval_range_target[0] -= (point - __interval_range_target[0]) * 1 / ((1 / __zoom_strength) - 1)
+    __interval_range_target[1] += (__interval_range_target[1] - point) * 1 / ((1 / __zoom_strength) - 1)
+
+    if __interval_range_target[0] < total_range[0]:
+        __interval_range_target[0] = total_range[0]
+
+    if __interval_range_target[1] > total_range[1]:
+        __interval_range_target[1] = total_range[1]
+
+
+# shifts the interval (sets the target interval, which is later animated using update_interval_range())
 def shift_time(forwards):
-    global end_time, start_time
+    global __interval_range, total_range, __animation_start_time, __interval_range_last
+    __interval_range_last = list(__interval_range)
+    __animation_start_time = time.time()
+    update_interval_range()
     if forwards:
-        shift_amount = end_time - start_time * zoom_strength
+        shift_amount = (__interval_range_target[1] - __interval_range_target[0]) * __zoom_strength
     else:
-        shift_amount = -(end_time - start_time * zoom_strength)
-    if start_time + shift_amount < database.min_time:
-        shift_amount = database.min_time - start_time
-    if end_time + shift_amount > database.max_time:
-        shift_amount = database.max_time - end_time
+        shift_amount = -(__interval_range_target[1] - __interval_range_target[0]) * __zoom_strength
+    if __interval_range_target[0] + shift_amount < total_range[0]:
+        shift_amount = total_range[0] - __interval_range_target[0]
+    if __interval_range_target[1] + shift_amount > total_range[1]:
+        shift_amount = total_range[1] - __interval_range_target[1]
 
-    start_time += shift_amount
-    end_time += shift_amount
+    __interval_range_target[0] += shift_amount
+    __interval_range_target[1] += shift_amount
 
 
 def getColorAsHex(index, opacity):
