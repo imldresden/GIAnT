@@ -10,8 +10,6 @@ class Variable_Width_Line:
     color = 'FF0000'
 
     def __init__(self, points, widths, color, parent):
-        # self.points = points
-        # self.widths = widths
         self.points = points
         self.widths = widths
         self.color = color
@@ -36,21 +34,21 @@ class Variable_Width_Line:
             p2 = self.points[i]
             t2 = self.widths[i]
             if (i < 1):
-                p1 = self.points[0]
-                t1 = self.widths[0]
+                p1 = (self.points[0][0] - (self.points[1][0] - self.points[0][0]), self.points[1][0])
                 p3 = self.points[i + 1]
+                t1 = self.widths[0]
                 t3 = self.widths[i + 1]
             else:
                 p1 = self.points[i - 1]
                 t1 = self.widths[i - 1]
                 if (i >= len(self.points) - 1):
+                    p3 = (2 * self.points[i][0] - self.points[i - 1][0], self.points[i - 1][1])
                     t3 = self.widths[i]
-                    p3 = self.points[i]
                 else:
-                    t3 = self.widths[i + 1]
                     p3 = self.points[i + 1]
+                    t3 = self.widths[i + 1]
             linepos = Draw.calculate_line_intersection(p1, p2, p3, t1, t2, t3)
-            # width = math.sin(i / float(800)) * 10 + 20
+
             vertexes.append(linepos[0])
             vertexes.append(linepos[1])
             texx = (i + 1) / float(len(self.widths) - 1)
@@ -71,11 +69,11 @@ class Variable_Width_Line:
             self.canvas = player.deleteCanvas(canvas_id)
         self.canvas = player.createCanvas(id=canvas_id, size=(len(self.widths) - 1, 1))
         for x in range(len(self.widths)):
-            if self.widths[x] == 0:
+            if self.widths[x] <= 0:
                 opacity = 1
             else:
-                opacity = 1 / (self.widths[x])
-            opacity += 0.03
+                opacity = 3 / (self.widths[x])
+            opacity += 0.0
             avg.LineNode(pos1=(x + 0.5, -0.5), pos2=(x + 0.5, 1.5), color=self.color, opacity=opacity, parent=self.canvas.getRootNode())
         self.canvas.render()
         self.gradientBmp = self.canvas.screenshot()
