@@ -31,11 +31,11 @@ class main_drawer(app.MainDiv):
 
     def onInit(self):
         # self.resolution = libavg.app.instance._resolution
-        self.resolution = (libavg.app.instance._resolution[0], libavg.app.instance._resolution[1] - 100)
-        libavg.RectNode(pos=(0, 0), size=self.resolution, fillcolor='ffffff', parent=self)
+        self.resolution = (libavg.app.instance._resolution[0], libavg.app.instance._resolution[1] - 80)
+        libavg.RectNode(pos=(0, 0), size=self.resolution, fillcolor='ffffff', parent=self, strokewidth=0)
         for userid in range(1, 5):
             user = User.User(userid)
-        self.visualizations.append(Visualization.Visualization(self, self.resolution, (100, 100)))
+        self.visualizations.append(Visualization.Visualization(parent=self, size=self.resolution, position=(0, 0)))
         self.subscribe(avg.Node.MOUSE_WHEEL, self.onMouseWheel)
         app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward)
         app.keyboardmanager.bindKeyDown(keyname='Left', handler=self.shift_back)
@@ -43,14 +43,12 @@ class main_drawer(app.MainDiv):
 
 
         # axes
-        self.x_axis = axis.AxisNode(size=(self.width - 100, 50), pos=(50, self.height - 100), parent=self,
-                                    data_range=global_values.total_range,
-                                    unit="ms")
-        self.time_axis = axis.TimeAxisNode(size=(self.width - 100, 50), pos=(50, self.height - 50), parent=self,
-                                           data_range=global_values.total_range,
-                                           unit="ms")
-        self.y_axis = axis.AxisNode(size=(libavg.app.instance._resolution[1] - 100, 50), pos=(0, 0), parent=self, vertical=True,
-                                    data_range=global_values.total_range)
+        self.x_axis = axis.AxisNode(size=(self.width, 20), pos=(0, self.height - 80), parent=self,
+                                    data_range=global_values.total_range, unit="ms")
+        self.time_axis = axis.TimeAxisNode(size=(self.width, 20), pos=(0, self.height - 40), parent=self,
+                                           data_range=global_values.total_range, unit="ms")
+        self.y_axis = axis.AxisNode(size=(libavg.app.instance._resolution[1] - 80, 30), pos=(25, 0), parent=self,
+                                    vertical=True, data_range=global_values.x_range, unit="cm")
 
     def onFrame(self):
         if global_values.update_interval_range():

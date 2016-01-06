@@ -6,6 +6,7 @@ colors_hsv = [[35 / float(360), 0.41, 1], [0, 0.50, 1], [287 / float(360), 0.34,
 samples_per_pixel = 0.1
 averaging_count = 500
 total_range = [database.min_time, database.max_time]
+x_range = [database.min_x, database.max_x]
 __interval_range = [total_range[0], total_range[1]]
 __interval_range_last = [total_range[0], total_range[1]]
 __interval_range_target = [total_range[0], total_range[1]]
