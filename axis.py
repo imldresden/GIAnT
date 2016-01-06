@@ -17,27 +17,29 @@ class AxisNode(avg.DivNode):
         """
         attributes
         """
-        self.__x_pos = self.width / 2   # default vertical positioning of main axis line inside AxisNode area
-        self.__y_pos = self.height / 2  # default horizontal positioning of main axis line inside AxisNode area
-        self.__label_values = []        # contains the data values of the tick labels of the axis
-        self.__label_pos = []           # contains the position along the axis for each label in __label_values
-        self.__ticks = []               # separation lines (ticks) for axis
-        self.__labels = []              # nice numbers for tick labels from __label_values
-        self.__label_nodes = []         # contains WordNodes for tick labels with text values from _labels
-        self.__vertical = vertical      # if True, axis is drawn vertically
-        self.__start = data_range[0]    # current minimal data value of visualization data
-        self.__end = data_range[1]      # current maximal data value of visualization data
-        self.__unit = unit              # unit of measurement for axis values (time: h, min, s, ms, length: m, cm, mm)
+        self.__tick_length = 5                              # half of the length of the tick marks on the axis
+        self.__x_offset = self.width - self.__tick_length   # offset of vertical line from right edge of DivNode
+        self.__y_offset = self.__tick_length                # offset of horizontal line from upper edge of DivNode
+        self.__label_values = []                            # contains the data values of the tick labels of the axis
+        self.__label_pos = []                               # contains the pos at axis for each label in __label_values
+        self.__ticks = []                                   # separation lines (ticks) for axis
+        self.__labels = []                                  # nice numbers for tick labels from __label_values
+        self.__label_nodes = []                             # WordNodes for tick labels with values from _labels
+        self.__vertical = vertical                          # if True, axis is drawn vertically
+        self.__start = data_range[0]                        # current minimal data value of visualization data
+        self.__end = data_range[1]                          # current maximal data value of visualization data
+        self.__unit = unit                                  # unit of measurement for axis values (time: ms, length: cm)
 
-        # temp rect to visualize div area
-        self.rect = avg.RectNode(size=self.size, fillopacity=.1, fillcolor="FFFFFF", color="000000", parent=self)
+        # background rectangle
+        self.rect = avg.RectNode(size=self.size, fillopacity=.0, fillcolor="FFFFFF", color="000000", parent=self)
 
         # create horizontal or vertical main axis line
         if self.__vertical:
             self.size = (self.size[1], self.size[0])
-            libavg.LineNode(strokewidth=1, pos1=(self.__x_pos, self.height), pos2=(self.__x_pos, 0), parent=self)
+            self.__x_offset = self.width - self.__tick_length
+            libavg.LineNode(strokewidth=1, pos1=(self.__x_offset, self.height), pos2=(self.__x_offset, 0), parent=self)
         else:
-            libavg.LineNode(strokewidth=1, pos1=(0, self.__y_pos), pos2=(self.width, self.__y_pos), parent=self)
+            libavg.LineNode(strokewidth=1, pos1=(0, self.__y_offset), pos2=(self.width, self.__y_offset), parent=self)
 
         self.__update(self.__start, self.__end)
 
@@ -90,13 +92,13 @@ class AxisNode(avg.DivNode):
             center = self.__label_nodes[i].width / 2
             v_center = self.__label_nodes[i].fontsize / 2
             if self.__vertical:
-                self.__ticks[i].pos1 = (self.__x_pos, pos)
-                self.__ticks[i].pos2 = (self.width - 5, pos)
-                self.__label_nodes[i].pos = (5, pos - v_center)
+                self.__ticks[i].pos1 = (self.__x_offset - self.__tick_length, pos)
+                self.__ticks[i].pos2 = (self.__x_offset + self.__tick_length, pos)
+                self.__label_nodes[i].pos = (self.__x_offset - 40, pos - v_center - 1)
             else:
-                self.__ticks[i].pos1 = (pos, 5)
-                self.__ticks[i].pos2 = (pos, self.__y_pos)
-                self.__label_nodes[i].pos = (pos - center, 30)
+                self.__ticks[i].pos1 = (pos, self.__y_offset - self.__tick_length)
+                self.__ticks[i].pos2 = (pos, self.__y_offset + self.__tick_length)
+                self.__label_nodes[i].pos = (pos - center, self.__y_offset + self.__tick_length + 5)
 
     def _value_to_pixel(self, value, start, end):
         """
@@ -197,20 +199,18 @@ class AxisNode(avg.DivNode):
     def __setSize(self, size):
         self.rect.size = size
         self.__div_size = size
-        self.__x_pos = size[0] / 2
-        self.__y_pos = size[1] / 2
 
-    def __get_x_pos(self):
-        return self.__x_pos
+    def __get_x_offset(self):
+        return self.__x_offset
 
-    def __set_x_pos(self, x):
-        self.__x_pos = x
+    def __set_x_offset(self, x):
+        self.__x_offset = x
 
-    def __get_y_pos(self):
-        return self.__y_pos
+    def __get_y_offset(self):
+        return self.__y_offset
 
-    def __set_y_pos(self, y):
-        self.__y_pos = y
+    def __set_y_offset(self, y):
+        self.__y_offset = y
 
     def __get_label_values(self):
         return self.__label_values
@@ -221,12 +221,16 @@ class AxisNode(avg.DivNode):
     def __get_end(self):
         return self.__end
 
+    def __get_tick_length(self):
+        return self.__tick_length
+
     size = property(__getSize, __setSize)
-    x_pos = property(__get_x_pos, __set_x_pos)
-    y_pos = property(__get_y_pos, __set_y_pos)
+    x_pos = property(__get_x_offset, __set_x_offset)
+    y_pos = property(__get_y_offset, __set_y_offset)
     label_values = property(__get_label_values)
     start = property(__get_start)
     end = property(__get_end)
+    tick_length = property(__get_tick_length)
 
     __update = update               # private copy of original update() method
     __div_size = avg.DivNode.size   # private copy of DivNode size
@@ -252,10 +256,12 @@ class TimeAxisNode(AxisNode):
 
         # interval lines
         self.__i_start_line = libavg.LineNode(strokewidth=2, color="FF0000",
-                                              pos1=(self.__i_start, self.y_pos), pos2=(self.__i_start, self.y_pos - 15),
+                                              pos1=(self.__i_start, self.y_pos - self.tick_length),
+                                              pos2=(self.__i_start, self.y_pos + self.tick_length),
                                               parent=self)
         self.__i_end_line = libavg.LineNode(strokewidth=2, color="FF0000",
-                                            pos1=(self.__i_end, self.y_pos), pos2=(self.__i_end, self.y_pos - 15),
+                                            pos1=(self.__i_end, self.y_pos - self.tick_length),
+                                            pos2=(self.__i_end, self.y_pos + self.tick_length),
                                             parent=self)
 
         self.update(self.start, self.end, self.start, self.end)
