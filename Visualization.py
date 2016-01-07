@@ -16,7 +16,9 @@ class Visualization(libavg.DivNode):
     start = 0
     end = 1
 
-    def __init__(self, parent, size, position):
+    def __init__(self, parent, size, position,  **kwargs):
+        super(Visualization, self).__init__(**kwargs)
+        self.registerInstance(self, parent)
         self.size = size
         self.position = position
         self.parent = parent
