@@ -2,6 +2,7 @@
 
 import libavg
 import Util
+import global_values
 from libavg import avg
 
 
@@ -17,18 +18,21 @@ class AxisNode(avg.DivNode):
         """
         attributes
         """
-        self.__tick_length = 5                              # half of the length of the tick marks on the axis
-        self.__x_offset = self.width - self.__tick_length   # offset of vertical line from right edge of DivNode
-        self.__y_offset = self.__tick_length                # offset of horizontal line from upper edge of DivNode
-        self.__label_values = []                            # contains the data values of the tick labels of the axis
-        self.__label_pos = []                               # contains the pos at axis for each label in __label_values
-        self.__ticks = []                                   # separation lines (ticks) for axis
-        self.__labels = []                                  # nice numbers for tick labels from __label_values
-        self.__label_nodes = []                             # WordNodes for tick labels with values from _labels
-        self.__vertical = vertical                          # if True, axis is drawn vertically
-        self.__start = data_range[0]                        # current minimal data value of visualization data
-        self.__end = data_range[1]                          # current maximal data value of visualization data
-        self.__unit = unit                                  # unit of measurement for axis values (time: ms, length: cm)
+        self.__h_tick_length = 5                             # half of the length of the tick marks on the axis
+        self.__tick_length = self.__h_tick_length * 2        # length of the tick marks on the axis
+        self.__x_offset = self.width - self.__h_tick_length  # offset of vertical line from right edge of DivNode
+        self.__y_offset = self.__h_tick_length               # offset of horizontal line from upper edge of DivNode
+        self.__label_offset = 5                              # offset of tick labels from axis line
+        self.__label_values = []                             # contains the data values of the tick labels of the axis
+        self.__label_pos = []                                # contains the pos at axis for each label in __label_values
+        self.__ticks = []                                    # separation lines (ticks) for axis
+        self.__labels = []                                   # nice numbers for tick labels from __label_values
+        self.__label_nodes = []                              # WordNodes for tick labels with values from _labels
+        self.__grid = []                                     # contains the grid lines covering the visualization
+        self.__vertical = vertical                           # if True, axis is drawn vertically
+        self.__start = data_range[0]                         # current minimal data value of visualization data
+        self.__end = data_range[1]                           # current maximal data value of visualization data
+        self.__unit = unit                                   # unit of measurement (time: ms, length: cm)
 
         # background rectangle
         self.rect = avg.RectNode(size=self.size, fillopacity=.0, fillcolor="FFFFFF", color="000000", parent=self)
@@ -36,7 +40,7 @@ class AxisNode(avg.DivNode):
         # create horizontal or vertical main axis line
         if self.__vertical:
             self.size = (self.size[1], self.size[0])
-            self.__x_offset = self.width - self.__tick_length
+            self.__x_offset = self.width - self.__h_tick_length
             libavg.LineNode(strokewidth=1, pos1=(self.__x_offset, self.height), pos2=(self.__x_offset, 0), parent=self)
         else:
             libavg.LineNode(strokewidth=1, pos1=(0, self.__y_offset), pos2=(self.width, self.__y_offset), parent=self)
@@ -78,12 +82,18 @@ class AxisNode(avg.DivNode):
             label.unlink()
         self.__label_nodes = [None] * len(self.__label_pos)
 
-        # for each tick create new tick-line and value label at position on axis line
+        # delete old grid lines
+        for grid in self.__grid:
+            grid.unlink()
+        self.__grid = [None] * len(self.__label_pos)
+
+        # for each tick create new tick-line, value label and grid line at position on axis line
         for i, pos in enumerate(self.__label_pos):
             if type(self.__ticks[i]) is not "libavg.avg.LineNode":
                 # create new axis tick and label at pos
                 self.__ticks[i] = libavg.LineNode(strokewidth=1, parent=self)
                 self.__label_nodes[i] = libavg.WordsNode(color="FFFFFF", parent=self)
+                self.__grid[i] = libavg.LineNode(strokewidth=1, color="222222", parent=self)
 
             # set label value
             self.__label_nodes[i].text = "{}".format(self.__labels[i])
@@ -92,13 +102,17 @@ class AxisNode(avg.DivNode):
             center = self.__label_nodes[i].width / 2
             v_center = self.__label_nodes[i].fontsize / 2
             if self.__vertical:
-                self.__ticks[i].pos1 = (self.__x_offset - self.__tick_length, pos)
-                self.__ticks[i].pos2 = (self.__x_offset + self.__tick_length, pos)
+                self.__ticks[i].pos1 = (self.__x_offset - self.__h_tick_length, pos)
+                self.__ticks[i].pos2 = (self.__x_offset + self.__h_tick_length, pos)
                 self.__label_nodes[i].pos = (self.__x_offset - 40, pos - v_center - 1)
+                self.__grid[i].pos1 = (self.__ticks[i].pos1[0], pos)
+                self.__grid[i].pos2 = (1500, pos)
             else:
                 self.__ticks[i].pos1 = (pos, self.__y_offset - self.__tick_length)
-                self.__ticks[i].pos2 = (pos, self.__y_offset + self.__tick_length)
-                self.__label_nodes[i].pos = (pos - center, self.__y_offset + self.__tick_length + 5)
+                self.__ticks[i].pos2 = (pos, self.__y_offset)
+                self.__label_nodes[i].pos = (pos - center, self.__y_offset + self.__h_tick_length + self.__label_offset)
+                self.__grid[i].pos1 = (pos, self.__ticks[i].pos1[1])
+                self.__grid[i].pos2 = (pos, - 750)
 
     def _value_to_pixel(self, value, start, end):
         """
@@ -221,16 +235,27 @@ class AxisNode(avg.DivNode):
     def __get_end(self):
         return self.__end
 
+    def __get_h_tick_length(self):
+        return self.__h_tick_length
+
     def __get_tick_length(self):
         return self.__tick_length
 
+    def __get_label_offset(self):
+        return self.__label_offset
+
+    def __set_label_offset(self, offset):
+        self.__label_offset = offset
+
     size = property(__getSize, __setSize)
-    x_pos = property(__get_x_offset, __set_x_offset)
-    y_pos = property(__get_y_offset, __set_y_offset)
+    x_offset = property(__get_x_offset, __set_x_offset)
+    y_offset = property(__get_y_offset, __set_y_offset)
     label_values = property(__get_label_values)
     start = property(__get_start)
     end = property(__get_end)
+    h_tick_length = property(__get_h_tick_length)
     tick_length = property(__get_tick_length)
+    label_offset = property(__get_label_offset, __set_label_offset)
 
     __update = update               # private copy of original update() method
     __div_size = avg.DivNode.size   # private copy of DivNode size
@@ -249,34 +274,36 @@ class TimeAxisNode(AxisNode):
         """
         attributes
         """
-        self.__i_start = self._value_to_pixel(self.start, self.start, self.end)   # interval start
-        self.__i_end = self._value_to_pixel(self.start, self.start, self.end)     # interval end
-        self.__i_start_line = None                                                # LineNode for begin of interval
-        self.__i_end_line = None                                                  # LineNode for end of interval
+        self.__i_start = self._value_to_pixel(self.start, self.start, self.end) # interval start
+        self.__i_end = self._value_to_pixel(self.start, self.start, self.end)   # interval end
+        self.label_offset = 10                                                  # bigger label offset for time axis
 
         # interval lines
-        self.__i_start_line = libavg.LineNode(strokewidth=2, color="FF0000",
-                                              pos1=(self.__i_start, self.y_pos - self.tick_length),
-                                              pos2=(self.__i_start, self.y_pos + self.tick_length),
-                                              parent=self)
-        self.__i_end_line = libavg.LineNode(strokewidth=2, color="FF0000",
-                                            pos1=(self.__i_end, self.y_pos - self.tick_length),
-                                            pos2=(self.__i_end, self.y_pos + self.tick_length),
-                                            parent=self)
+        self.__i_start_interval_line = libavg.LineNode(strokewidth=1, color="333333", parent=self,
+                                                       pos1=(0, self.y_offset + self.tick_length),
+                                                       pos2=(self.__i_end, self.y_offset + self.tick_length))
+        self.__i_end_interval_line = libavg.LineNode(strokewidth=1, color="333333", parent=self,
+                                                     pos1=(self.width, self.y_offset + self.tick_length),
+                                                     pos2=(self.end, self.y_offset + self.tick_length))
+        self.__i_line = libavg.LineNode(strokewidth=5, color="FFFFFF", parent=self,
+                                        pos1=(self.start, self.y_offset + self.tick_length - 2),
+                                        pos2=(self.end, self.y_offset + self.tick_length - 2))
 
-        self.update(self.start, self.end, self.start, self.end)
+        self.update(self.start, self.end)
 
-    def update(self, start, end, interval_start, interval_end):
+    def update(self, i_start, i_end, offset=0):
         """
         updates position of interval start and interval end
         needs to be called whenever corresponding data is changing (e.g. in onFrame())
         """
         # set new interval start and end
-        self.__i_start = self._value_to_pixel(interval_start, start, end)
-        self.__i_end = self._value_to_pixel(interval_end, start, end)
+        self.__i_start = self._value_to_pixel(i_start, global_values.total_range[0], global_values.total_range[1])
+        self.__i_end = self._value_to_pixel(i_end, global_values.total_range[0], global_values.total_range[1])
 
         # update positions of interval lines
-        self.__i_start_line.pos1 = (self.__i_start, self.__i_start_line.pos1[1])
-        self.__i_start_line.pos2 = (self.__i_start, self.__i_start_line.pos2[1])
-        self.__i_end_line.pos1 = (self.__i_end, self.__i_end_line.pos1[1])
-        self.__i_end_line.pos2 = (self.__i_end, self.__i_end_line.pos2[1])
+        self.__i_start_interval_line.pos2 = (self.__i_start, self.__i_start_interval_line.pos2[1])
+        self.__i_end_interval_line.pos2 = (self.__i_end, self.__i_end_interval_line.pos2[1])
+        self.__i_line.pos1 = (self.__i_start, self.__i_line.pos1[1])
+        self.__i_line.pos2 = (self.__i_end, self.__i_line.pos2[1])
+
+        super(TimeAxisNode, self).update(i_start, i_end, offset)
