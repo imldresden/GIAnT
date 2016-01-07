@@ -5,7 +5,6 @@ import Util
 import axis
 import Visualization
 import global_values
-import time
 import math
 
 
@@ -43,9 +42,7 @@ class main_drawer(app.MainDiv):
 
 
         # axes
-        self.x_axis = axis.AxisNode(size=(self.width, 20), pos=(0, self.height - 80), parent=self,
-                                    data_range=global_values.total_range, unit="ms")
-        self.time_axis = axis.TimeAxisNode(size=(self.width, 20), pos=(0, self.height - 40), parent=self,
+        self.time_axis = axis.TimeAxisNode(size=(self.width - 100, 20), pos=(50, self.height - 40), parent=self,
                                            data_range=global_values.total_range, unit="ms")
         self.y_axis = axis.AxisNode(size=(libavg.app.instance._resolution[1] - 80, 30), pos=(25, 0), parent=self,
                                     vertical=True, data_range=global_values.x_range, unit="cm")
@@ -57,8 +54,7 @@ class main_drawer(app.MainDiv):
 
             true_range = global_values.total_range[1] - global_values.total_range[0]
             offset = global_values.get_interval_range()[0]  # self.shift_current * true_range
-            self.x_axis.update(visualization.start * true_range, visualization.end * true_range, offset)
-            self.time_axis.update(global_values.total_range[0], global_values.total_range[1], visualization.start * true_range, visualization.end * true_range)
+            self.time_axis.update(visualization.start * true_range, visualization.end * true_range, offset)
 
     def draw_line(self, p1, p2, color, thickness, last_thickness, opacity):
         return libavg.LineNode(pos1=p1, pos2=p2, color=color, strokewidth=thickness, parent=self)
