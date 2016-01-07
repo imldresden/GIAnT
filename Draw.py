@@ -38,6 +38,8 @@ class main_drawer(app.MainDiv):
         self.subscribe(avg.Node.MOUSE_WHEEL, self.onMouseWheel)
         app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward)
         app.keyboardmanager.bindKeyDown(keyname='Left', handler=self.shift_back)
+        app.keyboardmanager.bindKeyDown(keyname='Up', handler=self.zoom_in)
+        app.keyboardmanager.bindKeyDown(keyname='Down', handler=self.zoom_out)
 
 
 
@@ -65,6 +67,12 @@ class main_drawer(app.MainDiv):
         if newNode:
             return libavg.PolygonNode(pos=[start_points[0], end_points[0], end_points[1], start_points[1]], opacity=opacity, color=color, parent=self)
         return [start_points[0], end_points[0], end_points[1], start_points[1]]
+
+    def zoom_in(self):
+        global_values.zoom_in_at(0.5)
+
+    def zoom_out(self):
+        global_values.zoom_out_at(0.5)
 
     def shift_back(self):
         global_values.shift_time(False)
