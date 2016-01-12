@@ -3,7 +3,7 @@ import database
 import time
 
 colors_hsv = [[35 / float(360), 0.41, 1], [0, 0.50, 1], [287 / float(360), 0.34, 1], [205 / float(360), 0.33, 1]]
-samples_per_pixel = 0.1
+samples_per_pixel = 0.2
 averaging_count = 500
 total_range = [database.min_time, database.max_time]
 x_range = [database.min_x, database.max_x]
