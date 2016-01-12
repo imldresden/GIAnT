@@ -357,24 +357,26 @@ def init_raw_values():
 
 def init_values():
     global min_x, max_x, min_touch_x, max_touch_x, min_y, max_y, min_touch_y, max_touch_y, min_z, max_z, min_time, max_time, times
-    min_x = executeQry("SELECT min(x) FROM headtable;", True)[0][0]
-    max_x = executeQry("SELECT max(x) FROM headtable;", True)[0][0]
+    try:
+        min_x = executeQry("SELECT min(x) FROM headtable;", True)[0][0]
+        max_x = executeQry("SELECT max(x) FROM headtable;", True)[0][0]
 
-    min_y = executeQry("SELECT min(y) FROM headtable;", True)[0][0]
-    max_y = executeQry("SELECT max(y) FROM headtable;", True)[0][0]
+        min_y = executeQry("SELECT min(y) FROM headtable;", True)[0][0]
+        max_y = executeQry("SELECT max(y) FROM headtable;", True)[0][0]
 
-    min_z = executeQry("SELECT min(z) FROM headtable;", True)[0][0]
-    max_z = executeQry("SELECT max(z) FROM headtable;", True)[0][0]
+        min_z = executeQry("SELECT min(z) FROM headtable;", True)[0][0]
+        max_z = executeQry("SELECT max(z) FROM headtable;", True)[0][0]
 
-    min_touch_x = executeQry("SELECT min(x) FROM touchtable;", True)[0][0]
-    max_touch_x = executeQry("SELECT max(x) FROM touchtable;", True)[0][0]
+        min_touch_x = executeQry("SELECT min(x) FROM touchtable;", True)[0][0]
+        max_touch_x = executeQry("SELECT max(x) FROM touchtable;", True)[0][0]
 
-    min_touch_y = executeQry("SELECT min(y) FROM touchtable;", True)[0][0]
-    max_touch_y = executeQry("SELECT max(y) FROM touchtable;", True)[0][0]
+        min_touch_y = executeQry("SELECT min(y) FROM touchtable;", True)[0][0]
+        max_touch_y = executeQry("SELECT max(y) FROM touchtable;", True)[0][0]
 
-    min_time = executeQry("SELECT min(time) FROM headtable;", True)[0][0]
-    max_time = executeQry("SELECT max(time) FROM headtable;", True)[0][0]
-
+        min_time = executeQry("SELECT min(time) FROM headtable;", True)[0][0]
+        max_time = executeQry("SELECT max(time) FROM headtable;", True)[0][0]
+    except:
+        print "Database not set up"
 
 def get_head_positions(userid):
     return executeQry("SELECT x, y, z, time FROM headtable WHERE user = " + str(userid) + " GROUP BY time ORDER BY time;", True)
@@ -401,13 +403,11 @@ def get_view_points_optimized(userid):
 
 
 def setup_database(wall_screen_resolution):
-    # setup_raw_table()
-    # init_raw_values()
-    # create_head_table()
-    # create_head_table_optimized()
+    setup_raw_table()
+    init_raw_values()
+    create_head_table()
     create_head_table_integral()
-    # create_touch_table(wall_screen_resolution)
+    create_touch_table(wall_screen_resolution)
 
 
-# setup_database((1920 * 4, 1080 * 3))
 init_values()
