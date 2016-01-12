@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from libavg import player, app, avg
+from libavg import player, avg
 import Draw
 
 
