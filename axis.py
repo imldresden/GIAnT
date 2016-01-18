@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import math
 import libavg
-import Util
 import global_values
 from libavg import avg
 
@@ -30,6 +30,7 @@ class AxisNode(avg.DivNode):
         self.__label_nodes = []                              # WordNodes for tick labels with values from _labels
         self.__grid = []                                     # contains the grid lines covering the visualization
         self.__vertical = vertical                           # if True, axis is drawn vertically
+        self.__data_range = data_range                       # data range of data set
         self.__start = data_range[0]                         # current minimal data value of visualization data
         self.__end = data_range[1]                           # current maximal data value of visualization data
         self.__unit = unit                                   # unit of measurement (time: ms, length: cm)
@@ -57,10 +58,10 @@ class AxisNode(avg.DivNode):
 
         # calculate tick marks with R's pretty algorithm and format numbers
         if self.__unit is "ms":
-            self.__label_values = Util.r_pretty(dmin=self.__start, dmax=self.__end, n=5, time=True)
+            self.__label_values = r_pretty(dmin=self.__start, dmax=self.__end, n=5, time=True)
         else:
-            self.__label_values = Util.r_pretty(dmin=self.__start, dmax=self.__end, n=5)
-        self.__labels = [self.__format_label_value(v) for v in self.__label_values]
+            self.__label_values = r_pretty(dmin=self.__start, dmax=self.__end, n=5)
+        self.__labels = [self._format_label_value(v) for v in self.__label_values]
 
         # calculate positions of ticks within AxisNode
         offset = self._value_to_pixel(offset, 0, self.__end - self.__start)
@@ -90,7 +91,7 @@ class AxisNode(avg.DivNode):
         # for each tick create new tick-line, value label and grid line at position on axis line
         for i, pos in enumerate(self.__label_pos):
             if type(self.__ticks[i]) is not "libavg.avg.LineNode":
-                # create new axis tick and label at pos
+                # create new axis tick, label and grid line
                 self.__ticks[i] = libavg.LineNode(strokewidth=1, parent=self)
                 self.__label_nodes[i] = libavg.WordsNode(color="FFFFFF", parent=self)
                 self.__grid[i] = libavg.LineNode(strokewidth=1, color="222222", parent=self)
@@ -98,7 +99,7 @@ class AxisNode(avg.DivNode):
             # set label value
             self.__label_nodes[i].text = "{}".format(self.__labels[i])
 
-            # set position of tick and label on axis
+            # set position of tick, label and grid on axis
             center = self.__label_nodes[i].width / 2
             v_center = self.__label_nodes[i].fontsize / 2
             if self.__vertical:
@@ -114,6 +115,17 @@ class AxisNode(avg.DivNode):
                 self.__grid[i].pos1 = (pos, self.__ticks[i].pos1[1])
                 self.__grid[i].pos2 = (pos, - 750)
 
+        # delete first and last tick except it is min or max of data range
+        if self.__label_values[0] not in self.__data_range:
+            self.__ticks[0].unlink()
+            self.__label_nodes[0].unlink()
+            self.__grid[0].unlink()
+
+        if self.__label_values[len(self.__label_values) - 1] not in self.__data_range:
+            self.__ticks[len(self.__label_values) - 1].unlink()
+            self.__label_nodes[len(self.__label_values) - 1].unlink()
+            self.__grid[len(self.__label_values) - 1].unlink()
+
     def _value_to_pixel(self, value, start, end):
         """
         calculate pixel position on axis line of label value
@@ -124,7 +136,7 @@ class AxisNode(avg.DivNode):
             a = (end - start) / self.width
         return value / a - start / a
 
-    def __format_label_value(self, v):
+    def _format_label_value(self, v):
         """
         format label values depending on units of measurement
         """
@@ -274,20 +286,33 @@ class TimeAxisNode(AxisNode):
         """
         attributes
         """
-        self.__i_start = self._value_to_pixel(self.start, self.start, self.end) # interval start
-        self.__i_end = self._value_to_pixel(self.start, self.start, self.end)   # interval end
-        self.label_offset = 10                                                  # bigger label offset for time axis
+        self.__i_start = self._value_to_pixel(self.start, self.start, self.end)     # interval start
+        self.__i_end = self._value_to_pixel(self.end, self.start, self.end)         # interval end
+        self.label_offset = 10                                                      # bigger label offset for time axis
+        self.__i_label_offset = 5                                                   # offset for interval duration label
 
-        # interval lines
+        """
+        setup
+        """
+        # interval lines and rectangle
         self.__i_start_interval_line = libavg.LineNode(strokewidth=1, color="333333", parent=self,
                                                        pos1=(0, self.y_offset + self.tick_length),
                                                        pos2=(self.__i_end, self.y_offset + self.tick_length))
         self.__i_end_interval_line = libavg.LineNode(strokewidth=1, color="333333", parent=self,
                                                      pos1=(self.width, self.y_offset + self.tick_length),
                                                      pos2=(self.end, self.y_offset + self.tick_length))
-        self.__i_line = libavg.LineNode(strokewidth=5, color="FFFFFF", parent=self,
-                                        pos1=(self.start, self.y_offset + self.tick_length - 2),
-                                        pos2=(self.end, self.y_offset + self.tick_length - 2))
+        self.__i_rect = libavg.RectNode(strokewidth=0, color="FFFFFF", fillcolor="FFFFFF", fillopacity=1, parent=self,
+                                        pos=(self.__i_start, self.y_offset + self.tick_length),
+                                        size=(self.__i_end - self.__i_start, -5))
+
+        # label for total interval time range
+        self.__i_label = libavg.WordsNode(color="000000", text="", opacity=0, parent=self)
+
+        """
+        events
+        """
+        self.subscribe(avg.Node.CURSOR_OVER, self.on_hover_over)
+        self.subscribe(avg.Node.CURSOR_OUT, self.on_hover_out)
 
         self.update(self.start, self.end)
 
@@ -303,7 +328,133 @@ class TimeAxisNode(AxisNode):
         # update positions of interval lines
         self.__i_start_interval_line.pos2 = (self.__i_start, self.__i_start_interval_line.pos2[1])
         self.__i_end_interval_line.pos2 = (self.__i_end, self.__i_end_interval_line.pos2[1])
-        self.__i_line.pos1 = (self.__i_start, self.__i_line.pos1[1])
-        self.__i_line.pos2 = (self.__i_end, self.__i_line.pos2[1])
+        self.__i_rect.pos = (self.__i_start, self.__i_rect.pos[1])
+        self.__i_rect.size = (self.__i_end - self.__i_start, self.__i_rect.size[1])
 
+        # call update from AxisNode (updates self.end and self.start)
         super(TimeAxisNode, self).update(i_start, i_end, offset)
+
+        # update interval details on demand (hover over)
+        i_start_width = self.__i_start_interval_line.pos2[0] - self.__i_start_interval_line.pos1[0]
+        self.__i_label.text = "{}".format(self._format_label_value(self.end - self.start))
+        if self.__i_rect.size[0] > self.__i_label.width + self.__i_label_offset:
+            self.__i_label.color = "000000"
+            self.__i_label.pos = (self.__i_rect.pos[0] + self.__i_rect.size[0] / 2 - self.__i_label.width / 2, 2)
+        else:
+            self.__i_label.color = "FFFFFF"
+            if i_start_width > self.__i_label.width + self.__i_label_offset:
+                self.__i_label.pos = (self.__i_rect.pos[0] - self.__i_label.width - self.__i_label_offset, 2)
+            else:
+                self.__i_label.pos = (self.__i_rect.pos[0] + self.__i_rect.size[0] + self.__i_label_offset, 2)
+
+    def on_hover_over(self, event=None):
+        # make interval rect bigger
+        self.__i_rect.size = (self.__i_rect.size[0], -14)
+        self.__i_rect.pos = (self.__i_rect.pos[0], self.__i_rect.pos[1] + 3)
+        # show label with current total interval time
+        self.__i_label.opacity = 1
+
+    def on_hover_out(self, event=None):
+        # make interval rect normal size again
+        self.__i_rect.size = (self.__i_rect.size[0], -5)
+        self.__i_rect.pos = (self.__i_rect.pos[0], self.__i_rect.pos[1] - 3)
+        # hide label with current total interval time
+        self.__i_label.opacity = 0
+
+
+def r_pretty(dmin, dmax, n, time=False):
+    """
+    calculates "nice" ticks for axis
+    """
+
+    min_n = int(n / 3)                          # non-negative integer giving minimal number of intervals n
+    shrink_small = 0.75                         # positive numeric by which a default scale is shrunk
+    high_unit_bias = 1.5                        # non-negative numeric, typically > 1
+                                                # the interval unit is determined as {1,2,5,10} * b, a power of 10
+                                                # larger high_unit_bias favors larger units
+    unit5_bias = 0.5 + 1.5 * high_unit_bias     # non-negative numeric multiplier favoring factor 5 over 2
+
+    h = high_unit_bias
+    h5 = unit5_bias
+    ndiv = n
+
+    dx = dmax - dmin
+
+    if dx is 0 and dmax is 0:
+        cell = 1.0
+        i_small = True
+        u = 1
+    else:
+        cell = max(abs(dmin), abs(dmax))
+        if h5 >= 1.5 * h + 0.5:
+            u = 1 + (1.0 / (1 + h))
+        else:
+            u = 1 + (1.5 / (1 + h5))
+        i_small = dx < (cell * u * max(1.0, ndiv) * 1e-07 * 3.0)
+
+    if i_small:
+        if cell > 10:
+            cell = 9 + cell / 10
+            cell *= shrink_small
+        if min_n > 1:
+            cell /= min_n
+    else:
+        cell = dx
+        if ndiv > 1:
+            cell /= ndiv
+    if cell < 20 * 1e-07:
+        cell = 20 * 1e-07
+
+    base = 10.00**math.floor(math.log10(cell))
+    unit = base
+
+    # time values have different preferred values
+    if time:
+        if (2 * base) - cell < h * (cell - unit):
+            unit = 2.0 * base
+            if (3 * base) - cell < h * (cell - unit):
+                unit = 3.0 * base
+                if (6 * base) - cell < h5 * (cell - unit):
+                    unit = 6.0 * base
+                    if (10 * base) - cell < h * (cell - unit):
+                        unit = 10.0 * base
+    else:
+        if (2 * base) - cell < h * (cell - unit):
+            unit = 2.0 * base
+            if (5 * base) - cell < h5 * (cell - unit):
+                unit = 5.0 * base
+                if (10 * base) - cell < h * (cell - unit):
+                    unit = 10.0 * base
+
+    ns = math.floor(dmin / unit + 1e-07)
+    nu = math.ceil(dmax / unit - 1e-07)
+
+    # extend range out beyond the data
+    while ns * unit > dmin + (1e-07 * unit):
+        ns -= 1
+    while nu * unit < dmax - (1e-07 * unit):
+        nu += 1
+
+    # if not enough labels, extend range out to make more (labels beyond data!)
+    k = math.floor(0.5 + nu-ns)
+    if k < min_n:
+        k = min_n - k
+        if ns >= 0:
+            nu += k / 2
+            ns = ns - k / 2 + k % 2
+        else:
+            ns -= k / 2
+            nu = nu + k / 2 + k % 2
+        ndiv = min_n
+    else:
+        ndiv = k
+
+    graphmin = ns * unit
+    graphmax = nu * unit
+    count = int(math.ceil(graphmax - graphmin) / unit)
+    res = [graphmin + k * unit for k in range(count + 1)]
+    if res[0] < dmin:
+        res[0] = dmin
+    if res[-1] > dmax:
+        res[-1] = dmax
+    return res
