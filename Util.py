@@ -1,5 +1,7 @@
 import math
 import sys
+import global_values
+import colorsys
 
 timestampOffset = sys.maxint
 
@@ -44,21 +46,24 @@ def convertTimestamp(timestamp):  # turns the Timestring into a Number of millis
 
 
 def line_intersection(line1, line2):
-    xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
-    ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])  # Typo was here
+    x1 = line1[0][0]
+    dx1 = line1[1][0] - x1
+    x2 = line2[0][0]
+    dx2 = line2[1][0] - x2
 
-    def det(a, b):
-        return a[0] * b[1] - a[1] * b[0]
+    y1 = line1[0][1]
+    dy1 = line1[1][1] - y1
+    y2 = line2[0][1]
+    dy2 = line2[1][1] - y2
 
-    div = det(xdiff, ydiff)
-    if div == 0:
-        #raise Exception('lines do not intersect')
-        return line1[0]
+    a = (dy2 * (x1 - x2) + dx2 * (y2 - y1)) / (dx2 * dy1 - dx1 * dy2)
 
-    d = (det(*line1), det(*line2))
-    x = det(d, xdiff) / div
-    y = det(d, ydiff) / div
-    return x, y
+    # fixes the weird spike artifacts (not a pretty solution though)
+    if a < -3 or a > 3:
+        return (x2, y2)
+    result1 = (round(x1 + a * dx1, 5), round(y1 + a * dy1, 5))
+
+    return result1
 
 
 def r_pretty(dmin, dmax, n, time=False):
@@ -158,4 +163,13 @@ def r_pretty(dmin, dmax, n, time=False):
         res[-1] = dmax
     return res
 
-# calculate_line_intersection((0,0),(0,1),(1,1),0.1, 0.3, 0.1)
+
+def getColorAsHex(index, opacity):
+    if index < 0 or index > 3:
+        index = 0
+        print "color index out of range"
+    hsv = global_values.colors_hsv[index]
+    hsv = colorsys.hsv_to_rgb(hsv[0], min(1, hsv[1] * opacity * opacity * opacity * opacity * 4), hsv[2])
+    color = (int(hsv[0] * 255), int(hsv[1] * 255), int(hsv[2] * 255))
+    color = '%02x%02x%02x' % color
+    return color
