@@ -46,7 +46,7 @@ class main_drawer(app.MainDiv):
         # axes
         self.time_axis = axis.TimeAxisNode(size=(self.width - 100, 20), pos=(50, self.height - 40), parent=self,
                                            data_range=global_values.total_range, unit="ms")
-        self.y_axis = axis.AxisNode(size=(libavg.app.instance._resolution[1] - 80, 30), pos=(25, 25), parent=self,
+        self.y_axis = axis.AxisNode(size=(libavg.app.instance._resolution[1] - 80, 30), pos=(25, 0), parent=self,
                                     vertical=True, data_range=global_values.x_range, unit="cm")
 
     def onFrame(self):

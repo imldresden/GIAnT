@@ -9,26 +9,26 @@ total_range = [database.min_time, database.max_time]
 x_range = [database.min_x, database.max_x]
 __interval_range = [total_range[0], total_range[1]]
 __interval_range_last = [total_range[0], total_range[1]]
-interval_range_target = [total_range[0], total_range[1]]    # temporary global
-animation_start_time = -1                                   # temporary global
+__interval_range_target = [total_range[0], total_range[1]]
+__animation_start_time = -1
 __animation_duration = 1
 __zoom_strength = 0.1
 
 
 # updates the current interval to the interpolated value for the animation
 def update_interval_range():
-    global animation_start_time, __animation_duration, interval_range_target, __interval_range, __interval_range_last
-    if animation_start_time == -1:
+    global __animation_start_time, __animation_duration, __interval_range_target, __interval_range, __interval_range_last
+    if __animation_start_time == -1:
         return False
 
-    progress = (time.time() - animation_start_time) / __animation_duration
+    progress = (time.time() - __animation_start_time) / __animation_duration
     if progress >= 1:
-        __interval_range = list(interval_range_target)
+        __interval_range = list(__interval_range_target)
 
-        animation_start_time = -1
+        __animation_start_time = -1
         return True
-    __interval_range[0] = progress * interval_range_target[0] + (1 - progress) * __interval_range_last[0]
-    __interval_range[1] = progress * interval_range_target[1] + (1 - progress) * __interval_range_last[1]
+    __interval_range[0] = progress * __interval_range_target[0] + (1 - progress) * __interval_range_last[0]
+    __interval_range[1] = progress * __interval_range_target[1] + (1 - progress) * __interval_range_last[1]
     return True
 
 
@@ -41,49 +41,49 @@ def get_interval_range():
 
 # zooms in around the mouse (sets the target interval, which is later animated using update_interval_range())
 def zoom_in_at(fraction_in_timeframe):
-    global __interval_range, animation_start_time, __interval_range_last, interval_range_target
+    global __interval_range, __animation_start_time, __interval_range_last, __interval_range_target
     __interval_range_last = list(__interval_range)
-    animation_start_time = time.time()
+    __animation_start_time = time.time()
     update_interval_range()
 
-    point = interval_range_target[0] + fraction_in_timeframe * (interval_range_target[1] - interval_range_target[0])
-    interval_range_target[0] = point - (point - interval_range_target[0]) * (1 - __zoom_strength)
-    interval_range_target[1] = point + (interval_range_target[1] - point) * (1 - __zoom_strength)
+    point = __interval_range_target[0] + fraction_in_timeframe * (__interval_range_target[1] - __interval_range_target[0])
+    __interval_range_target[0] = point - (point - __interval_range_target[0]) * (1 - __zoom_strength)
+    __interval_range_target[1] = point + (__interval_range_target[1] - point) * (1 - __zoom_strength)
 
 # zooms out around the mouse (sets the target interval, which is later animated using update_interval_range())
 def zoom_out_at(fraction_in_timeframe):
-    global __interval_range, total_range, animation_start_time, __interval_range_last, interval_range_target
+    global __interval_range, total_range, __animation_start_time, __interval_range_last, __interval_range_target
     __interval_range_last = list(__interval_range)
-    animation_start_time = time.time()
+    __animation_start_time = time.time()
     update_interval_range()
-    point = interval_range_target[0] + fraction_in_timeframe * (interval_range_target[1] - interval_range_target[0])
-    interval_range_target[0] -= (point - interval_range_target[0]) * 1 / ((1 / __zoom_strength) - 1)
-    interval_range_target[1] += (interval_range_target[1] - point) * 1 / ((1 / __zoom_strength) - 1)
+    point = __interval_range_target[0] + fraction_in_timeframe * (__interval_range_target[1] - __interval_range_target[0])
+    __interval_range_target[0] -= (point - __interval_range_target[0]) * 1 / ((1 / __zoom_strength) - 1)
+    __interval_range_target[1] += (__interval_range_target[1] - point) * 1 / ((1 / __zoom_strength) - 1)
 
-    if interval_range_target[0] < total_range[0]:
-        interval_range_target[0] = total_range[0]
+    if __interval_range_target[0] < total_range[0]:
+        __interval_range_target[0] = total_range[0]
 
-    if interval_range_target[1] > total_range[1]:
-        interval_range_target[1] = total_range[1]
+    if __interval_range_target[1] > total_range[1]:
+        __interval_range_target[1] = total_range[1]
 
 
 # shifts the interval (sets the target interval, which is later animated using update_interval_range())
 def shift_time(forwards):
-    global __interval_range, total_range, animation_start_time, __interval_range_last
+    global __interval_range, total_range, __animation_start_time, __interval_range_last
     __interval_range_last = list(__interval_range)
-    animation_start_time = time.time()
+    __animation_start_time = time.time()
     update_interval_range()
     if forwards:
-        shift_amount = (interval_range_target[1] - interval_range_target[0]) * __zoom_strength
+        shift_amount = (__interval_range_target[1] - __interval_range_target[0]) * __zoom_strength
     else:
-        shift_amount = -(interval_range_target[1] - interval_range_target[0]) * __zoom_strength
-    if interval_range_target[0] + shift_amount < total_range[0]:
-        shift_amount = total_range[0] - interval_range_target[0]
-    if interval_range_target[1] + shift_amount > total_range[1]:
-        shift_amount = total_range[1] - interval_range_target[1]
+        shift_amount = -(__interval_range_target[1] - __interval_range_target[0]) * __zoom_strength
+    if __interval_range_target[0] + shift_amount < total_range[0]:
+        shift_amount = total_range[0] - __interval_range_target[0]
+    if __interval_range_target[1] + shift_amount > total_range[1]:
+        shift_amount = total_range[1] - __interval_range_target[1]
 
-    interval_range_target[0] += shift_amount
-    interval_range_target[1] += shift_amount
+    __interval_range_target[0] += shift_amount
+    __interval_range_target[1] += shift_amount
 
 
 def getColorAsHex(index, opacity):
