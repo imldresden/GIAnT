@@ -1,7 +1,6 @@
 import sqlite3
 import csv
 import time
-import Util
 
 
 # Positions in the database
@@ -91,6 +90,7 @@ def load_files_into_database(filelist):
 
 # loads the rows from a csv file and returns a list-hierarchy of it
 def loadCsv(rows):
+    import Util
     global min_time
     file = []
     lastline = 0
