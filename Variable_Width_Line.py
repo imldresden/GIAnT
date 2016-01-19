@@ -15,7 +15,7 @@ class Variable_Width_Line:
         self.color = color
         self.__genGradient()
 
-        self.node = avg.MeshNode(parent=parent)
+        self.node = avg.MeshNode(parent=parent, blendmode="add")
         self.node.setBitmap(self.gradientBmp)
         self.__genMesh()
 

@@ -1,23 +1,23 @@
 import User
 import database
-import Draw
-import libavg
 import global_values
+import Time_Frame
+import libavg
 import Variable_Width_Line
 
 
-class Visualization(libavg.DivNode):
+class Line_Visualization(libavg.DivNode):
     canvasObjects = []
-    size = (100, 100)
-    position = (0, 0)
-    parent = 0
     samples_per_pixel = 1
     parent = 0
     start = 0
     end = 1
 
+
+
+
     def __init__(self, parent, size, position,  **kwargs):
-        super(Visualization, self).__init__(**kwargs)
+        super(Line_Visualization, self).__init__(**kwargs)
         self.registerInstance(self, parent)
         self.size = size
         self.position = position
@@ -25,12 +25,13 @@ class Visualization(libavg.DivNode):
         self.createLine()
 
     # make start and end values in 0..1
-    def update_timeframe(self):
-        self.start = global_values.get_interval_range()[0] / (global_values.total_range[1] - global_values.total_range[0])
-        self.end = global_values.get_interval_range()[1] / (global_values.total_range[1] - global_values.total_range[0])
+    def update_time_frame(self, interval):
+        self.start = interval[0] / (Time_Frame.total_range[1] - Time_Frame.total_range[0])
+        self.end = interval[1] / (Time_Frame.total_range[1] - Time_Frame.total_range[0])
+        self.createLine()
+
 
     def createLine(self):
-        self.update_timeframe()
         userid = -1
         for user in User.users:
             userid += 1
@@ -58,7 +59,7 @@ class Visualization(libavg.DivNode):
                 # y value of the visualization
                 current_position.append(head_x * self.size[1])
 
-                thickness = pow(head_z, 3) * 60
+                thickness = 1+pow(head_z, 3) * 60
                 opacity = (1 - head_z)
                 points.append(current_position)
                 widths.append(thickness)
@@ -69,7 +70,7 @@ class Visualization(libavg.DivNode):
                     if len(self.canvasObjects) <= userid:
                         user_objects.append(
                             Draw.main_drawer.draw_line(self.parent, tuple(current_position), tuple(last_position),
-                                                     global_values.getColorAsHex(userid, 1), thickness, thickness, opacity))
+                                                     global_values.get_color_as_hex(userid, 1), thickness, thickness, opacity))
                     else:
                         if len(self.canvasObjects[userid]) > i:
                             self.canvasObjects[userid][i].pos1 = current_position
@@ -83,7 +84,7 @@ class Visualization(libavg.DivNode):
                 userline = self.canvasObjects[userid]
                 userline.set_points_and_widths(points, widths)
             else:
-                self.canvasObjects.append(Variable_Width_Line.Variable_Width_Line(points, widths, global_values.getColorAsHex(userid, 1), self.parent))
+                self.canvasObjects.append(Variable_Width_Line.Variable_Width_Line(points, widths, global_values.get_color_as_hex(userid, 1), self.parent))
 
     def draw(self):
 
