@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import math
-import time
 import libavg
 import global_values
 import custom_slider
-from libavg import avg, widget
+from libavg import avg
 
 
 class AxisNode(avg.DivNode):
@@ -319,23 +318,18 @@ class TimeAxisNode(AxisNode):
                                         pos=(self.__i_start, self.y_offset + self.tick_length),
                                         size=(self.__i_end - self.__i_start, -5))
 
-        # label for total interval time range
-        self.__i_label = libavg.WordsNode(color="000000", text="", opacity=0, parent=self)
-
         """
         interactivity
         """
-        self.__i_start_slider = custom_slider.IntervalSlider(pos=(0, 7),
+        self.__i_scrollbar = custom_slider.IntervalScrollBar(pos=(0, 3),
                                                              opacity=0, width=self.width,
                                                              range=self.data_range, parent=self)
-        self.__i_start_slider.subscribe(custom_slider.IntervalSlider.THUMB_POS_CHANGED,
-                                        lambda pos: self.change_interval(self.__i_start_slider.getThumbPos(), self.end))
-        self.__i_end_slider = custom_slider.IntervalSlider(pos=(0, 7),
-                                                           opacity=0, width=self.width,
-                                                           range=self.data_range, parent=self)
-        self.__i_scrollbar = custom_slider.IntervalScrollBar(pos=(0, self.__i_start_interval_line.pos1[1]),
-                                                             opacity=0, width=self.width,
-                                                             range=self.data_range, parent=self)
+        self.__i_scrollbar.subscribe(custom_slider.IntervalScrollBar.THUMB_POS_CHANGED,
+                                     lambda pos: self.change_interval(self.__i_scrollbar.getThumbPos(),
+                                                                      self.end + pos - self.start))
+
+        # label for total interval time range
+        self.__i_label = libavg.WordsNode(color="000000", text="", opacity=0, parent=self)
 
         """
         events
@@ -352,6 +346,7 @@ class TimeAxisNode(AxisNode):
         # update axis
         self.update(start, end)
 
+        # update ScrollBar size
         new_thumb_pos = start
         return new_thumb_pos
 
@@ -386,9 +381,7 @@ class TimeAxisNode(AxisNode):
             else:
                 self.__i_label.pos = (self.__i_rect.pos[0] + self.__i_rect.size[0] + self.__i_label_offset, 2)
 
-        # update slider
-        self.__i_start_slider.setThumbPos(self.start)
-        self.__i_end_slider.setThumbPos(self.end)
+        # update scrollbar
         self.__i_scrollbar.setThumbPos(self.start)
         self.__i_scrollbar.setThumbExtent(self.end - self.start)
 
@@ -397,13 +390,11 @@ class TimeAxisNode(AxisNode):
         Called when mouse hovers over TimeAxisNodeDiv. Shows Details on Demand of interval.
         """
         # make interval rect bigger
-        self.__i_rect.size = (self.__i_rect.size[0], -14)
+        self.__i_rect.size = (self.__i_rect.size[0], -13)
         self.__i_rect.pos = (self.__i_rect.pos[0], self.__i_rect.pos[1] + 3)
         # show label with current total interval time
         self.__i_label.opacity = 1
-        # show interval slider
-        self.__i_start_slider.opacity = 1
-        self.__i_end_slider.opacity = 1
+        # show interval scrollbr
         self.__i_scrollbar.opacity = 1
 
     def __on_hover_out(self, event=None):
@@ -415,9 +406,7 @@ class TimeAxisNode(AxisNode):
         self.__i_rect.pos = (self.__i_rect.pos[0], self.__i_rect.pos[1] - 3)
         # hide label with current total interval time
         self.__i_label.opacity = 0
-        # hide interval slider
-        self.__i_start_slider.opacity = 0
-        self.__i_end_slider.opacity = 0
+        # hide interval scrollbar
         self.__i_scrollbar.opacity = 0
 
 
