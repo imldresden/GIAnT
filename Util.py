@@ -56,7 +56,10 @@ def line_intersection(line1, line2):
     y2 = line2[0][1]
     dy2 = line2[1][1] - y2
 
-    a = (dy2 * (x1 - x2) + dx2 * (y2 - y1)) / (dx2 * dy1 - dx1 * dy2)
+    try:
+        a = (dy2 * (x1 - x2) + dx2 * (y2 - y1)) / (dx2 * dy1 - dx1 * dy2)
+    except ZeroDivisionError:
+        return (x2, y2)
 
     # fixes the weird spike artifacts (not a pretty solution though)
     if a < -3 or a > 3:
