@@ -351,6 +351,9 @@ class TimeAxisNode(AxisNode):
         # update axis
         self.update(start, end)
 
+        # update time frame
+        Time_Frame.main_time_frame.set_time_frame((start, end))
+
         # update ScrollBar size
         new_thumb_pos = start
         return new_thumb_pos
