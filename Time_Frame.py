@@ -84,9 +84,10 @@ class time_frame:
         self.__interval_range_target[1] += shift_amount
 
     def set_time_frame(self, interval):
-        self.__interval_range_last = list(self.__interval_range)
+        self.__interval_range_last = list(interval)
         self.__interval_range_target = list(interval)
-        self.__animation_start_time = time.time()
+        self.__interval_range = list(interval)
+        self.publish()
 
     def subscribe(self, target):
         self.__subscribers.append(target)
