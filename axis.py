@@ -2,7 +2,7 @@
 
 import math
 import libavg
-import global_values
+import Time_Frame
 import custom_slider
 from libavg import avg
 
@@ -65,7 +65,8 @@ class AxisNode(avg.DivNode):
         self.__labels = [self._format_label_value(v) for v in self.__label_values]
 
         # calculate positions of ticks within AxisNode
-        offset = self._value_to_pixel(offset, 0, self.__end - self.__start)
+        #offset = Time_Frame.total_range[0]
+        offset = self._value_to_pixel(start, 0, self.__end - self.__start)
         self.__label_pos = [self._value_to_pixel(t, 0, self.__end - self.__start) - offset for t in self.__label_values]
 
         self.__draw_ticks()
@@ -336,11 +337,15 @@ class TimeAxisNode(AxisNode):
         """
         self.subscribe(avg.Node.CURSOR_OVER, self.__on_hover_over)
         self.subscribe(avg.Node.CURSOR_OUT, self.__on_hover_out)
+        Time_Frame.main_time_frame.subscribe(self)
 
         """
         update
         """
         self.update(self.start, self.end)
+
+    def update_time_frame(self, interval):
+        self.update(interval[0], interval[1])
 
     def change_interval(self, start, end):
         # update axis
@@ -356,8 +361,8 @@ class TimeAxisNode(AxisNode):
         needs to be called whenever corresponding data is changing (e.g. in onFrame())
         """
         # set new interval start and end
-        self.__i_start = self._value_to_pixel(i_start, global_values.total_range[0], global_values.total_range[1])
-        self.__i_end = self._value_to_pixel(i_end, global_values.total_range[0], global_values.total_range[1])
+        self.__i_start = self._value_to_pixel(i_start, Time_Frame.total_range[0], Time_Frame.total_range[1])
+        self.__i_end = self._value_to_pixel(i_end, Time_Frame.total_range[0], Time_Frame.total_range[1])
 
         # update positions of interval lines
         self.__i_start_interval_line.pos2 = (self.__i_start, self.__i_start_interval_line.pos2[1])
