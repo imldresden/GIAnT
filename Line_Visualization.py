@@ -1,6 +1,7 @@
 import User
 import database
 import global_values
+import axis
 import Time_Frame
 import libavg
 import Variable_Width_Line
@@ -13,9 +14,6 @@ class Line_Visualization(libavg.DivNode):
     start = 0
     end = 1
 
-
-
-
     def __init__(self, parent, size, position,  **kwargs):
         super(Line_Visualization, self).__init__(**kwargs)
         self.registerInstance(self, parent)
@@ -24,12 +22,17 @@ class Line_Visualization(libavg.DivNode):
         self.parent = parent
         self.createLine()
 
+        # axes
+        self.time_axis = axis.TimeAxisNode(size=(self.width - 100, 20), pos=(50, self.height - 40), parent=self,
+                                           data_range=Time_Frame.total_range, unit="ms")
+        self.y_axis = axis.AxisNode(size=(libavg.app.instance._resolution[1] - 80, 30), pos=(25, 25), parent=self,
+                                    vertical=True, data_range=Time_Frame.x_range, unit="cm")
+
     # make start and end values in 0..1
     def update_time_frame(self, interval):
         self.start = interval[0] / (Time_Frame.total_range[1] - Time_Frame.total_range[0])
         self.end = interval[1] / (Time_Frame.total_range[1] - Time_Frame.total_range[0])
         self.createLine()
-
 
     def createLine(self):
         userid = -1
