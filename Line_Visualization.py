@@ -87,7 +87,9 @@ class Line_Visualization(libavg.DivNode):
                 userline = self.canvasObjects[userid]
                 userline.set_points_and_widths(points, widths)
             else:
-                self.canvasObjects.append(Variable_Width_Line.Variable_Width_Line(points, widths, global_values.get_color_as_hex(userid, 1), self.parent))
+                self.canvasObjects.append(
+                    Variable_Width_Line.Variable_Width_Line(points=points, widths=widths,  parent=self,
+                                                            color=global_values.get_color_as_hex(userid, 1)))
 
     def draw(self):
 
