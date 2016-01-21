@@ -36,20 +36,20 @@ class AxisNode(avg.DivNode):
         self.__end = data_range[1]                           # current maximal data value of visualization data
         self.__unit = unit                                   # unit of measurement (time: ms, length: cm)
 
-        # background rectangle
-        self.rect = avg.RectNode(size=self.size, fillopacity=.0, fillcolor="FFFFFF", color="000000", parent=self)
-
-        # create horizontal or vertical main axis line
+        # create main axis line (horizontal or vertical)
+        self.__axis_line = libavg.LineNode(strokewidth=1, parent=self)
         if self.__vertical:
             self.size = (self.size[1], self.size[0])
             self.__x_offset = self.width - self.__h_tick_length
-            libavg.LineNode(strokewidth=1, pos1=(self.__x_offset, self.height), pos2=(self.__x_offset, 0), parent=self)
+            self.__axis_line.pos1 = (self.__x_offset, self.height)
+            self.__axis_line.pos2 = (self.__x_offset, 0)
         else:
-            libavg.LineNode(strokewidth=1, pos1=(0, self.__y_offset), pos2=(self.width, self.__y_offset), parent=self)
+            self.__axis_line.pos1 = (0, self.__y_offset)
+            self.__axis_line.pos2 = (self.width, self.__y_offset)
 
         self.__update(self.__start, self.__end)
 
-    def update(self, start, end, offset=0):
+    def update(self, start, end):
         """
         updates position of ticks and labels, and value of labels
         needs to be called whenever corresponding data is changing (e.g. in onFrame())
@@ -65,7 +65,6 @@ class AxisNode(avg.DivNode):
         self.__labels = [self._format_label_value(v) for v in self.__label_values]
 
         # calculate positions of ticks within AxisNode
-        #offset = Time_Frame.total_range[0]
         offset = self._value_to_pixel(start, 0, self.__end - self.__start)
         self.__label_pos = [self._value_to_pixel(t, 0, self.__end - self.__start) - offset for t in self.__label_values]
 
@@ -94,9 +93,9 @@ class AxisNode(avg.DivNode):
         for i, pos in enumerate(self.__label_pos):
             if type(self.__ticks[i]) is not "libavg.avg.LineNode":
                 # create new axis tick, label and grid line
-                self.__ticks[i] = libavg.LineNode(strokewidth=1, parent=self)
-                self.__label_nodes[i] = libavg.WordsNode(color="FFFFFF", parent=self)
                 self.__grid[i] = libavg.LineNode(strokewidth=1, color="222222", parent=self)
+                self.__ticks[i] = libavg.LineNode(strokewidth=1, color="FFFFFF", parent=self)
+                self.__label_nodes[i] = libavg.WordsNode(color="FFFFFF", parent=self)
 
             # set label value
             self.__label_nodes[i].text = "{}".format(self.__labels[i])
@@ -105,28 +104,28 @@ class AxisNode(avg.DivNode):
             center = self.__label_nodes[i].width / 2
             v_center = self.__label_nodes[i].fontsize / 2
             if self.__vertical:
-                self.__ticks[i].pos1 = (self.__x_offset - self.__h_tick_length, pos)
-                self.__ticks[i].pos2 = (self.__x_offset + self.__h_tick_length, pos)
-                self.__label_nodes[i].pos = (self.__x_offset - 40, pos - v_center - 1)
-                self.__grid[i].pos1 = (self.__ticks[i].pos1[0], pos)
+                self.__grid[i].pos1 = (self.__x_offset, pos)
                 self.__grid[i].pos2 = (1500, pos)
+                self.__ticks[i].pos1 = (self.__x_offset, pos)
+                self.__ticks[i].pos2 = (self.__x_offset + self.__tick_length, pos)
+                self.__label_nodes[i].pos = (self.__x_offset - 40, pos - v_center - 1)
             else:
+                self.__grid[i].pos1 = (pos, self.__ticks[i].pos1[1])
+                self.__grid[i].pos2 = (pos, - 750)
                 self.__ticks[i].pos1 = (pos, self.__y_offset - self.__tick_length)
                 self.__ticks[i].pos2 = (pos, self.__y_offset)
                 self.__label_nodes[i].pos = (pos - center, self.__y_offset + self.__h_tick_length + self.__label_offset)
-                self.__grid[i].pos1 = (pos, self.__ticks[i].pos1[1])
-                self.__grid[i].pos2 = (pos, - 750)
 
         # delete first and last tick except it is min or max of data range
         if self.__label_values[0] not in self.__data_range:
+            self.__grid[0].unlink()
             self.__ticks[0].unlink()
             self.__label_nodes[0].unlink()
-            self.__grid[0].unlink()
 
         if self.__label_values[len(self.__label_values) - 1] not in self.__data_range:
+            self.__grid[len(self.__label_values) - 1].unlink()
             self.__ticks[len(self.__label_values) - 1].unlink()
             self.__label_nodes[len(self.__label_values) - 1].unlink()
-            self.__grid[len(self.__label_values) - 1].unlink()
 
     def _value_to_pixel(self, value, start, end):
         """
@@ -225,7 +224,6 @@ class AxisNode(avg.DivNode):
         return self.__div_size
 
     def __setSize(self, size):
-        self.rect.size = size
         self.__div_size = size
 
     def __get_vertical(self):
@@ -318,6 +316,9 @@ class TimeAxisNode(AxisNode):
         self.__i_rect = libavg.RectNode(strokewidth=0, color="FFFFFF", fillcolor="FFFFFF", fillopacity=1, parent=self,
                                         pos=(self.__i_start, self.y_offset + self.tick_length),
                                         size=(self.__i_end - self.__i_start, -5))
+        # vertical brushing & linking line
+        self.__highlight_line = libavg.LineNode(strokewidth=1, color="FFFFFF", parent=self,
+                                                pos1=(0, self.y_offset), pos2=(0, -750))
 
         """
         interactivity
@@ -326,11 +327,12 @@ class TimeAxisNode(AxisNode):
                                                              opacity=0, width=self.width,
                                                              range=self.data_range, parent=self)
         self.__i_scrollbar.subscribe(custom_slider.IntervalScrollBar.THUMB_POS_CHANGED,
-                                     lambda pos: self.change_interval(self.__i_scrollbar.getThumbPos(),
-                                                                      self.end + pos - self.start))
+                                     lambda pos: self.__change_interval(self.__i_scrollbar.getThumbPos(),
+                                                                        self.end + pos - self.start))
+        self.getParent().subscribe(avg.Node.CURSOR_MOTION, self.__on_visualization_hover_over)
 
         # label for total interval time range
-        self.__i_label = libavg.WordsNode(color="000000", text="", opacity=0, parent=self)
+        self.__i_label = libavg.WordsNode(color="000000", text="", opacity=0, parent=self, sensitive=False)
 
         """
         events
@@ -345,9 +347,13 @@ class TimeAxisNode(AxisNode):
         self.update(self.start, self.end)
 
     def update_time_frame(self, interval):
+        """
+        called by time_frame to update the visualization to the new interval
+        :param interval: (start, end): new interval start and end as list
+        """
         self.update(interval[0], interval[1])
 
-    def change_interval(self, start, end):
+    def __change_interval(self, start, end):
         # update axis
         self.update(start, end)
 
@@ -358,7 +364,7 @@ class TimeAxisNode(AxisNode):
         new_thumb_pos = start
         return new_thumb_pos
 
-    def update(self, i_start, i_end, offset=0):
+    def update(self, i_start, i_end):
         """
         updates position of interval start and interval end
         needs to be called whenever corresponding data is changing (e.g. in onFrame())
@@ -374,7 +380,7 @@ class TimeAxisNode(AxisNode):
         self.__i_rect.size = (self.__i_end - self.__i_start, self.__i_rect.size[1])
 
         # call update from AxisNode (updates self.end and self.start)
-        super(TimeAxisNode, self).update(i_start, i_end, offset)
+        super(TimeAxisNode, self).update(i_start, i_end)
 
         # update interval details on demand (hover over)
         i_start_width = self.__i_start_interval_line.pos2[0] - self.__i_start_interval_line.pos1[0]
@@ -417,6 +423,11 @@ class TimeAxisNode(AxisNode):
         # hide interval scrollbar
         self.__i_scrollbar.opacity = 0
 
+    def __on_visualization_hover_over(self, event=None):
+        relPos = self.getRelPos(event.pos)
+        self.__highlight_line.pos1 = (relPos[0], self.__highlight_line.pos1[1])
+        self.__highlight_line.pos2 = (relPos[0], self.__highlight_line.pos2[1])
+        # TODO: make self.__highlight_line last drawn node to appear in front of everything
 
 """
 utils

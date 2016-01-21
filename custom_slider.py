@@ -25,7 +25,7 @@ class IntervalSliderBase(avg.DivNode):
         self._thumbPos = thumbPos
 
         self.subscribe(self.SIZE_CHANGED, lambda newSize: self._positionNodes())
-        self.size = (width, 10)
+        self.size = (width, 20)
 
         self.__recognizer = gesture.DragRecognizer(self._thumbNode, friction=-1, detectedHandler=self.__onDragStart,
                                                    moveHandler=self.__onDrag, upHandler=self.__onUp)
@@ -93,9 +93,9 @@ class IntervalScrollBar(IntervalSliderBase):
         super(IntervalScrollBar, self).__init__(cfg=cfg, **kwargs)
 
     def _initThumb(self, cfg):
-        thumbUpBmp = avg.ImageNode(href="images/quad_white.png", size=(1024, 1024)).getBitmap()
-        thumbDownBmp = avg.ImageNode(href="images/quad_white.png", size=(1024, 1024)).getBitmap()
-        thumbDisabledBmp = avg.ImageNode(href="images/quad_white.png", size=(1024, 1024)).getBitmap()
+        thumbUpBmp = avg.ImageNode(href="images/quad_white.png", size=(128, 128)).getBitmap()
+        thumbDownBmp = avg.ImageNode(href="images/quad_white.png", size=(128, 128)).getBitmap()
+        thumbDisabledBmp = avg.ImageNode(href="images/quad_white.png", size=(128, 128)).getBitmap()
         endsExtent = 1
 
         self._thumbNode = IntervalScrollBarThumb(upBmp=thumbUpBmp, downBmp=thumbDownBmp,
