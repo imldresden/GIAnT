@@ -1,6 +1,7 @@
 import User
 import database
 import global_values
+import Util
 import axis
 import Time_Frame
 import libavg
@@ -14,19 +15,25 @@ class Line_Visualization(libavg.DivNode):
     start = 0
     end = 1
 
-    def __init__(self, parent, size, position,  **kwargs):
+    def __init__(self, parent, size, **kwargs):
         super(Line_Visualization, self).__init__(**kwargs)
         self.registerInstance(self, parent)
         self.size = size
-        self.position = position
         self.parent = parent
-        self.createLine()
+
+        # rect for coloured border and background
+        libavg.RectNode(pos=(0, 0), size=self.size, parent=self,
+                        strokewidth=0, fillopacity=0, fillcolor=global_values.COLOR_FOREGROUND)
 
         # axes
-        self.time_axis = axis.TimeAxisNode(size=(self.width - 100, 20), pos=(50, self.height - 40), parent=self,
-                                           data_range=Time_Frame.total_range, unit="ms")
-        self.y_axis = axis.AxisNode(size=(libavg.app.instance._resolution[1] - 80, 30), pos=(25, 25), parent=self,
-                                    vertical=True, data_range=Time_Frame.x_range, unit="cm")
+        self.y_axis = axis.AxisNode(size=(100, self.height), parent=self, sensitive=False,
+                                    data_range=Time_Frame.x_range, unit="cm")
+        self.y_axis.pos = (-self.y_axis.width, 0)
+        self.time_axis = axis.TimeAxisNode(size=(self.width, 100), parent=self, data_range=Time_Frame.total_range,
+                                           unit="ms")
+        self.time_axis.pos = (0, self.height)
+
+        self.createLine()
 
     # make start and end values in 0..1
     def update_time_frame(self, interval):
@@ -88,8 +95,8 @@ class Line_Visualization(libavg.DivNode):
                 userline.set_points_and_widths(points, widths)
             else:
                 self.canvasObjects.append(
-                    Variable_Width_Line.Variable_Width_Line(points=points, widths=widths,  parent=self,
-                                                            color=global_values.get_color_as_hex(userid, 1)))
+                    Variable_Width_Line.Variable_Width_Line(points=points, widths=widths, parent=self,
+                                                            color=Util.get_user_color_as_hex(userid, 1)))
 
     def draw(self):
 

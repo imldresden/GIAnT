@@ -154,31 +154,3 @@ class IntervalScrollBarThumb(widget.SwitchNode):
             "DISABLED": self.__disabledNode
         })
         self.visibleid = "UP"
-
-
-class IntervalSlider(widget.Slider):
-    """
-    Implements a custom slider for an interval.
-    Has two thumbs (interval start and interval end) and a range slider inbetween to move the whole interval.
-    """
-    def __init__(self, parent=None, **kwargs):
-        # pass arguments to super and initialize C++ class
-        super(IntervalSlider, self).__init__(**kwargs)
-        self.registerInstance(self, parent)
-
-    def _initThumb(self, cfg):
-        thumbUpNode = libavg.RectNode(pos=(0, 0), size=(14, 14), color="FF0000", parent=None)
-        thumbDownNode = libavg.RectNode(pos=(0, 0), size=(14, 14), color="FF0000", parent=None)
-        thumbDisNode = libavg.RectNode(pos=(0, 0), size=(14, 14), color="FF0000", parent=None)
-        self._thumbNode = IntervalSliderThumb(upNode=thumbUpNode, downNode=thumbDownNode, disabledNode=thumbDisNode)
-        self.appendChild(self._thumbNode)
-
-
-class IntervalSliderThumb(widget.SwitchNode):
-    """
-    Custom slider thumbs to allow libavg.RectNode's to be used as thumbs, not bitmaps.
-    -> more freedom in adjusting thumb.
-    """
-    def __init__(self, upNode, downNode, disabledNode, **kwargs):
-        nodeMap = {"UP": upNode, "DOWN": downNode, "DISABLED": disabledNode}
-        super(IntervalSliderThumb, self).__init__(nodeMap=nodeMap, visibleid="UP", **kwargs)

@@ -32,10 +32,9 @@ class main_drawer(app.MainDiv):
     def onInit(self):
         # self.resolution = libavg.app.instance._resolution
         self.resolution = (libavg.app.instance._resolution[0], libavg.app.instance._resolution[1])
-        libavg.RectNode(pos=(0, 0), size=self.resolution, fillcolor='ffffff', parent=self, strokewidth=0)
         for userid in range(1, 5):
             user = User.User(userid)
-        main_visualization = Line_Visualization.Line_Visualization(parent=self, size=self.resolution, position=(0, 0))
+        main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0]-200, self.resolution[1]-200), pos=(100, 100))
         self.visualizations.append(main_visualization)
         Time_Frame.main_time_frame.subscribe(main_visualization)
 
@@ -47,7 +46,6 @@ class main_drawer(app.MainDiv):
 
     def onFrame(self):
         Time_Frame.main_time_frame.update_interval_range()
-
 
     def draw_line(self, p1, p2, color, thickness, last_thickness, opacity):
         return libavg.LineNode(pos1=p1, pos2=p2, color=color, strokewidth=thickness, parent=self)
