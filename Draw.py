@@ -7,7 +7,7 @@ import Util
 import User
 import Line_Visualization
 import Time_Frame
-
+import global_values
 
 class main_drawer(app.MainDiv):
     last_time = 0
@@ -30,11 +30,11 @@ class main_drawer(app.MainDiv):
     '''
 
     def onInit(self):
-        # self.resolution = libavg.app.instance._resolution
-        self.resolution = (libavg.app.instance._resolution[0], libavg.app.instance._resolution[1])
+        self.resolution = tuple(libavg.app.instance._resolution)
+        libavg.RectNode(pos=(0,0), size=self.resolution, color=global_values.COLOR_BACKGROUND)
         for userid in range(1, 5):
             user = User.User(userid)
-        main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0]-200, self.resolution[1]-200), pos=(100, 100))
+        main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0]-200, self.resolution[1]-200), pos=(50, 50))
         self.visualizations.append(main_visualization)
         Time_Frame.main_time_frame.subscribe(main_visualization)
 
