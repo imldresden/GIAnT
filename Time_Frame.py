@@ -2,7 +2,6 @@ import time
 import database
 
 total_range = [database.min_time, database.max_time]
-x_range = [database.min_x, database.max_x]
 
 
 class time_frame:
