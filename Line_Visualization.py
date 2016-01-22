@@ -15,24 +15,22 @@ class Line_Visualization(libavg.DivNode):
     start = 0
     end = 1
 
-    def __init__(self, parent, size, **kwargs):
+    def __init__(self, parent, **kwargs):
         super(Line_Visualization, self).__init__(**kwargs)
+        self.elementoutlinecolor = "ff0000"
         self.registerInstance(self, parent)
-        self.size = size
         self.parent = parent
+        self.size = (self.size[0] - axis.AXIS_THICKNESS, self.size[1] - axis.AXIS_THICKNESS)
+        self.pos = (self.pos[0] + axis.AXIS_THICKNESS, self.pos[1])
 
         # rect for coloured border and background
         libavg.RectNode(pos=(0, 0), size=self.size, parent=self,
                         strokewidth=0, fillopacity=0, fillcolor=global_values.COLOR_FOREGROUND)
 
         # axes
-        self.y_axis = axis.AxisNode(size=(100, self.height), parent=self, sensitive=False,
-                                    data_range=Time_Frame.x_range, unit="cm")
-        self.y_axis.pos = (-self.y_axis.width, 0)
-        self.time_axis = axis.TimeAxisNode(size=(self.width, 100), parent=self, data_range=Time_Frame.total_range,
-                                           unit="ms")
-        self.time_axis.pos = (0, self.height)
+        self.y_axis = axis.AxisNode(size=(axis.AXIS_THICKNESS, self.height), parent=self, sensitive=False, data_range=global_values.x_range, unit="cm", pos=(-axis.AXIS_THICKNESS, 0))
 
+        self.time_axis = axis.TimeAxisNode(size=(self.width, axis.AXIS_THICKNESS), parent=self, data_range=Time_Frame.total_range, unit="ms", pos=(0, self.height))
         self.createLine()
 
     # make start and end values in 0..1
@@ -62,14 +60,14 @@ class Line_Visualization(libavg.DivNode):
                 # touch_x = (user.touches[posindex][0]-database.min_touch_x)/float(database.max_touch_x-database.min_touch_x)
                 # touch_y = (user.touches[posindex][1]-database.min_touch_y)/float(database.max_touch_y-database.min_touch_y)
                 # touch_time = (user.touches[posindex][2]-database.min_time)/float(database.max_time-database.min_time)
-                time = i / float(global_values.samples_per_pixel)
+                time = float(i) / float(global_values.samples_per_pixel)
 
                 # x value of the visualization
                 current_position.append(time)
                 # y value of the visualization
                 current_position.append(head_x * self.size[1])
 
-                thickness = 1+pow(head_z, 3) * 60
+                thickness = 1 + pow(head_z, 3) * 60
                 opacity = (1 - head_z)
                 points.append(current_position)
                 widths.append(thickness)

@@ -7,6 +7,8 @@ import custom_slider
 import global_values
 from libavg import avg
 
+AXIS_THICKNESS = 50
+
 
 class AxisNode(avg.DivNode):
     """
