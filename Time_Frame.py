@@ -25,6 +25,7 @@ class time_frame:
             self.__interval_range = list(self.__interval_range_target)
 
             self.__animation_start_time = -1
+            self.publish()
             return True
 
         new_range = [0, 0]
