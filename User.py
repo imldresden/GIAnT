@@ -25,6 +25,9 @@ class User:
         count = min(global_values.averaging_count, len(self.head_positions_integral) - index - 1)
         integral = self.head_positions_integral
         index = min(max(0, index), len(integral) - 1)
+        if count == 0:
+            count = 1
+
         head_position = [(integral[index + count][0] - integral[index][0]) / count,
                          (integral[index + count][1] - integral[index][1]) / count,
                          (integral[index + count][2] - integral[index][2]) / count,
