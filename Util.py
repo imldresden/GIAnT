@@ -73,8 +73,8 @@ def get_user_color_as_hex(index, opacity):
     if index < 0 or index > 3:
         index = 0
         print "user color index out of range"
-    hsv = global_values.user_colors_hsv[index]
-    hsv = colorsys.hsv_to_rgb(hsv[0], min(1, hsv[1] * opacity * opacity * opacity * opacity * 4), hsv[2])
-    color = (int(hsv[0] * 255), int(hsv[1] * 255), int(hsv[2] * 255))
+    hls = global_values.user_colors_hls[index]
+    hls = colorsys.hsv_to_rgb(hls[0], min(1, hls[1] * opacity * opacity * opacity * opacity * 4), hls[2])
+    color = (int(hls[0] * 255), int(hls[1] * 255), int(hls[2] * 255))
     color = '%02x%02x%02x' % color
     return color
