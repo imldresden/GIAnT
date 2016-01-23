@@ -8,10 +8,10 @@ import User
 import Line_Visualization
 import Time_Frame
 import global_values
+import axis
 
 class main_drawer(app.MainDiv):
     last_time = 0
-    visualizations = []
     resolution = (1920, 1000)
     viewport_change_duration = 0.3
     '''
@@ -35,14 +35,12 @@ class main_drawer(app.MainDiv):
         for userid in range(1, 5):
             user = User.User(userid)
 
-        main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0]-400, self.resolution[1]-100), pos=(0, 0),
+        main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0]-400, self.resolution[1]-100),
+                                                                   pos=(0, axis.AXIS_THICKNESS),
                                                                    data_type_x=Line_Visualization.DATA_TIME,
                                                                    data_type_y=Line_Visualization.DATA_POSITION_X,
                                                                    data_type_thickness=Line_Visualization.DATA_POSITION_Z,
                                                                    data_type_opacity=Line_Visualization.DATA_POSITION_Z)
-        self.visualizations.append(main_visualization)
-
-
 
         Time_Frame.main_time_frame.subscribe(main_visualization)
 

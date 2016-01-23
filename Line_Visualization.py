@@ -32,23 +32,31 @@ class Line_Visualization(libavg.DivNode):
     def __init__(self, parent, data_type_x, data_type_y, data_type_thickness, data_type_opacity, **kwargs):
         super(Line_Visualization, self).__init__(**kwargs)
         self.registerInstance(self, parent)
-        self.crop = True
+        self.crop = False
 
         self.data_type_x = data_type_x
         self.data_type_y = data_type_y
         self.data_type_thickness = data_type_thickness
         self.data_type_opacity = data_type_opacity
 
-        self.data_div = libavg.DivNode(pos=(axis.AXIS_THICKNESS, 0), size=(self.width - axis.AXIS_THICKNESS, self.height - axis.AXIS_THICKNESS), parent=self, crop=True)
-
         # rect for coloured border and background
-        libavg.RectNode(pos=(0, 0), size=self.size, parent=self,
-                        strokewidth=0, fillopacity=0, fillcolor=global_values.COLOR_FOREGROUND)
+        self.background_rect = libavg.RectNode(pos=(axis.AXIS_THICKNESS, 0),
+                                               size=(self.width - axis.AXIS_THICKNESS, self.height - axis.AXIS_THICKNESS),
+                                               parent=self, strokewidth=1, fillopacity=1,
+                                               color=global_values.COLOR_BACKGROUND,
+                                               fillcolor=global_values.COLOR_BACKGROUND)
+
+        # div for visualization data
+        self.data_div = libavg.DivNode(pos=self.background_rect.pos, size=self.background_rect.size, parent=self,
+                                       crop=True)
 
         # axes
-        self.y_axis = axis.AxisNode(size=(axis.AXIS_THICKNESS, self.data_div.height), parent=self, sensitive=False, data_range=global_values.x_range, unit="cm", pos=(0, 0))
+        self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.AXIS_THICKNESS, self.data_div.height), hide_rims=True,
+                                    parent=self, sensitive=False, data_range=global_values.x_range, unit="cm")
 
-        self.time_axis = axis.TimeAxisNode(size=(self.width, self.data_div.width), parent=self, data_range=Time_Frame.total_range, unit="ms", pos=(0, self.data_div.height))
+        self.time_axis = axis.TimeAxisNode(pos=(axis.AXIS_THICKNESS, self.data_div.height),
+                                           size=(self.data_div.width, axis.AXIS_THICKNESS),
+                                           parent=self, data_range=Time_Frame.total_range, unit="ms")
         self.createLine()
 
     # make start and end values in 0..1

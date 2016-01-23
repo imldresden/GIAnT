@@ -9,5 +9,5 @@ user_colors_hls = [[ 35 / float(360), 0.409, 1], # Yellow
 x_range = [database.min_x, database.max_x]
 COLOR_FOREGROUND = "FFFFFF"
 COLOR_SECONDARY = "333333"
-COLOR_BACKGROUND = "222222"
+COLOR_BACKGROUND = "111111"
 COLOR_HIGHLIGHT = "FF0000"
