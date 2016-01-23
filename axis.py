@@ -121,7 +121,7 @@ class AxisNode(avg.DivNode):
             else:
                 self.__grid[i].pos1 = (pos, self.__axis_line.pos1[0])
                 # TODO: get visualization height    (for some reason self.parent.height and self.parent.data_div.height
-                # TODO:                             does not exist for the time axis, for the other axis it works...?!)
+                # TODO: -650 hardcoded for now       does not exist for the time axis, for the other axis it works...?!)
                 self.__grid[i].pos2 = (pos, -650)
                 self.__ticks[i].pos1 = (pos, self.__axis_line.pos1[0] - self.__tick_length)
                 self.__ticks[i].pos2 = (pos, self.__axis_line.pos1[0])
@@ -303,6 +303,9 @@ class TimeAxisNode(AxisNode):
         self.__i_start = self._value_to_pixel(self.start, self.start, self.end)  # interval start
         self.__i_end = self._value_to_pixel(self.end, self.start, self.end)      # interval end
         self.__i_label_offset = 5                                                # offset for interval duration label
+        self.__pinned = False                                                    # if highlight line is pinned
+        self.__highlight_time = 0                                                # time at pinned highlight line
+        self.__highlight_pixel = 0
         self.label_offset = 1.5 * self.tick_length                               # bigger label offset for time axis
         self.vertical = False                                                    # TimeAxisNode can only be horizontal
 
@@ -318,8 +321,8 @@ class TimeAxisNode(AxisNode):
                                         pos=(self.__i_start, 1.5 * self.tick_length),
                                         size=(self.__i_end - self.__i_start, -5))
         # vertical brushing & linking line
-        self.__highlight_line = libavg.LineNode(strokewidth=1, color=global_values.COLOR_FOREGROUND, parent=self,
-                                                pos1=(0, 0), pos2=(0, -self.parent.data_div.height))
+        self.__highlight_line = libavg.LineNode(strokewidth=1, color=global_values.COLOR_SECONDARY, parent=self,
+                                                pos1=(0, 0), pos2=(0, -self.parent.data_div.height), opacity=0)
         # interactive interval scrollbar
         self.__i_scrollbar = custom_slider.IntervalScrollBar(pos=(0, 0), width=self.width, opacity=0,
                                                              range=self.data_range, parent=self)
@@ -335,12 +338,9 @@ class TimeAxisNode(AxisNode):
                                      lambda pos: self.__change_interval(self.__i_scrollbar.getThumbPos(),
                                                                         self.end + pos - self.start))
         # subscription for mouse movement over visualization (highlight line)
-        self.parent.data_div.subscribe(avg.Node.CURSOR_MOTION, self.__on_visualization_hover_over)
-        # subscription to mouse click to highlight single user path
-        # for i in range(self.getParent().getNumChildren()):
-        #     print type(self.getParent().getChild(i))
-        #     if type(self.getParent().getChild(i)) is "libavg.avg.MeshNode":
-        #         self.getParent().getChild(i).subscribe(avg.Node.CURSOR_DOWN, self.__on_path_click)
+        self.__hover_id = self.parent.data_div.subscribe(avg.Node.CURSOR_MOTION, self.__on_visualization_hover_over)
+        # pin and unpin highlight_line on mouse click
+        self.parent.data_div.subscribe(avg.Node.CURSOR_DOWN, self.__toggle_pin_highlight_line)
         # more/less details of interval slider
         self.subscribe(avg.Node.CURSOR_OVER, self.__show_interval_slider)
         self.subscribe(avg.Node.CURSOR_OUT, self.__hide_interval_slider)
@@ -354,9 +354,6 @@ class TimeAxisNode(AxisNode):
         initial update
         """
         self.update(self.start, self.end)
-
-    def __on_path_click(self, event=None):
-        print "{}".format(event.node)
 
     def update_time_frame(self, interval):
         """
@@ -417,6 +414,17 @@ class TimeAxisNode(AxisNode):
         self.__i_scrollbar.setThumbPos(self.start)
         self.__i_scrollbar.setThumbExtent(self.end - self.start)
 
+        # update position of pinned highlight_line
+        if self.__pinned:
+            self.__highlight_pixel = self._value_to_pixel(self.__highlight_time, self.start, self.end)
+            if self.__highlight_pixel > self.width or self.__highlight_pixel < 0:
+                self.__highlight_line.opacity = 0
+            else:
+                self.__highlight_line.opacity = 1
+                self.__highlight_line.pos1 = (self.__highlight_pixel, self.__highlight_line.pos1[1])
+                self.__highlight_line.pos2 = (self.__highlight_pixel, self.__highlight_line.pos2[1])
+
+
     def __show_interval_slider(self, event=None):
         """
         Called when mouse hovers over TimeAxisNodeDiv. Shows Details on demand of interval.
@@ -451,10 +459,46 @@ class TimeAxisNode(AxisNode):
         self.appendChild(self.__highlight_line)
 
     def __show_highlight_line(self, event=None):
+        """
+        Shows highlight line when mouse hovers over visualization.
+        """
         self.__highlight_line.opacity = 1
 
     def __hide_highlight_line(self, event=None):
-        self.__highlight_line.opacity = 0
+        """
+        Hides highlight line when mouse exits area of visualization.
+        """
+        if not self.__pinned:
+            self.__highlight_line.opacity = 0
+
+    def __toggle_pin_highlight_line(self, event=None):
+        """
+        Allows the highlight line to be pinned at the current mouse location.
+        """
+        # unpin line
+        if self.__pinned:
+            self.__highlight_line.color = global_values.COLOR_SECONDARY
+            self.__hover_id = self.parent.data_div.subscribe(avg.Node.CURSOR_MOTION, self.__on_visualization_hover_over)
+            relPos = self.getRelPos(event.pos)
+            self.__highlight_line.pos1 = (relPos[0], self.__highlight_line.pos1[1])
+            self.__highlight_line.pos2 = (relPos[0], self.__highlight_line.pos2[1])
+            self.__pinned = False
+        # pin line
+        else:
+            self.__highlight_time = self.__calculate_time_from_pixel(self.__highlight_line.pos1[0])
+            self.__highlight_line.color = global_values.COLOR_FOREGROUND
+            self.parent.data_div.unsubscribe(avg.Node.CURSOR_MOTION, self.__hover_id)
+            self.__pinned = True
+
+    def __calculate_time_from_pixel(self, pixel):
+        """
+        Calculates the time in milliseconds of the given pixel value within the width of the axis.
+        :param pixel the pixel value to be converted to time in ms
+        """
+        time_i_range = self.end - self.start            # time
+        ratio = pixel / self.width                      # %
+        time = ratio * time_i_range + self.start        # time
+        return time
 
 """
 utils
