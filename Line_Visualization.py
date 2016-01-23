@@ -7,6 +7,20 @@ import Time_Frame
 import libavg
 import Variable_Width_Line
 
+DATA_POSITION_X = 0
+DATA_POSITION_Y = 1
+DATA_POSITION_Z = 2
+DATA_TIME = 3
+DATA_VIEWPOINT_X = 4
+DATA_VIEWPOINT_Y = 5
+DATA_TOUCH_X = 6
+DATA_TOUCH_Y = 7
+
+VIS_X = 0
+VIS_Y = 1
+VIS_THICKNESS = 2
+VIS_OPACITY = 3
+
 
 class Line_Visualization(libavg.DivNode):
     canvasObjects = []
@@ -15,22 +29,26 @@ class Line_Visualization(libavg.DivNode):
     start = 0
     end = 1
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, data_type_x, data_type_y, data_type_thickness, data_type_opacity, **kwargs):
         super(Line_Visualization, self).__init__(**kwargs)
-        self.elementoutlinecolor = "ff0000"
         self.registerInstance(self, parent)
-        self.parent = parent
-        self.size = (self.size[0] - axis.AXIS_THICKNESS, self.size[1] - axis.AXIS_THICKNESS)
-        self.pos = (self.pos[0] + axis.AXIS_THICKNESS, self.pos[1])
+        self.crop = True
+
+        self.data_type_x = data_type_x
+        self.data_type_y = data_type_y
+        self.data_type_thickness = data_type_thickness
+        self.data_type_opacity = data_type_opacity
+
+        self.data_div = libavg.DivNode(pos=(axis.AXIS_THICKNESS, 0), size=(self.width - axis.AXIS_THICKNESS, self.height - axis.AXIS_THICKNESS), parent=self, crop=True)
 
         # rect for coloured border and background
         libavg.RectNode(pos=(0, 0), size=self.size, parent=self,
                         strokewidth=0, fillopacity=0, fillcolor=global_values.COLOR_FOREGROUND)
 
         # axes
-        self.y_axis = axis.AxisNode(size=(axis.AXIS_THICKNESS, self.height), parent=self, sensitive=False, data_range=global_values.x_range, unit="cm", pos=(-axis.AXIS_THICKNESS, 0))
+        self.y_axis = axis.AxisNode(size=(axis.AXIS_THICKNESS, self.data_div.height), parent=self, sensitive=False, data_range=global_values.x_range, unit="cm", pos=(0, 0))
 
-        self.time_axis = axis.TimeAxisNode(size=(self.width, axis.AXIS_THICKNESS), parent=self, data_range=Time_Frame.total_range, unit="ms", pos=(0, self.height))
+        self.time_axis = axis.TimeAxisNode(size=(self.width, self.data_div.width), parent=self, data_range=Time_Frame.total_range, unit="ms", pos=(0, self.data_div.height))
         self.createLine()
 
     # make start and end values in 0..1
@@ -45,32 +63,75 @@ class Line_Visualization(libavg.DivNode):
             userid += 1
             points = []
             widths = []
-
-            for i in range(int(self.size[0] * global_values.samples_per_pixel)):
+            opacities = []
+            samplecount = 100
+            if self.data_type_x == DATA_TIME:
+                samplecount = int(self.data_div.width * global_values.samples_per_pixel) + 1
+            if self.data_type_y == DATA_TIME:
+                samplecount = int(self.data_div.height * global_values.samples_per_pixel) + 1
+            for sample in range(samplecount):
                 if len(user.head_positions) == 0:
                     continue
                 posindex = int(
-                    len(user.head_positions) * i * (self.end - self.start) / float(
-                        self.size[0] * global_values.samples_per_pixel) + self.start * len(user.head_positions))
+                    len(user.head_positions) * sample * (self.end - self.start) / float(
+                        samplecount) + self.start * len(user.head_positions))
                 current_position = []
                 head_position_averaged = user.get_head_position_averaged(posindex)
-                head_x = (head_position_averaged[0] - database.min_x) / float(database.max_x - database.min_x)
-                head_y = (head_position_averaged[1] - database.min_y) / float(database.max_y - database.min_y)
-                head_z = (head_position_averaged[2] - database.min_z) / float(database.max_z - database.min_z)
-                # touch_x = (user.touches[posindex][0]-database.min_touch_x)/float(database.max_touch_x-database.min_touch_x)
-                # touch_y = (user.touches[posindex][1]-database.min_touch_y)/float(database.max_touch_y-database.min_touch_y)
-                # touch_time = (user.touches[posindex][2]-database.min_time)/float(database.max_time-database.min_time)
-                time = float(i) / float(global_values.samples_per_pixel)
 
-                # x value of the visualization
-                current_position.append(time)
-                # y value of the visualization
-                current_position.append(head_x * self.size[1])
+                for i in range(4):
+                    data = 0
+                    if i == VIS_X:
+                        data_type = self.data_type_x
+                    if i == VIS_Y:
+                        data_type = self.data_type_y
+                    if i == VIS_THICKNESS:
+                        data_type = self.data_type_thickness
+                    if i == VIS_OPACITY:
+                        data_type = self.data_type_opacity
 
-                thickness = 1 + pow(head_z, 3) * 60
-                opacity = (1 - head_z)
-                points.append(current_position)
-                widths.append(thickness)
+                    if data_type == DATA_POSITION_X:
+                        data = (head_position_averaged[0] - database.min_x) / float(database.max_x - database.min_x)
+                    if data_type == DATA_POSITION_Y:
+                        data = (head_position_averaged[1] - database.min_y) / float(database.max_y - database.min_y)
+                    if data_type == DATA_POSITION_Z:
+                        data = (head_position_averaged[2] - database.min_z) / float(database.max_z - database.min_z)
+
+                    if data_type == DATA_TIME:
+                        data = float(sample) / float(samplecount)
+
+                    if data_type == DATA_VIEWPOINT_X:
+                        print "not done yet"
+                        # TODO
+                    if data_type == DATA_VIEWPOINT_Y:
+                        print "not done yet"
+                        # TODO
+
+                    if data_type == DATA_TOUCH_X:
+                        print "not working yet"
+                        # touch_x = (user.touches[posindex][0]-database.min_touch_x)/float(database.max_touch_x-database.min_touch_x)
+
+                    if data_type == DATA_TOUCH_Y:
+                        print "not working yet"
+                        # touch_y = (user.touches[posindex][1]-database.min_touch_y)/float(database.max_touch_y-database.min_touch_y)
+                        # touch_time = (user.touches[posindex][2]-database.min_time)/float(database.max_time-database.min_time)
+
+                    if i == VIS_X:
+                        data *= self.data_div.width
+
+                    if i == VIS_Y:
+                        data *= self.data_div.height
+
+                    if i == VIS_THICKNESS:
+                        data = 1 + pow(data, 3) * 60
+
+                    if i == VIS_OPACITY:
+                        data = (1 - data)
+                    # x or y value of the visualization depending on i being
+                    current_position.append(data)
+
+                points.append((current_position[VIS_X], current_position[VIS_Y]))
+                widths.append(current_position[VIS_THICKNESS])
+                opacities.append(current_position[VIS_OPACITY])
                 '''
                 if last_position == 0:
                     last_position = current_position
@@ -90,10 +151,10 @@ class Line_Visualization(libavg.DivNode):
 
             if len(self.canvasObjects) > userid:
                 userline = self.canvasObjects[userid]
-                userline.set_points_and_widths(points, widths)
+                userline.set_values(points, widths, opacities)
             else:
                 self.canvasObjects.append(
-                    Variable_Width_Line.Variable_Width_Line(points=points, widths=widths, parent=self,
+                    Variable_Width_Line.Variable_Width_Line(points=points, widths=widths, opacities=opacities, parent=self.data_div,
                                                             color=Util.get_user_color_as_hex(userid, 1)))
 
     def draw(self):

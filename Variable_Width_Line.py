@@ -7,11 +7,13 @@ import Draw
 class Variable_Width_Line:
     points = []
     widths = []
+    opacities = []
     color = 'FF0000'
 
-    def __init__(self, points, widths, color, parent):
+    def __init__(self, points, widths, opacities, color, parent):
         self.points = points
         self.widths = widths
+        self.opacities = opacities
         self.color = color
         self.__genGradient()
 
@@ -19,9 +21,10 @@ class Variable_Width_Line:
         self.node.setBitmap(self.gradientBmp)
         self.__genMesh()
 
-    def set_points_and_widths(self, points, widths):
+    def set_values(self, points, widths, opacities):
         self.points = points
         self.widths = widths
+        self.opacities = opacities
         self.__genGradient()
         self.node.setBitmap(self.gradientBmp)
         self.__genMesh()
@@ -69,11 +72,7 @@ class Variable_Width_Line:
             self.canvas = player.deleteCanvas(canvas_id)
         self.canvas = player.createCanvas(id=canvas_id, size=(len(self.widths) - 1, 1))
         for x in range(len(self.widths)):
-            if self.widths[x] <= 0:
-                opacity = 1
-            else:
-                opacity = 3 / (self.widths[x])
-            opacity += 0.0
+            opacity = self.opacities[x]
             avg.LineNode(pos1=(x + 0.5, -0.5), pos2=(x + 0.5, 1.5), color=self.color, opacity=opacity, parent=self.canvas.getRootNode())
         self.canvas.render()
         self.gradientBmp = self.canvas.screenshot()
