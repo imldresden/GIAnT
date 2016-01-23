@@ -34,8 +34,16 @@ class main_drawer(app.MainDiv):
         libavg.RectNode(pos=(0,0), size=self.resolution, color=global_values.COLOR_BACKGROUND)
         for userid in range(1, 5):
             user = User.User(userid)
-        main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0]-200, self.resolution[1]-200), pos=(50, 50))
+
+        main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0]-400, self.resolution[1]-100), pos=(0, 0),
+                                                                   data_type_x=Line_Visualization.DATA_TIME,
+                                                                   data_type_y=Line_Visualization.DATA_POSITION_X,
+                                                                   data_type_thickness=Line_Visualization.DATA_POSITION_Z,
+                                                                   data_type_opacity=Line_Visualization.DATA_POSITION_Z)
         self.visualizations.append(main_visualization)
+
+
+
         Time_Frame.main_time_frame.subscribe(main_visualization)
 
         self.subscribe(avg.Node.MOUSE_WHEEL, self.onMouseWheel)
