@@ -323,6 +323,9 @@ class TimeAxisNode(AxisNode):
         # vertical brushing & linking line
         self.__highlight_line = libavg.LineNode(strokewidth=1, color=global_values.COLOR_SECONDARY, parent=self,
                                                 pos1=(0, 0), pos2=(0, -self.parent.data_div.height), opacity=0)
+        self.__highlight_marker = libavg.LineNode(strokewidth=1, color=global_values.COLOR_FOREGROUND, parent=self,
+                                                  pos1=(0, self.__i_line.pos1[1]), pos2=(0, -5),
+                                                  opacity=0)
         # interactive interval scrollbar
         self.__i_scrollbar = custom_slider.IntervalScrollBar(pos=(0, 0), width=self.width, opacity=0,
                                                              range=self.data_range, parent=self)
@@ -414,13 +417,15 @@ class TimeAxisNode(AxisNode):
         self.__i_scrollbar.setThumbPos(self.start)
         self.__i_scrollbar.setThumbExtent(self.end - self.start)
 
-        # update position of pinned highlight_line
+        # update position of pinned highlight line and highlight line marker
         if self.__pinned:
             self.__highlight_pixel = self._value_to_pixel(self.__highlight_time, self.start, self.end)
             if self.__highlight_pixel > self.width or self.__highlight_pixel < 0:
                 self.__highlight_line.opacity = 0
+                self.__highlight_marker.opacity = 1
             else:
                 self.__highlight_line.opacity = 1
+                self.__highlight_marker.opacity = 0
                 self.__highlight_line.pos1 = (self.__highlight_pixel, self.__highlight_line.pos1[1])
                 self.__highlight_line.pos2 = (self.__highlight_pixel, self.__highlight_line.pos2[1])
 
@@ -482,10 +487,15 @@ class TimeAxisNode(AxisNode):
             relPos = self.getRelPos(event.pos)
             self.__highlight_line.pos1 = (relPos[0], self.__highlight_line.pos1[1])
             self.__highlight_line.pos2 = (relPos[0], self.__highlight_line.pos2[1])
+            self.__highlight_marker.opacity = 0
             self.__pinned = False
         # pin line
         else:
             self.__highlight_time = self.__calculate_time_from_pixel(self.__highlight_line.pos1[0])
+            marker_pos = self._value_to_pixel(self.__highlight_time, self.data_range[0], self.data_range[1])
+            self.__highlight_marker.pos1 = (marker_pos, self.__highlight_marker.pos1[1])
+            self.__highlight_marker.pos2 = (marker_pos, self.__highlight_marker.pos2[1])
+            self.__highlight_marker.opacity = 1
             self.__highlight_line.color = global_values.COLOR_FOREGROUND
             self.parent.data_div.unsubscribe(avg.Node.CURSOR_MOTION, self.__hover_id)
             self.__pinned = True
