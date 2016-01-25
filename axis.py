@@ -22,6 +22,7 @@ class AxisNode(avg.DivNode):
         """
         attributes
         """
+        self.__parent = parent
         self.__h_tick_length = 5                             # half of the length of the tick marks on the axis
         self.__tick_length = self.__h_tick_length * 2        # length of the tick marks on the axis
         self.__label_offset = self.__tick_length             # offset of tick labels from axis line
@@ -37,6 +38,17 @@ class AxisNode(avg.DivNode):
         self.__end = data_range[1]                           # current maximal data value of visualization data
         self.__unit = unit                                   # unit of measurement (time: ms, length: cm)
         self.__hide_rims = hide_rims                         # determines if the first and last tick are shown
+
+        """
+        TODO:
+        Workaround for not working self.parent.data_div.height for yet unknown reasons.
+        The workaround should set the height when initializing a time axis.
+        """
+        try:
+            self.__vis_height = self.parent.data_div.height
+        except:
+            self.__vis_height = 0
+            print "Error getting height of data_div in {}!".format(self)
 
         # axis is displayed vertical if width smaller than height
         if self.height > self.width:
@@ -114,15 +126,13 @@ class AxisNode(avg.DivNode):
             if self.__vertical:
                 self.__label_nodes[i].alignment = "right"
                 self.__grid[i].pos1 = (self.__axis_line.pos1[0], pos)
-                self.__grid[i].pos2 = (self.__axis_line.pos1[0] + 100000, pos)
+                self.__grid[i].pos2 = (self.__axis_line.pos1[0] + self.parent.data_div.width, pos)
                 self.__ticks[i].pos1 = (self.__axis_line.pos1[0], pos)
                 self.__ticks[i].pos2 = (self.__axis_line.pos1[0] + self.__tick_length, pos)
                 self.__label_nodes[i].pos = (self.__axis_line.pos1[0] - self.__tick_length, pos - v_center - 1)
             else:
                 self.__grid[i].pos1 = (pos, self.__axis_line.pos1[0])
-                # TODO: get visualization height    (for some reason self.parent.height and self.parent.data_div.height
-                # TODO: -650 hardcoded for now       does not exist for the time axis, for the other axis it works...?!)
-                self.__grid[i].pos2 = (pos, -650)
+                self.__grid[i].pos2 = (pos, - self.__vis_height)
                 self.__ticks[i].pos1 = (pos, self.__axis_line.pos1[0] - self.__tick_length)
                 self.__ticks[i].pos2 = (pos, self.__axis_line.pos1[0])
                 self.__label_nodes[i].pos = (pos - center,
@@ -269,6 +279,12 @@ class AxisNode(avg.DivNode):
     def __get_data_range(self):
         return self.__data_range
 
+    def __get_vis_height(self):
+        return self.__vis_height
+
+    def __set_vis_height(self, height):
+        self.__vis_height = height
+
     size = property(__getSize, __setSize)
     vertical = property(__get_vertical, __set_vertical)
     label_values = property(__get_label_values)
@@ -278,6 +294,7 @@ class AxisNode(avg.DivNode):
     tick_length = property(__get_tick_length)
     label_offset = property(__get_label_offset, __set_label_offset)
     data_range = property(__get_data_range)
+    vis_height = property(__get_vis_height, __set_vis_height)
 
     __update = update               # private copy of original update() method
     __div_size = avg.DivNode.size   # private copy of DivNode size
@@ -308,6 +325,7 @@ class TimeAxisNode(AxisNode):
         self.__highlight_pixel = 0
         self.label_offset = 1.5 * self.tick_length                               # bigger label offset for time axis
         self.vertical = False                                                    # TimeAxisNode can only be horizontal
+        self.vis_height = self.parent.data_div.height                            # workaround (see comment in AxisNode)
 
         """
         setup Nodes
@@ -324,7 +342,7 @@ class TimeAxisNode(AxisNode):
         self.__highlight_line = libavg.LineNode(strokewidth=1, color=global_values.COLOR_SECONDARY, parent=self,
                                                 pos1=(0, 0), pos2=(0, -self.parent.data_div.height), opacity=0)
         self.__highlight_marker = libavg.LineNode(strokewidth=1, color=global_values.COLOR_FOREGROUND, parent=self,
-                                                  pos1=(0, self.__i_line.pos1[1]), pos2=(0, -5),
+                                                  pos1=(0, self.__i_line.pos1[1]), pos2=(0, self.__i_line.pos1[1] - 5),
                                                   opacity=0)
         # interactive interval scrollbar
         self.__i_scrollbar = custom_slider.IntervalScrollBar(pos=(0, 0), width=self.width, opacity=0,
@@ -467,7 +485,11 @@ class TimeAxisNode(AxisNode):
         """
         Shows highlight line when mouse hovers over visualization.
         """
-        self.__highlight_line.opacity = 1
+        if self.__pinned:
+            if not self.__highlight_pixel > self.width and not self.__highlight_pixel < 0:
+                self.__highlight_line.opacity = 1
+        else:
+            self.__highlight_line.opacity = 1
 
     def __hide_highlight_line(self, event=None):
         """
@@ -483,11 +505,12 @@ class TimeAxisNode(AxisNode):
         # unpin line
         if self.__pinned:
             self.__highlight_line.color = global_values.COLOR_SECONDARY
-            self.__hover_id = self.parent.data_div.subscribe(avg.Node.CURSOR_MOTION, self.__on_visualization_hover_over)
             relPos = self.getRelPos(event.pos)
             self.__highlight_line.pos1 = (relPos[0], self.__highlight_line.pos1[1])
             self.__highlight_line.pos2 = (relPos[0], self.__highlight_line.pos2[1])
+            self.__highlight_line.opacity = 1
             self.__highlight_marker.opacity = 0
+            self.__hover_id = self.parent.data_div.subscribe(avg.Node.CURSOR_MOTION, self.__on_visualization_hover_over)
             self.__pinned = False
         # pin line
         else:
