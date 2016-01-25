@@ -36,13 +36,33 @@ class main_drawer(app.MainDiv):
             user = User.User(userid)
 
         main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0]-400, self.resolution[1]-100),
-                                                                   pos=(0, axis.AXIS_THICKNESS),
+                                                                   pos=(0, 0),
                                                                    data_type_x=Line_Visualization.DATA_TIME,
                                                                    data_type_y=Line_Visualization.DATA_POSITION_X,
                                                                    data_type_thickness=Line_Visualization.DATA_POSITION_Z,
-                                                                   data_type_opacity=Line_Visualization.DATA_POSITION_Z)
-
+                                                                   data_type_opacity=Line_Visualization.DATA_POSITION_Z,
+                                                                   show_bottom_axis=True)
         Time_Frame.main_time_frame.subscribe(main_visualization)
+
+
+
+        room_visualization = Line_Visualization.Line_Visualization(parent=self, size=(400, (self.resolution[1]-100)/2),
+                                                                   pos=(self.resolution[0]-400, 0),
+                                                                   data_type_x=Line_Visualization.DATA_POSITION_X,
+                                                                   data_type_y=Line_Visualization.DATA_POSITION_Z,
+                                                                   data_type_thickness=1.4,
+                                                                   data_type_opacity=0.01,
+                                                                   show_bottom_axis=True)
+        Time_Frame.main_time_frame.subscribe(room_visualization)
+
+        wall_visualization = Line_Visualization.Line_Visualization(parent=self, size=(400, (self.resolution[1]-100)/2),
+                                                                   pos=(self.resolution[0]-400, (self.resolution[1]-100)/2),
+                                                                   data_type_x=Line_Visualization.DATA_POSITION_X,
+                                                                   data_type_y=Line_Visualization.DATA_POSITION_Y,
+                                                                   data_type_thickness=1.4,
+                                                                   data_type_opacity=0.01,
+                                                                   show_bottom_axis=False)
+        Time_Frame.main_time_frame.subscribe(wall_visualization)
 
         self.subscribe(avg.Node.MOUSE_WHEEL, self.onMouseWheel)
         app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward)

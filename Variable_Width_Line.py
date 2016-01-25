@@ -2,15 +2,16 @@
 
 from libavg import player, avg
 import Draw
+import random
 
 
 class Variable_Width_Line:
     points = []
     widths = []
     opacities = []
-    color = 'FF0000'
 
     def __init__(self, points, widths, opacities, color, parent):
+        self.id = random.randint(0, 10000000)
         self.points = points
         self.widths = widths
         self.opacities = opacities
@@ -67,7 +68,7 @@ class Variable_Width_Line:
         self.node.triangles = triangles
 
     def __genGradient(self):
-        canvas_id = str("gradient " + self.color)
+        canvas_id = str("gradient "+str(self.id) + self.color)
         if hasattr(self, 'canvas'):
             self.canvas = player.deleteCanvas(canvas_id)
         self.canvas = player.createCanvas(id=canvas_id, size=(len(self.widths) - 1, 1))

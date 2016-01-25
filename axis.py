@@ -114,7 +114,7 @@ class AxisNode(avg.DivNode):
             if self.__vertical:
                 self.__label_nodes[i].alignment = "right"
                 self.__grid[i].pos1 = (self.__axis_line.pos1[0], pos)
-                self.__grid[i].pos2 = (self.parent.data_div.pos[0] + self.parent.data_div.width, pos)
+                self.__grid[i].pos2 = (self.__axis_line.pos1[0] + 100000, pos)
                 self.__ticks[i].pos1 = (self.__axis_line.pos1[0], pos)
                 self.__ticks[i].pos2 = (self.__axis_line.pos1[0] + self.__tick_length, pos)
                 self.__label_nodes[i].pos = (self.__axis_line.pos1[0] - self.__tick_length, pos - v_center - 1)
