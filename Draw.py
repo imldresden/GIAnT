@@ -5,10 +5,10 @@ from libavg import app, avg
 import libavg
 import Util
 import User
-import Line_Visualization
+import Line_Visualization as Vis
 import Time_Frame
 import global_values
-import axis
+
 
 class main_drawer(app.MainDiv):
     last_time = 0
@@ -30,38 +30,50 @@ class main_drawer(app.MainDiv):
     '''
 
     def onInit(self):
-        self.resolution = tuple(libavg.app.instance._resolution)
-        libavg.RectNode(pos=(0,0), size=self.resolution, color=global_values.COLOR_BACKGROUND)
+
+        # main_drawer Div has margin to all sides of application window
+        margin = global_values.APP_MARGIN
+        # ratio for distributing visualizations across application
+        ratio = 0.7
+        # padding
+        pad = global_values.APP_PADDING
+
+        self.pos = (margin, margin)
+        self.resolution = (libavg.app.instance._resolution[0] - 2*margin, libavg.app.instance._resolution[1] - 2*margin)
+
+        # to color background
+        libavg.RectNode(parent=self, pos=(0, 0), size=self.resolution,
+                        strokewidth=0, fillcolor=global_values.COLOR_BLACK, fillopacity=1)
+
         for userid in range(1, 5):
             user = User.User(userid)
 
-        main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0]-400, self.resolution[1]-100),
-                                                                   pos=(0, 0),
-                                                                   data_type_x=Line_Visualization.DATA_TIME,
-                                                                   data_type_y=Line_Visualization.DATA_POSITION_X,
-                                                                   data_type_thickness=Line_Visualization.DATA_POSITION_Z,
-                                                                   data_type_opacity=Line_Visualization.DATA_POSITION_Z,
-                                                                   show_bottom_axis=True)
+        main_visualization = Vis.Line_Visualization(parent=self,
+                                                    size=(self.resolution[0] * ratio, self.resolution[1]-100),
+                                                    pos=(0, 0),
+                                                    data_type_x=Vis.DATA_TIME,
+                                                    data_type_y=Vis.DATA_POSITION_X,
+                                                    data_type_thickness=Vis.DATA_POSITION_Z,
+                                                    data_type_opacity=Vis.DATA_POSITION_Z)
         Time_Frame.main_time_frame.subscribe(main_visualization)
 
-
-
-        room_visualization = Line_Visualization.Line_Visualization(parent=self, size=(400, (self.resolution[1]-100)/2),
-                                                                   pos=(self.resolution[0]-400, 0),
-                                                                   data_type_x=Line_Visualization.DATA_POSITION_X,
-                                                                   data_type_y=Line_Visualization.DATA_POSITION_Z,
-                                                                   data_type_thickness=1.4,
-                                                                   data_type_opacity=0.01,
-                                                                   show_bottom_axis=True)
+        room_visualization = Vis.Line_Visualization(parent=self,
+                                                    size=(self.resolution[0] * (1-ratio) - 2 * pad, (self.resolution[1]-100)/2),
+                                                    pos=(main_visualization.size[0] + pad, 0),
+                                                    data_type_x=Vis.DATA_POSITION_X,
+                                                    data_type_y=Vis.DATA_POSITION_Z,
+                                                    data_type_thickness=1.4,
+                                                    data_type_opacity=0.01)
         Time_Frame.main_time_frame.subscribe(room_visualization)
 
-        wall_visualization = Line_Visualization.Line_Visualization(parent=self, size=(400, (self.resolution[1]-100)/2),
-                                                                   pos=(self.resolution[0]-400, (self.resolution[1]-100)/2),
-                                                                   data_type_x=Line_Visualization.DATA_POSITION_X,
-                                                                   data_type_y=Line_Visualization.DATA_POSITION_Y,
-                                                                   data_type_thickness=1.4,
-                                                                   data_type_opacity=0.01,
-                                                                   show_bottom_axis=False)
+        wall_visualization = Vis.Line_Visualization(parent=self,
+                                                    size=(self.resolution[0] * (1-ratio) - 2 * pad, (self.resolution[1]-100)/2),
+                                                    pos=(main_visualization.size[0] + pad, (self.resolution[1]-100)/2),
+                                                    data_type_x=Vis.DATA_POSITION_X,
+                                                    data_type_y=Vis.DATA_POSITION_Y,
+                                                    data_type_thickness=1.4,
+                                                    data_type_opacity=0.01,
+                                                    show_bottom_axis=False)
         Time_Frame.main_time_frame.subscribe(wall_visualization)
 
         self.subscribe(avg.Node.MOUSE_WHEEL, self.onMouseWheel)
