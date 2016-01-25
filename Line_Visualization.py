@@ -8,13 +8,13 @@ import libavg
 import Variable_Width_Line
 
 DATA_POSITION_X = 0
-DATA_POSITION_Y = 1
-DATA_POSITION_Z = 2
-DATA_TIME = 3
-DATA_VIEWPOINT_X = 4
-DATA_VIEWPOINT_Y = 5
-DATA_TOUCH_X = 6
-DATA_TOUCH_Y = 7
+DATA_POSITION_Y = -1
+DATA_POSITION_Z = -2
+DATA_TIME = -3
+DATA_VIEWPOINT_X = -4
+DATA_VIEWPOINT_Y = -5
+DATA_TOUCH_X = -6
+DATA_TOUCH_Y = -7
 
 VIS_X = 0
 VIS_Y = 1
@@ -23,22 +23,20 @@ VIS_OPACITY = 3
 
 
 class Line_Visualization(libavg.DivNode):
-    canvasObjects = []
-    samples_per_pixel = 1
-    parent = 0
     start = 0
     end = 1
 
-    def __init__(self, parent, data_type_x, data_type_y, data_type_thickness, data_type_opacity, **kwargs):
+    def __init__(self, parent, data_type_x, data_type_y, data_type_thickness, data_type_opacity, show_bottom_axis, **kwargs):
         super(Line_Visualization, self).__init__(**kwargs)
         self.registerInstance(self, parent)
-        self.crop = False
+        self.crop = True
 
         self.data_type_x = data_type_x
+        self.canvasObjects = []
         self.data_type_y = data_type_y
         self.data_type_thickness = data_type_thickness
         self.data_type_opacity = data_type_opacity
-
+        # div for visualization data
         # rect for coloured border and background
         self.background_rect = libavg.RectNode(pos=(axis.AXIS_THICKNESS, 0),
                                                size=(self.width - axis.AXIS_THICKNESS, self.height - axis.AXIS_THICKNESS),
@@ -46,17 +44,51 @@ class Line_Visualization(libavg.DivNode):
                                                color=global_values.COLOR_BACKGROUND,
                                                fillcolor=global_values.COLOR_BACKGROUND)
 
-        # div for visualization data
         self.data_div = libavg.DivNode(pos=self.background_rect.pos, size=self.background_rect.size, parent=self,
                                        crop=True)
 
-        # axes
-        self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.AXIS_THICKNESS, self.data_div.height), hide_rims=True,
-                                    parent=self, sensitive=False, data_range=global_values.x_range, unit="cm")
 
-        self.time_axis = axis.TimeAxisNode(pos=(axis.AXIS_THICKNESS, self.data_div.height),
-                                           size=(self.data_div.width, axis.AXIS_THICKNESS),
-                                           parent=self, data_range=Time_Frame.total_range, unit="ms")
+        # axes
+        if data_type_y == DATA_TIME:
+            self.y_axis = axis.TimeAxisNode(pos=(0, 0), parent=self, size=(axis.AXIS_THICKNESS, self.data_div.height), data_range=Time_Frame.total_range, unit="ms")
+
+        else:
+            # set data_range according to data input
+            if data_type_y == DATA_POSITION_X:
+                data_range = global_values.x_range
+            if data_type_y == DATA_POSITION_Y:
+                data_range = global_values.y_range
+            if data_type_y == DATA_POSITION_Z:
+                data_range = global_values.z_range
+            if data_type_y == DATA_TOUCH_Y:
+                data_range = global_values.y_touch_range
+            if data_type_y == DATA_TOUCH_X:
+                data_range = global_values.x_touch_range
+            self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.AXIS_THICKNESS, self.data_div.height), hide_rims=True, parent=self, sensitive=True, data_range=data_range, unit="cm")
+
+        if show_bottom_axis:
+            if self.data_type_x == DATA_TIME:
+                self.x_axis = axis.TimeAxisNode(pos=(axis.AXIS_THICKNESS, self.data_div.height), parent=self, size=(self.data_div.width, axis.AXIS_THICKNESS), data_range=Time_Frame.total_range,
+                                                unit="ms")
+            else:
+                # set data_ragne according to data input
+                if data_type_x == DATA_POSITION_X:
+                    data_range = global_values.x_range
+                if data_type_x == DATA_POSITION_Y:
+                    data_range = global_values.y_range
+                if data_type_x == DATA_POSITION_Z:
+                    data_range = global_values.z_range
+                if data_type_x == DATA_TOUCH_Y:
+                    data_range = global_values.y_touch_range
+                if data_type_x == DATA_TOUCH_X:
+                    data_range = global_values.x_touch_range
+
+                self.x_axis = axis.AxisNode(pos=(axis.AXIS_THICKNESS, self.data_div.height),
+                                            size=(self.data_div.width, axis.AXIS_THICKNESS),
+                                            hide_rims=True, sensitive=True,
+                                            parent=self, data_range=data_range, unit="cm")
+
+
         self.createLine()
 
     # make start and end values in 0..1
@@ -88,6 +120,7 @@ class Line_Visualization(libavg.DivNode):
 
                 for i in range(4):
                     data = 0
+
                     if i == VIS_X:
                         data_type = self.data_type_x
                     if i == VIS_Y:
@@ -97,6 +130,9 @@ class Line_Visualization(libavg.DivNode):
                     if i == VIS_OPACITY:
                         data_type = self.data_type_opacity
 
+                    if data_type > 0:
+                        data = data_type
+
                     if data_type == DATA_POSITION_X:
                         data = (head_position_averaged[0] - database.min_x) / float(database.max_x - database.min_x)
                     if data_type == DATA_POSITION_Y:
@@ -105,7 +141,7 @@ class Line_Visualization(libavg.DivNode):
                         data = (head_position_averaged[2] - database.min_z) / float(database.max_z - database.min_z)
 
                     if data_type == DATA_TIME:
-                        data = float(sample) / float(samplecount)
+                        data = float(sample) / float(samplecount - 1)
 
                     if data_type == DATA_VIEWPOINT_X:
                         print "not done yet"
@@ -129,8 +165,8 @@ class Line_Visualization(libavg.DivNode):
                     if i == VIS_Y:
                         data *= self.data_div.height
 
-                    if i == VIS_THICKNESS:
-                        data = 1 + pow(data, 3) * 60
+                    if i == VIS_THICKNESS and data_type <= 0:
+                        data = 1 + pow(data, 4) * (min(self.width, self.height) / 10)
 
                     if i == VIS_OPACITY:
                         data = (1 - data)
