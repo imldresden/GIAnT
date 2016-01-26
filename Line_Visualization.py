@@ -26,17 +26,17 @@ class Line_Visualization(libavg.DivNode):
     start = 0
     end = 1
 
-    def __init__(self, parent, data_type_x, data_type_y, data_type_thickness, data_type_opacity, show_bottom_axis, **kwargs):
+    def __init__(self, parent, data_type_x, data_type_y, data_type_thickness, data_type_opacity, show_bottom_axis=True, **kwargs):
         super(Line_Visualization, self).__init__(**kwargs)
         self.registerInstance(self, parent)
-        self.crop = True
+        self.crop = False
 
         self.data_type_x = data_type_x
         self.canvasObjects = []
         self.data_type_y = data_type_y
         self.data_type_thickness = data_type_thickness
         self.data_type_opacity = data_type_opacity
-        # div for visualization data
+
         # rect for coloured border and background
         self.background_rect = libavg.RectNode(pos=(axis.AXIS_THICKNESS, 0),
                                                size=(self.width - axis.AXIS_THICKNESS, self.height - axis.AXIS_THICKNESS),
@@ -44,9 +44,10 @@ class Line_Visualization(libavg.DivNode):
                                                color=global_values.COLOR_BACKGROUND,
                                                fillcolor=global_values.COLOR_BACKGROUND)
 
-        self.data_div = libavg.DivNode(pos=self.background_rect.pos, size=self.background_rect.size, parent=self,
-                                       crop=True)
-
+        # div for visualization data
+        self.data_div = libavg.DivNode(pos=(axis.AXIS_THICKNESS, 0),
+                                       size=(self.width - axis.AXIS_THICKNESS, self.height - axis.AXIS_THICKNESS),
+                                       parent=self, crop=True)
 
         # axes
         if data_type_y == DATA_TIME:
