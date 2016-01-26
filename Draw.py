@@ -31,40 +31,40 @@ class main_drawer(app.MainDiv):
 
     def onInit(self):
         self.resolution = tuple(libavg.app.instance._resolution)
-        libavg.RectNode(pos=(0,0), size=self.resolution, color=global_values.COLOR_BACKGROUND)
+        self.menu_width = 500
+        self.menu_height = 200
+        libavg.RectNode(pos=(0, 0), size=self.resolution, color=global_values.COLOR_BACKGROUND)
         for userid in range(1, 5):
             user = User.User(userid)
 
-        main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0]-400, self.resolution[1]-100),
-                                                                   pos=(0, 0),
-                                                                   data_type_x=Line_Visualization.DATA_TIME,
-                                                                   data_type_y=Line_Visualization.DATA_POSITION_X,
-                                                                   data_type_thickness=Line_Visualization.DATA_POSITION_Z,
-                                                                   data_type_opacity=Line_Visualization.DATA_POSITION_Z,
-                                                                   show_bottom_axis=True)
-        Time_Frame.main_time_frame.subscribe(main_visualization)
+        self.main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0] - self.menu_width, self.resolution[1] - 100),
+                                                                        pos=(0, 0),
+                                                                        data_type_x=Line_Visualization.DATA_TIME,
+                                                                        data_type_y=Line_Visualization.DATA_POSITION_X,
+                                                                        data_type_thickness=Line_Visualization.DATA_POSITION_Z,
+                                                                        data_type_opacity=Line_Visualization.DATA_POSITION_Z,
+                                                                        show_bottom_axis=True)
+        Time_Frame.main_time_frame.subscribe(self.main_visualization)
 
+        self.wall_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.menu_width, (self.resolution[1] - self.menu_height) / 2),
+                                                                        pos=(self.resolution[0] - self.menu_width, 0),
+                                                                        data_type_x=Line_Visualization.DATA_POSITION_X,
+                                                                        data_type_y=Line_Visualization.DATA_POSITION_Y,
+                                                                        data_type_thickness=1.4,
+                                                                        data_type_opacity=0.01,
+                                                                        show_bottom_axis=True)
+        Time_Frame.main_time_frame.subscribe(self.wall_visualization)
 
+        self.room_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.menu_width, (self.resolution[1] - self.menu_height) / 2),
+                                                                        pos=(self.wall_visualization.pos[0], self.wall_visualization.pos[1] + self.wall_visualization.height),
+                                                                        data_type_x=Line_Visualization.DATA_POSITION_X,
+                                                                        data_type_y=Line_Visualization.DATA_POSITION_Z,
+                                                                        data_type_thickness=1.4,
+                                                                        data_type_opacity=0.01,
+                                                                        show_bottom_axis=False)
+        Time_Frame.main_time_frame.subscribe(self.room_visualization)
 
-        room_visualization = Line_Visualization.Line_Visualization(parent=self, size=(400, (self.resolution[1]-100)/2),
-                                                                   pos=(self.resolution[0]-400, 0),
-                                                                   data_type_x=Line_Visualization.DATA_POSITION_X,
-                                                                   data_type_y=Line_Visualization.DATA_POSITION_Z,
-                                                                   data_type_thickness=1.4,
-                                                                   data_type_opacity=0.01,
-                                                                   show_bottom_axis=True)
-        Time_Frame.main_time_frame.subscribe(room_visualization)
-
-        wall_visualization = Line_Visualization.Line_Visualization(parent=self, size=(400, (self.resolution[1]-100)/2),
-                                                                   pos=(self.resolution[0]-400, (self.resolution[1]-100)/2),
-                                                                   data_type_x=Line_Visualization.DATA_POSITION_X,
-                                                                   data_type_y=Line_Visualization.DATA_POSITION_Y,
-                                                                   data_type_thickness=1.4,
-                                                                   data_type_opacity=0.01,
-                                                                   show_bottom_axis=False)
-        Time_Frame.main_time_frame.subscribe(wall_visualization)
-
-        self.subscribe(avg.Node.MOUSE_WHEEL, self.onMouseWheel)
+        self.main_visualization.data_div.subscribe(avg.Node.MOUSE_WHEEL, self.onMouseWheel)
         app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward)
         app.keyboardmanager.bindKeyDown(keyname='Left', handler=self.shift_back)
         app.keyboardmanager.bindKeyDown(keyname='Up', handler=self.zoom_in)
@@ -97,9 +97,9 @@ class main_drawer(app.MainDiv):
 
     def onMouseWheel(self, event):
         if event.motion.y > 0:
-            Time_Frame.main_time_frame.zoom_in_at(event.pos[0] / self.resolution[0])
+            Time_Frame.main_time_frame.zoom_in_at((event.pos[0]-axis.AXIS_THICKNESS) / (self.main_visualization.width-axis.AXIS_THICKNESS))
         else:
-            Time_Frame.main_time_frame.zoom_out_at(event.pos[0] / self.resolution[0])
+            Time_Frame.main_time_frame.zoom_out_at(event.pos[0] / self.main_visualization.width)
 
 
 def calculate_line_intersection(p1, p2_selected, p3, thickness1, thickness2_selected, thickness3):
