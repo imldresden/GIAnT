@@ -26,7 +26,6 @@ class Variable_Width_Line:
         self.points = points
         self.widths = widths
         self.opacities = opacities
-        self.__genGradient()
         self.node.setBitmap(self.gradientBmp)
         self.__genMesh()
 
@@ -55,7 +54,7 @@ class Variable_Width_Line:
 
             vertexes.append(linepos[0])
             vertexes.append(linepos[1])
-            texx = (i + 1) / float(len(self.widths) - 1)
+            texx = min(255.0/256.0,pow(self.opacities[i], 2) * 2)
             texcoords.append((texx, 0))
             texcoords.append((texx, 0))
             triangles.append((i * 2, i * 2 + 1, i * 2 + 2))
@@ -68,12 +67,12 @@ class Variable_Width_Line:
         self.node.triangles = triangles
 
     def __genGradient(self):
-        canvas_id = str("gradient "+str(self.id) + self.color)
+        canvas_id = str("gradient " + str(self.id) + self.color)
         if hasattr(self, 'canvas'):
             self.canvas = player.deleteCanvas(canvas_id)
-        self.canvas = player.createCanvas(id=canvas_id, size=(len(self.widths) - 1, 1))
-        for x in range(len(self.widths)):
-            opacity = self.opacities[x]
+        self.canvas = player.createCanvas(id=canvas_id, size=(256, 1))
+        for x in range(256):
+            opacity = float(x) / 256.0
             avg.LineNode(pos1=(x + 0.5, -0.5), pos2=(x + 0.5, 1.5), color=self.color, opacity=opacity, parent=self.canvas.getRootNode())
         self.canvas.render()
         self.gradientBmp = self.canvas.screenshot()
