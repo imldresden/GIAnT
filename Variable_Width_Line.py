@@ -3,6 +3,7 @@
 from libavg import player, avg
 import Draw
 import random
+import Util
 
 
 class Variable_Width_Line:
@@ -10,12 +11,12 @@ class Variable_Width_Line:
     widths = []
     opacities = []
 
-    def __init__(self, points, widths, opacities, color, parent):
+    def __init__(self, points, widths, opacities, userid, parent):
         self.id = random.randint(0, 10000000)
         self.points = points
         self.widths = widths
         self.opacities = opacities
-        self.color = color
+        self.color = Util.get_user_color_as_hex(userid, 1)
         self.__genGradient()
 
         self.node = avg.MeshNode(parent=parent, blendmode="add")
@@ -36,7 +37,7 @@ class Variable_Width_Line:
         for i in range(len(self.points)):
             p2 = self.points[i]
             t2 = self.widths[i]
-            if (i < 1):
+            if i < 1:
                 p1 = (self.points[0][0] - (self.points[1][0] - self.points[0][0]), self.points[1][0])
                 p3 = self.points[i + 1]
                 t1 = self.widths[0]
@@ -44,7 +45,7 @@ class Variable_Width_Line:
             else:
                 p1 = self.points[i - 1]
                 t1 = self.widths[i - 1]
-                if (i >= len(self.points) - 1):
+                if i >= len(self.points) - 1:
                     p3 = (2 * self.points[i][0] - self.points[i - 1][0], self.points[i - 1][1])
                     t3 = self.widths[i]
                 else:

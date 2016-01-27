@@ -11,6 +11,7 @@ class User:
     touches = []
     head_times = []
     index = -1
+    selected = True
 
     def addHeadPosition(self, position):
         self.head_positions.append(position)

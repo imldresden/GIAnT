@@ -1,7 +1,6 @@
 import User
 import database
 import global_values
-import Util
 import axis
 import Time_Frame
 import libavg
@@ -33,7 +32,7 @@ class Line_Visualization(libavg.DivNode):
 
         #here the size is first increased, so that it later can be decreased again (around line 82), effectively hiding the bottom axis but still showing its grid
         if not show_bottom_axis:
-            self.size = (self.width, self.height+axis.AXIS_THICKNESS)
+            pass#self.size = (self.width, self.height+axis.AXIS_THICKNESS)
 
         self.data_type_x = data_type_x
         self.canvasObjects = []
@@ -52,6 +51,11 @@ class Line_Visualization(libavg.DivNode):
         self.data_div = libavg.DivNode(pos=(axis.AXIS_THICKNESS, 0),
                                        size=(self.width - axis.AXIS_THICKNESS, self.height - axis.AXIS_THICKNESS),
                                        parent=self, crop=True)
+
+        # user divs to distinguish MeshNodes in data_div by user (user_divs are initialized as self.data_div's)
+        self.user_divs = []
+        for i in range((len(User.users))):
+            self.user_divs.append(libavg.DivNode(pos=(0, 0), parent=self.data_div, crop=True, size=self.size))
 
         # axes
         if data_type_y == DATA_TIME:
@@ -117,105 +121,106 @@ class Line_Visualization(libavg.DivNode):
         userid = -1
         for user in User.users:
             userid += 1
-            points = []
-            widths = []
-            opacities = []
-            samplecount = 100
-            if self.data_type_x == DATA_TIME:
-                samplecount = int(self.data_div.width * global_values.samples_per_pixel) + 1
-            if self.data_type_y == DATA_TIME:
-                samplecount = int(self.data_div.height * global_values.samples_per_pixel) + 1
-            for sample in range(samplecount):
-                if len(user.head_positions) == 0:
-                    continue
-                posindex = int(
-                    len(user.head_positions) * sample * (self.end - self.start) / float(
-                        samplecount) + self.start * len(user.head_positions))
-                current_position = []
-                head_position_averaged = user.get_head_position_averaged(posindex)
+            if user.selected:
+                points = []
+                widths = []
+                opacities = []
+                samplecount = 100
+                if self.data_type_x == DATA_TIME:
+                    samplecount = int(self.data_div.width * global_values.samples_per_pixel) + 1
+                if self.data_type_y == DATA_TIME:
+                    samplecount = int(self.data_div.height * global_values.samples_per_pixel) + 1
+                for sample in range(samplecount):
+                    if len(user.head_positions) == 0:
+                        continue
+                    posindex = int(
+                        len(user.head_positions) * sample * (self.end - self.start) / float(
+                            samplecount) + self.start * len(user.head_positions))
+                    current_position = []
+                    head_position_averaged = user.get_head_position_averaged(posindex)
 
-                for i in range(4):
-                    data = 0
+                    for i in range(4):
+                        data = 0
 
-                    if i == VIS_X:
-                        data_type = self.data_type_x
-                    if i == VIS_Y:
-                        data_type = self.data_type_y
-                    if i == VIS_THICKNESS:
-                        data_type = self.data_type_thickness
-                    if i == VIS_OPACITY:
-                        data_type = self.data_type_opacity
+                        if i == VIS_X:
+                            data_type = self.data_type_x
+                        if i == VIS_Y:
+                            data_type = self.data_type_y
+                        if i == VIS_THICKNESS:
+                            data_type = self.data_type_thickness
+                        if i == VIS_OPACITY:
+                            data_type = self.data_type_opacity
 
-                    if data_type > 0:
-                        data = data_type
+                        if data_type > 0:
+                            data = data_type
 
-                    if data_type == DATA_POSITION_X:
-                        data = (head_position_averaged[0] - database.min_x) / float(database.max_x - database.min_x)
-                    if data_type == DATA_POSITION_Y:
-                        data = (head_position_averaged[1] - database.min_y) / float(database.max_y - database.min_y)
-                    if data_type == DATA_POSITION_Z:
-                        data = (head_position_averaged[2] - database.min_z) / float(database.max_z - database.min_z)
+                        if data_type == DATA_POSITION_X:
+                            data = (head_position_averaged[0] - database.min_x) / float(database.max_x - database.min_x)
+                        if data_type == DATA_POSITION_Y:
+                            data = (head_position_averaged[1] - database.min_y) / float(database.max_y - database.min_y)
+                        if data_type == DATA_POSITION_Z:
+                            data = (head_position_averaged[2] - database.min_z) / float(database.max_z - database.min_z)
 
-                    if data_type == DATA_TIME:
-                        data = float(sample) / float(samplecount - 1)
+                        if data_type == DATA_TIME:
+                            data = float(sample) / float(samplecount - 1)
 
-                    if data_type == DATA_VIEWPOINT_X:
-                        print "not done yet"
-                        # TODO
-                    if data_type == DATA_VIEWPOINT_Y:
-                        print "not done yet"
-                        # TODO
+                        if data_type == DATA_VIEWPOINT_X:
+                            print "not done yet"
+                            # TODO
+                        if data_type == DATA_VIEWPOINT_Y:
+                            print "not done yet"
+                            # TODO
 
-                    if data_type == DATA_TOUCH_X:
-                        print "not working yet"
-                        # touch_x = (user.touches[posindex][0]-database.min_touch_x)/float(database.max_touch_x-database.min_touch_x)
+                        if data_type == DATA_TOUCH_X:
+                            print "not working yet"
+                            # touch_x = (user.touches[posindex][0]-database.min_touch_x)/float(database.max_touch_x-database.min_touch_x)
 
-                    if data_type == DATA_TOUCH_Y:
-                        print "not working yet"
-                        # touch_y = (user.touches[posindex][1]-database.min_touch_y)/float(database.max_touch_y-database.min_touch_y)
-                        # touch_time = (user.touches[posindex][2]-database.min_time)/float(database.max_time-database.min_time)
+                        if data_type == DATA_TOUCH_Y:
+                            print "not working yet"
+                            # touch_y = (user.touches[posindex][1]-database.min_touch_y)/float(database.max_touch_y-database.min_touch_y)
+                            # touch_time = (user.touches[posindex][2]-database.min_time)/float(database.max_time-database.min_time)
 
-                    if i == VIS_X:
-                        data *= self.data_div.width
+                        if i == VIS_X:
+                            data *= self.data_div.width
 
-                    if i == VIS_Y:
-                        data *= self.data_div.height
+                        if i == VIS_Y:
+                            data *= self.data_div.height
 
-                    if i == VIS_THICKNESS and data_type <= 0:
-                        data = 1 + pow(data, 4) * (min(self.width, self.height) / 10)
+                        if i == VIS_THICKNESS and data_type <= 0:
+                            data = 1 + pow(data, 4) * (min(self.width, self.height) / 10)
 
-                    if i == VIS_OPACITY:
-                        data = (1 - data)
-                    # x or y value of the visualization depending on i being
-                    current_position.append(data)
+                        if i == VIS_OPACITY:
+                            data = (1 - data)
+                        # x or y value of the visualization depending on i being
+                        current_position.append(data)
 
-                points.append((current_position[VIS_X], current_position[VIS_Y]))
-                widths.append(current_position[VIS_THICKNESS])
-                opacities.append(current_position[VIS_OPACITY])
-                '''
-                if last_position == 0:
-                    last_position = current_position
-                else:
-                    if len(self.canvasObjects) <= userid:
-                        user_objects.append(
-                            Draw.main_drawer.draw_line(self.parent, tuple(current_position), tuple(last_position),
-                                                     global_values.get_color_as_hex(userid, 1), thickness, thickness, opacity))
+                    points.append((current_position[VIS_X], current_position[VIS_Y]))
+                    widths.append(current_position[VIS_THICKNESS])
+                    opacities.append(current_position[VIS_OPACITY])
+                    '''
+                    if last_position == 0:
+                        last_position = current_position
                     else:
-                        if len(self.canvasObjects[userid]) > i:
-                            self.canvasObjects[userid][i].pos1 = current_position
-                            self.canvasObjects[userid][i].pos2 = last_position
-                            self.canvasObjects[userid][i].strokewidth = thickness
-                            self.canvasObjects[userid][i].opacity = opacity
-                    last_position = current_position
-                '''
+                        if len(self.canvasObjects) <= userid:
+                            user_objects.append(
+                                Draw.main_drawer.draw_line(self.parent, tuple(current_position), tuple(last_position),
+                                                         global_values.get_color_as_hex(userid, 1), thickness, thickness, opacity))
+                        else:
+                            if len(self.canvasObjects[userid]) > i:
+                                self.canvasObjects[userid][i].pos1 = current_position
+                                self.canvasObjects[userid][i].pos2 = last_position
+                                self.canvasObjects[userid][i].strokewidth = thickness
+                                self.canvasObjects[userid][i].opacity = opacity
+                        last_position = current_position
+                    '''
 
-            if len(self.canvasObjects) > userid:
-                userline = self.canvasObjects[userid]
-                userline.set_values(points, widths, opacities)
-            else:
-                self.canvasObjects.append(
-                    Variable_Width_Line.Variable_Width_Line(points=points, widths=widths, opacities=opacities, parent=self.data_div,
-                                                            color=Util.get_user_color_as_hex(userid, 1)))
+                if len(self.canvasObjects) > userid:
+                    userline = self.canvasObjects[userid]
+                    userline.set_values(points, widths, opacities)
+                else:
+                    self.canvasObjects.append(
+                        Variable_Width_Line.Variable_Width_Line(points=points, widths=widths, opacities=opacities,
+                                                                userid=userid, parent=self.user_divs[userid]))
 
     def draw(self):
 
