@@ -321,8 +321,7 @@ class TimeAxisNode(AxisNode):
         self.__i_end = self._value_to_pixel(self.end, self.start, self.end)      # interval end
         self.__i_label_offset = 5                                                # offset for interval duration label
         self.__pinned = False                                                    # if highlight line is pinned
-        self.__highlight_time = 0                                                # time at pinned highlight line
-        self.__highlight_pixel = 0
+        self.__highlight_pixel = 0                                               # pixel position on axis of highlight
         self.label_offset = 1.5 * self.tick_length                               # bigger label offset for time axis
         self.vertical = False                                                    # TimeAxisNode can only be horizontal
         self.vis_height = self.parent.data_div.height                            # workaround (see comment in AxisNode)
@@ -437,7 +436,8 @@ class TimeAxisNode(AxisNode):
 
         # update position of pinned highlight line and highlight line marker
         if self.__pinned:
-            self.__highlight_pixel = self._value_to_pixel(self.__highlight_time, self.start, self.end)
+            self.__highlight_pixel = self._value_to_pixel(Time_Frame.main_time_frame.highlight_time,
+                                                          self.start, self.end)
             if self.__highlight_pixel > self.width or self.__highlight_pixel < 0:
                 self.__highlight_line.opacity = 0
                 self.__highlight_marker.opacity = 1
@@ -514,8 +514,9 @@ class TimeAxisNode(AxisNode):
             self.__pinned = False
         # pin line
         else:
-            self.__highlight_time = self.__calculate_time_from_pixel(self.__highlight_line.pos1[0])
-            marker_pos = self._value_to_pixel(self.__highlight_time, self.data_range[0], self.data_range[1])
+            Time_Frame.main_time_frame.highlight_time = self.__calculate_time_from_pixel(self.__highlight_line.pos1[0])
+            marker_pos = self._value_to_pixel(Time_Frame.main_time_frame.highlight_time,
+                                              self.data_range[0], self.data_range[1])
             self.__highlight_marker.pos1 = (marker_pos, self.__highlight_marker.pos1[1])
             self.__highlight_marker.pos2 = (marker_pos, self.__highlight_marker.pos2[1])
             self.__highlight_marker.opacity = 1
