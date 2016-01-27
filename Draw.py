@@ -6,6 +6,7 @@ import libavg
 import Util
 import User
 import Line_Visualization
+import Options
 import Time_Frame
 import global_values
 import axis
@@ -51,24 +52,12 @@ class main_drawer(app.MainDiv):
         for userid in range(1, 5):
             user = User.User(userid)
 
-        self.main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0] - self.menu_width, self.resolution[1]-100),
-                                                                   pos=(0, 0),
-                                                                   data_type_x=Line_Visualization.DATA_TIME,
-                                                                   data_type_y=Line_Visualization.DATA_POSITION_X,
-                                                                   data_type_thickness=Line_Visualization.DATA_POSITION_Z,
-                                                                   data_type_opacity=Line_Visualization.DATA_POSITION_Z,
-                                                                   show_bottom_axis=True)
-        Time_Frame.main_time_frame.subscribe(self.main_visualization)
-
-
-
         self.wall_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.menu_width, (self.resolution[1]-self.menu_height)/2),
                                                                    pos=(self.resolution[0]-self.menu_width, 0),
                                                                    data_type_x=Line_Visualization.DATA_POSITION_X,
                                                                    data_type_y=Line_Visualization.DATA_POSITION_Y,
                                                                    data_type_thickness=1.4,
-                                                                   data_type_opacity=0.01,
-                                                                   show_bottom_axis=True)
+                                                                   data_type_opacity=0.01)
         Time_Frame.main_time_frame.subscribe(self.wall_visualization)
 
         self.room_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.menu_width, (self.resolution[1]-self.menu_height)/2),
@@ -79,6 +68,22 @@ class main_drawer(app.MainDiv):
                                                                    data_type_opacity=0.01,
                                                                    show_bottom_axis=False)
         Time_Frame.main_time_frame.subscribe(self.room_visualization)
+
+        self.main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0] - self.menu_width, self.resolution[1]-100),
+                                                                   pos=(0, 0),
+                                                                   data_type_x=Line_Visualization.DATA_TIME,
+                                                                   data_type_y=Line_Visualization.DATA_POSITION_X,
+                                                                   data_type_thickness=Line_Visualization.DATA_POSITION_Z,
+                                                                   data_type_opacity=Line_Visualization.DATA_POSITION_Z)
+        Time_Frame.main_time_frame.subscribe(self.main_visualization)
+
+        # menu
+        vis_nodes = [self.wall_visualization, self.room_visualization, self.main_visualization]
+        self.menu = Options.Options(nodes=vis_nodes, parent=self,
+                                    pos=(self.resolution[0]-self.menu_width + axis.AXIS_THICKNESS,
+                                         self.room_visualization.pos[1] + self.room_visualization.height + axis.AXIS_THICKNESS),
+                                    size=(self.menu_width - axis.AXIS_THICKNESS,
+                                          self.resolution[1] - self.wall_visualization.height - self.room_visualization.height - axis.AXIS_THICKNESS), )
 
         self.subscribe(avg.Node.MOUSE_WHEEL, self.onMouseWheel)
         app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward)
