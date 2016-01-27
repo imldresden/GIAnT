@@ -2,6 +2,7 @@ import math
 import sys
 import global_values
 import colorsys
+import random
 
 timestampOffset = sys.maxint
 
@@ -61,12 +62,46 @@ def line_intersection(line1, line2):
     except ZeroDivisionError:
         return (x2, y2)
 
+    threshold = 2
     # fixes the weird spike artifacts (not a pretty solution though)
-    if a < -3 or a > 3:
+    if a < -threshold or a > threshold:
         return (x2, y2)
     result1 = (round(x1 + a * dx1, 5), round(y1 + a * dy1, 5))
 
     return result1
+
+
+def get_look_direction(pitch, yaw):
+    x = 0
+    y = 0
+    z = 1
+
+    # pitch
+    pitch_cos = math.cos(pitch)
+    pitch_sin = math.sin(pitch)
+
+    new_z = z * pitch_cos
+    new_y = z * pitch_sin
+    z = new_z
+    y = new_y
+
+    yaw_cos = math.cos(yaw)
+    yaw_sin = math.sin(yaw)
+    # yaw
+    new_x = - z * yaw_sin
+    new_z = x * yaw_sin + z * yaw_cos
+    x = new_x
+    z = new_z
+
+    return (x, y, z)
+
+
+def normalize_vector(vector):
+    result = []
+    length = get_length(vector)
+    for i in range(0, len(vector)):
+        result.append(float(vector[i]) / float(length))
+    return result
 
 
 def get_user_color_as_hex(index, opacity):
@@ -78,3 +113,9 @@ def get_user_color_as_hex(index, opacity):
     color = (int(hls[0] * 255), int(hls[1] * 255), int(hls[2] * 255))
     color = '%02x%02x%02x' % color
     return color
+
+#
+# for i in range(100):
+#     pitch = random.random()*math.pi-math.pi/2
+#     yaw = random.random()*math.pi-math.pi/2
+#     print str(pitch)+"    " + str(yaw) + "    " + str(get_look_direction(pitch,yaw))
