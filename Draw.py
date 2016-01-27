@@ -113,9 +113,9 @@ class main_drawer(app.MainDiv):
 
     def onMouseWheel(self, event):
         if event.motion.y > 0:
-            Time_Frame.main_time_frame.zoom_in_at(event.pos[0] / self.resolution[0])
+            Time_Frame.main_time_frame.zoom_in_at((event.pos[0]-axis.AXIS_THICKNESS) / (self.main_visualization.width-axis.AXIS_THICKNESS))
         else:
-            Time_Frame.main_time_frame.zoom_out_at(event.pos[0] / self.resolution[0])
+            Time_Frame.main_time_frame.zoom_out_at((event.pos[0]-axis.AXIS_THICKNESS) / (self.main_visualization.width-axis.AXIS_THICKNESS))
 
 
 def calculate_line_intersection(p1, p2_selected, p3, thickness1, thickness2_selected, thickness3):
