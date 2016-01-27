@@ -31,6 +31,10 @@ class Line_Visualization(libavg.DivNode):
         self.registerInstance(self, parent)
         self.crop = False
 
+        #here the size is first increased, so that it later can be decreased again (around line 82), effectively hiding the bottom axis but still showing its grid
+        if not show_bottom_axis:
+            self.size = (self.width, self.height+axis.AXIS_THICKNESS)
+
         self.data_type_x = data_type_x
         self.canvasObjects = []
         self.data_type_y = data_type_y
@@ -54,40 +58,51 @@ class Line_Visualization(libavg.DivNode):
             self.y_axis = axis.TimeAxisNode(pos=(0, 0), parent=self, size=(axis.AXIS_THICKNESS, self.data_div.height), data_range=Time_Frame.total_range, unit="ms")
 
         else:
+            data_range = [0, 10]
+            unit = ""
             # set data_range according to data input
             if data_type_y == DATA_POSITION_X:
                 data_range = global_values.x_range
+                unit = "cm"
             if data_type_y == DATA_POSITION_Y:
                 data_range = global_values.y_range
+                unit = "cm"
             if data_type_y == DATA_POSITION_Z:
                 data_range = global_values.z_range
+                unit = "cm"
             if data_type_y == DATA_TOUCH_Y:
                 data_range = global_values.y_touch_range
+                unit = "px"
             if data_type_y == DATA_TOUCH_X:
                 data_range = global_values.x_touch_range
-            self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.AXIS_THICKNESS, self.data_div.height), hide_rims=True, parent=self, sensitive=True, data_range=data_range, unit="cm")
+                unit = "px"
 
-        if show_bottom_axis:
-            if self.data_type_x == DATA_TIME:
-                self.x_axis = axis.TimeAxisNode(pos=(axis.AXIS_THICKNESS, self.data_div.height), parent=self, size=(self.data_div.width, axis.AXIS_THICKNESS), data_range=Time_Frame.total_range,
-                                                unit="ms")
-            else:
-                # set data_ragne according to data input
-                if data_type_x == DATA_POSITION_X:
-                    data_range = global_values.x_range
-                if data_type_x == DATA_POSITION_Y:
-                    data_range = global_values.y_range
-                if data_type_x == DATA_POSITION_Z:
-                    data_range = global_values.z_range
-                if data_type_x == DATA_TOUCH_Y:
-                    data_range = global_values.y_touch_range
-                if data_type_x == DATA_TOUCH_X:
-                    data_range = global_values.x_touch_range
+            self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.AXIS_THICKNESS, self.data_div.height), hide_rims=True, parent=self, sensitive=True, data_range=data_range, unit=unit)
 
-                self.x_axis = axis.AxisNode(pos=(axis.AXIS_THICKNESS, self.data_div.height),
-                                            size=(self.data_div.width, axis.AXIS_THICKNESS),
-                                            hide_rims=True, sensitive=True,
-                                            parent=self, data_range=data_range, unit="cm")
+        x_axis_pos = (axis.AXIS_THICKNESS, self.data_div.height)
+        if not show_bottom_axis:
+            x_axis_pos = (x_axis_pos[0], x_axis_pos[1]+axis.AXIS_THICKNESS)
+            self.size = (self.width, self.height-axis.AXIS_THICKNESS)
+        if self.data_type_x == DATA_TIME:
+            self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, parent=self, size=(self.data_div.width, axis.AXIS_THICKNESS), data_range=Time_Frame.total_range,
+                                            unit="ms")
+        else:
+            # set data_ragne according to data input
+            if data_type_x == DATA_POSITION_X:
+                data_range = global_values.x_range
+            if data_type_x == DATA_POSITION_Y:
+                data_range = global_values.y_range
+            if data_type_x == DATA_POSITION_Z:
+                data_range = global_values.z_range
+            if data_type_x == DATA_TOUCH_Y:
+                data_range = global_values.y_touch_range
+            if data_type_x == DATA_TOUCH_X:
+                data_range = global_values.x_touch_range
+
+            self.x_axis = axis.AxisNode(pos=x_axis_pos,
+                                        size=(self.data_div.width, axis.AXIS_THICKNESS),
+                                        hide_rims=True, sensitive=True,
+                                        parent=self, data_range=data_range, unit="cm")
 
 
         self.createLine()
