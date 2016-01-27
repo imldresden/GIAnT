@@ -32,7 +32,7 @@ class Line_Visualization(libavg.DivNode):
 
         #here the size is first increased, so that it later can be decreased again (around line 82), effectively hiding the bottom axis but still showing its grid
         if not show_bottom_axis:
-            pass#self.size = (self.width, self.height+axis.AXIS_THICKNESS)
+            pass  # self.size = (self.width, self.height+axis.AXIS_THICKNESS)
 
         self.data_type_x = data_type_x
         self.canvasObjects = []
@@ -91,7 +91,7 @@ class Line_Visualization(libavg.DivNode):
             self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, parent=self, size=(self.data_div.width, axis.AXIS_THICKNESS), data_range=Time_Frame.total_range,
                                             unit="ms")
         else:
-            # set data_ragne according to data input
+            # set data_range according to data input
             if data_type_x == DATA_POSITION_X:
                 data_range = global_values.x_range
             if data_type_x == DATA_POSITION_Y:

@@ -32,8 +32,8 @@ class Options(libavg.DivNode):
         for i in range(len(User.users)):
             self.user_buttons.append(widget.CheckBox(pos=(20, (i + 1) * 20), size=(100, 100), parent=self, skinObj=skin))
             self.user_buttons[i].checked = True
-            self.user_texts.append(avg.WordsNode(pos=(40, (i + 1) * 20), color=Util.get_user_color_as_hex(i, 1), parent=self,
-                                                 text="User {}".format(i)))
+            self.user_texts.append(avg.WordsNode(pos=(40, (i + 1) * 20), color=Util.get_user_color_as_hex(i, 1),
+                                                 parent=self, text="User {}".format(i)))
 
         # TODO: the lambda has set the user_id always as the largest i (was always 3) when put in above for loop
         self.user_buttons[0].subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_user(checked, user_id=0))
@@ -41,6 +41,14 @@ class Options(libavg.DivNode):
         self.user_buttons[2].subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_user(checked, user_id=2))
         self.user_buttons[3].subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_user(checked, user_id=3))
 
+        # smoothness slider
+        self.smoothness_text = avg.WordsNode(pos=(20, 120), color=global_values.COLOR_FOREGROUND, parent=self,
+                                             text="Smoothness: {}ms".format(global_values.averaging_count))
+        self.smoothness_slider = widget.Slider(pos=(20, 150), width=self.width - 40, parent=self, range=(50, 2000))
+        self.smoothness_slider.thumbPos = global_values.averaging_count
+        self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, lambda pos: self.__change_smoothness(pos))
+
+        # subscribe to global time_frame
         Time_Frame.main_time_frame.subscribe(self)
 
     def __toggle_user(self, checked, user_id, event=None):
@@ -52,8 +60,15 @@ class Options(libavg.DivNode):
             User.users[user_id].selected = False
             for i, node in enumerate(self.nodes):
                 node.user_divs[user_id].unlink()
-                # for child in range(node.user_divs[user_id].getNumChildren() - 1):
-                #     print node.user_divs[user_id].unlink(child)
+
+        # publish changes
+        Time_Frame.main_time_frame.publish()
+
+    def __change_smoothness(self, value):
+        global_values.averaging_count = int(value)
+        self.smoothness_text.text = "Smoothness: {}ms".format(global_values.averaging_count)
+
+        # publish changes
         Time_Frame.main_time_frame.publish()
 
     def update_time_frame(self, interval):

@@ -8,6 +8,7 @@ class time_frame:
     __interval_range = [total_range[0], total_range[1]]
     __interval_range_last = [total_range[0], total_range[1]]
     __interval_range_target = [total_range[0], total_range[1]]
+    __highlight_time = 0
     __animation_start_time = -1
     __animation_duration = 1
     __zoom_strength = 0.1
@@ -96,5 +97,12 @@ class time_frame:
         for subscriber in self.__subscribers:
             subscriber.update_time_frame(self.__interval_range)
 
+    def __set_highlight_time(self, time):
+        self.__highlight_time = time
+
+    def __get_highlight_time(self):
+        return self.__highlight_time
+
+    highlight_time = property(__get_highlight_time, __set_highlight_time)
 
 main_time_frame = time_frame()
