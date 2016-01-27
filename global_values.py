@@ -1,6 +1,6 @@
 import database
 
-samples_per_pixel = 0.05
+samples_per_pixel = 0.2
 averaging_count = 500
 
 x_range = [database.min_x, database.max_x]
