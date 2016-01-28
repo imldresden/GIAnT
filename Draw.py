@@ -8,8 +8,10 @@ import User
 import Line_Visualization
 import Options
 import Time_Frame
+import time
 import global_values
 import axis
+
 
 class main_drawer(app.MainDiv):
     last_time = 0
@@ -40,11 +42,13 @@ class main_drawer(app.MainDiv):
         pad = global_values.APP_PADDING
 
         self.pos = (margin, margin)
-        self.resolution = (libavg.app.instance._resolution[0] - 2*margin, libavg.app.instance._resolution[1] - 2*margin)
-        
+        self.resolution = (libavg.app.instance._resolution[0] - 2 * margin, libavg.app.instance._resolution[1] - 2 * margin)
+
         self.menu_width = 500
         self.menu_height = 200
-        
+
+        self.__play = False
+        self.__last_frame_time = time.time()
         # to color background
         libavg.RectNode(parent=self, pos=(0, 0), size=self.resolution,
                         strokewidth=0, fillcolor=global_values.COLOR_BLACK, fillopacity=1)
@@ -52,35 +56,35 @@ class main_drawer(app.MainDiv):
         for userid in range(1, 5):
             user = User.User(userid)
 
-        self.wall_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.menu_width, (self.resolution[1]-self.menu_height)/2),
-                                                                   pos=(self.resolution[0]-self.menu_width, 0),
-                                                                   data_type_x=Line_Visualization.DATA_POSITION_X,
-                                                                   data_type_y=Line_Visualization.DATA_POSITION_Y,
-                                                                   data_type_thickness=1.4,
-                                                                   data_type_opacity=0.01)
+        self.wall_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.menu_width, (self.resolution[1] - self.menu_height) / 2),
+                                                                        pos=(self.resolution[0] - self.menu_width, 0),
+                                                                        data_type_x=Line_Visualization.DATA_POSITION_X,
+                                                                        data_type_y=Line_Visualization.DATA_POSITION_Y,
+                                                                        data_type_thickness=1.4,
+                                                                        data_type_opacity=0.01)
         Time_Frame.main_time_frame.subscribe(self.wall_visualization)
 
-        self.room_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.menu_width, (self.resolution[1]-self.menu_height)/2),
-                                                                   pos=(self.resolution[0]-self.menu_width, (self.wall_visualization.pos[1] + self.wall_visualization.height)),
-                                                                   data_type_x=Line_Visualization.DATA_POSITION_X,
-                                                                   data_type_y=Line_Visualization.DATA_POSITION_Z,
-                                                                   data_type_thickness=1.4,
-                                                                   data_type_opacity=0.01,
-                                                                   show_bottom_axis=False)
+        self.room_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.menu_width, (self.resolution[1] - self.menu_height) / 2),
+                                                                        pos=(self.resolution[0] - self.menu_width, (self.wall_visualization.pos[1] + self.wall_visualization.height)),
+                                                                        data_type_x=Line_Visualization.DATA_POSITION_X,
+                                                                        data_type_y=Line_Visualization.DATA_POSITION_Z,
+                                                                        data_type_thickness=1.4,
+                                                                        data_type_opacity=0.01,
+                                                                        show_bottom_axis=False)
         Time_Frame.main_time_frame.subscribe(self.room_visualization)
 
-        self.main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0] - self.menu_width, self.resolution[1]-100),
-                                                                   pos=(0, 0),
-                                                                   data_type_x=Line_Visualization.DATA_TIME,
-                                                                   data_type_y=Line_Visualization.DATA_POSITION_X,
-                                                                   data_type_thickness=Line_Visualization.DATA_POSITION_Z,
-                                                                   data_type_opacity=Line_Visualization.DATA_POSITION_Z)
+        self.main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0] - self.menu_width, self.resolution[1] - 100),
+                                                                        pos=(0, 0),
+                                                                        data_type_x=Line_Visualization.DATA_TIME,
+                                                                        data_type_y=Line_Visualization.DATA_POSITION_X,
+                                                                        data_type_thickness=Line_Visualization.DATA_POSITION_Z,
+                                                                        data_type_opacity=Line_Visualization.DATA_POSITION_Z)
         Time_Frame.main_time_frame.subscribe(self.main_visualization)
 
         # menu
         vis_nodes = [self.wall_visualization, self.room_visualization, self.main_visualization]
         self.menu = Options.Options(nodes=vis_nodes, parent=self,
-                                    pos=(self.resolution[0]-self.menu_width + axis.AXIS_THICKNESS,
+                                    pos=(self.resolution[0] - self.menu_width + axis.AXIS_THICKNESS,
                                          self.room_visualization.pos[1] + self.room_visualization.height + axis.AXIS_THICKNESS),
                                     size=(self.menu_width - axis.AXIS_THICKNESS,
                                           self.resolution[1] - self.wall_visualization.height - self.room_visualization.height - axis.AXIS_THICKNESS), )
@@ -90,8 +94,13 @@ class main_drawer(app.MainDiv):
         app.keyboardmanager.bindKeyDown(keyname='Left', handler=self.shift_back)
         app.keyboardmanager.bindKeyDown(keyname='Up', handler=self.zoom_in)
         app.keyboardmanager.bindKeyDown(keyname='Down', handler=self.zoom_out)
+        app.keyboardmanager.bindKeyDown(keyname='P', handler=self.play)
 
     def onFrame(self):
+        if self.__play:
+            current_time = time.time()
+            Time_Frame.main_time_frame.shift_time(True, (current_time - self.__last_frame_time) * 1000)
+            self.__last_frame_time = current_time
         Time_Frame.main_time_frame.update_interval_range()
 
     def draw_line(self, p1, p2, color, thickness, last_thickness, opacity):
@@ -116,11 +125,14 @@ class main_drawer(app.MainDiv):
     def shift_forward(self):
         Time_Frame.main_time_frame.shift_time(True)
 
+    def play(self):
+        self.__play = not self.__play
+
     def onMouseWheel(self, event):
         if event.motion.y > 0:
-            Time_Frame.main_time_frame.zoom_in_at((event.pos[0]-axis.AXIS_THICKNESS) / (self.main_visualization.width-axis.AXIS_THICKNESS))
+            Time_Frame.main_time_frame.zoom_in_at((event.pos[0] - axis.AXIS_THICKNESS) / (self.main_visualization.width - axis.AXIS_THICKNESS))
         else:
-            Time_Frame.main_time_frame.zoom_out_at((event.pos[0]-axis.AXIS_THICKNESS) / (self.main_visualization.width-axis.AXIS_THICKNESS))
+            Time_Frame.main_time_frame.zoom_out_at((event.pos[0] - axis.AXIS_THICKNESS) / (self.main_visualization.width - axis.AXIS_THICKNESS))
 
 
 def calculate_line_intersection(p1, p2_selected, p3, thickness1, thickness2_selected, thickness3):

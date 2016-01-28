@@ -68,14 +68,35 @@ class time_frame:
             self.__interval_range_target[1] = total_range[1]
 
     # shifts the interval (sets the target interval, which is later animated using update_interval_range())
-    def shift_time(self, forwards):
+    def shift_time(self, forwards, amount = -1):
         self.__interval_range_last = list(self.__interval_range)
-        self.__animation_start_time = time.time()
+
         self.update_interval_range()
-        if forwards:
-            shift_amount = (self.__interval_range_target[1] - self.__interval_range_target[0]) * self.__zoom_strength
+        if amount == -1:
+            if forwards:
+                shift_amount = (self.__interval_range_target[1] - self.__interval_range_target[0]) * self.__zoom_strength
+            else:
+                shift_amount = -(self.__interval_range_target[1] - self.__interval_range_target[0]) * self.__zoom_strength
         else:
-            shift_amount = -(self.__interval_range_target[1] - self.__interval_range_target[0]) * self.__zoom_strength
+            print amount
+            if forwards:
+                shift_amount = amount
+                if self.__interval_range_target[1] + shift_amount > total_range[1]:
+                    shift_amount = total_range[1] - self.__interval_range_target[1]
+            else:
+                shift_amount = -amount
+                if self.__interval_range_target[0] + shift_amount < total_range[0]:
+                    shift_amount = total_range[0] - self.__interval_range_target[0]
+
+            self.__interval_range_target[0] += shift_amount
+            self.__interval_range_target[1] += shift_amount
+            self.__interval_range_last = list(self.__interval_range_target)
+            self.__interval_range = list(self.__interval_range_target)
+            self.publish()
+            return
+
+        self.__animation_start_time = time.time()
+
         if self.__interval_range_target[0] + shift_amount < total_range[0]:
             shift_amount = total_range[0] - self.__interval_range_target[0]
         if self.__interval_range_target[1] + shift_amount > total_range[1]:
