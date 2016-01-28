@@ -162,7 +162,7 @@ class Line_Visualization(libavg.DivNode):
                             data = (head_position_averaged[2] - database.min_z) / float(database.max_z - database.min_z)
 
                         if data_type == DATA_TIME:
-                            data = float(sample) / float(samplecount - 1)
+                            data = float(sample) / float(max(1, samplecount - 1))
 
                         if data_type == DATA_VIEWPOINT_X:
                             print "not done yet"
@@ -187,7 +187,7 @@ class Line_Visualization(libavg.DivNode):
                             data *= self.data_div.height
 
                         if i == VIS_THICKNESS and data_type <= 0:
-                            data = 1 + pow(data, 4) * (min(self.width, self.height) / 10)
+                            data = calculate_thickness(data, self)
 
                         if i == VIS_OPACITY:
                             data = (1 - data)
@@ -227,3 +227,6 @@ class Line_Visualization(libavg.DivNode):
         for user in User.users:
             for point in user.head_positions:
                 None
+
+def calculate_thickness(data, div):
+     return 1 + pow(data, 4) * (min(div.width, div.height) / 10)
