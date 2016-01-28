@@ -127,6 +127,8 @@ class main_drawer(app.MainDiv):
 
     def play(self):
         self.__play = not self.__play
+        self.__last_frame_time = time.time()
+        Time_Frame.main_time_frame.publish()
 
     def onMouseWheel(self, event):
         if event.motion.y > 0:
