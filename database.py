@@ -1,6 +1,7 @@
 import sqlite3
 import csv
 import time
+import global_values
 
 
 # Positions in the database
@@ -31,9 +32,6 @@ min_time = 0
 max_time = 0
 
 times = []
-
-# interval in ms (just for calculation, will be normalized between 0 and 1)
-time_stepSize = 50
 
 # qry: the query to execute (string)
 # doFetch: whether data should be fetched and returned
@@ -176,7 +174,7 @@ def create_head_table():
             new_data[COL_TIME] -= min_time  # shift time to start at 0
 
             # time "rounded" to closest divisible of time_stepSize
-            time_step = int(new_data[COL_TIME] / time_stepSize) * time_stepSize
+            time_step = int(new_data[COL_TIME] / global_values.time_step_size) * global_values.time_step_size
 
             # initialize first values
             if last_data == 0:
@@ -190,12 +188,12 @@ def create_head_table():
                 new_data = list(new_data)
 
                 # if at least 1 step would be skipped. calculate the steps between
-                if last_time_step + time_stepSize < time_step:
+                if last_time_step + global_values.time_step_size < time_step:
                     last_time = last_data[COL_TIME]
                     newest_time = new_data[COL_TIME]
                     # for each skipped step
                     interpolated_list = []
-                    for interpolated_time in range(last_time_step, new_data[COL_TIME], time_stepSize):
+                    for interpolated_time in range(last_time_step, new_data[COL_TIME], global_values.time_step_size):
                         # progress/percentage of the step between the last time and the new time
                         percentage = min(1, max(0, (interpolated_time - last_time) / float(newest_time - last_time)))
 
@@ -251,13 +249,25 @@ def create_head_table_integral():
                                       "time FLOAT NOT NULL")
     for userid in range(1, 5):
         user_head_data = executeQry("SELECT user, x, y, z, pitch, yaw, roll, time FROM headtable WHERE user = " + str(userid) + " GROUP BY time ORDER BY time;", True)
-        for i in range(1, len(user_head_data)):
+        for i in range(0, len(user_head_data)):
             for column in range(1, 4):
                 as_list = list(user_head_data[i])
                 as_list[column] += user_head_data[i - 1][column]
                 user_head_data[i] = tuple(as_list)
 
         insert_many(user_head_data, "headtableintegral", ["user", "x", "y", "z", "pitch", "yaw", "roll", "time"])
+
+
+def create_viewpoint_table():
+    create_table("viewpointtable", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                      "user TINYINT NOT NULL,"
+                                      "x FLOAT,"
+                                      "y FLOAT,"
+                                      "time FLOAT NOT NULL")
+    for userid in range(1, 5):
+        user_head_data = executeQry("SELECT x, y, z, pitch, yaw, roll, time FROM headtable WHERE user = " + str(userid) + " GROUP BY time ORDER BY time;", True)
+        for i in range(0, len(user_head_data)):
+            print "NOT DONE YET"
 
 
 def create_touch_table(wall_screen_resolution):
