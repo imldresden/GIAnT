@@ -4,6 +4,7 @@ from libavg import player, avg
 import Draw
 import random
 import Util
+import global_values
 
 
 class Variable_Width_Line:
@@ -34,6 +35,7 @@ class Variable_Width_Line:
         vertexes = []
         texcoords = [(0.1, 0), (0.1, 0)]
         triangles = []
+
         for i in range(len(self.points)):
             p2 = self.points[i]
             t2 = self.widths[i]
@@ -56,8 +58,8 @@ class Variable_Width_Line:
             vertexes.append(linepos[0])
             vertexes.append(linepos[1])
             texx = min(255.0/256.0,pow(self.opacities[i], 2) * 2)
-            texcoords.append((texx, 0))
-            texcoords.append((texx, 0))
+            texcoords.append((texx, texx/2.0))
+            texcoords.append((texx, 1-(texx/2.0)))
             triangles.append((i * 2, i * 2 + 1, i * 2 + 2))
             triangles.append((i * 2 + 1, i * 2 + 2, i * 2 + 3))
 
@@ -71,9 +73,9 @@ class Variable_Width_Line:
         canvas_id = str("gradient " + str(self.id) + self.color)
         if hasattr(self, 'canvas'):
             self.canvas = player.deleteCanvas(canvas_id)
-        self.canvas = player.createCanvas(id=canvas_id, size=(256, 1))
+        self.canvas = player.createCanvas(id=canvas_id, size=(256, 3))
         for x in range(256):
             opacity = float(x) / 256.0
-            avg.LineNode(pos1=(x + 0.5, -0.5), pos2=(x + 0.5, 1.5), color=self.color, opacity=opacity, parent=self.canvas.getRootNode())
+            avg.LineNode(pos1=(x + 0.5, 1), pos2=(x + 0.5, 2), color=self.color, opacity=opacity, parent=self.canvas.getRootNode())
         self.canvas.render()
         self.gradientBmp = self.canvas.screenshot()
