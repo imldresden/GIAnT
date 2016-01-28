@@ -43,8 +43,8 @@ class Options(libavg.DivNode):
 
         # smoothness slider
         self.smoothness_text = avg.WordsNode(pos=(20, 120), color=global_values.COLOR_FOREGROUND, parent=self,
-                                             text="Smoothness: {}ms".format(global_values.averaging_count))
-        self.smoothness_slider = widget.Slider(pos=(20, 150), width=self.width - 40, parent=self, range=(50, 2000))
+                                             text="Smoothness: {}s".format(global_values.averaging_count*global_values.time_step_size/1000))
+        self.smoothness_slider = widget.Slider(pos=(20, 150), width=self.width - 40, parent=self, range=(2, 2000))
         self.smoothness_slider.thumbPos = global_values.averaging_count
         self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, lambda pos: self.__change_smoothness(pos))
 
@@ -66,7 +66,7 @@ class Options(libavg.DivNode):
 
     def __change_smoothness(self, value):
         global_values.averaging_count = int(value)
-        self.smoothness_text.text = "Smoothness: {}ms".format(global_values.averaging_count)
+        self.smoothness_text.text = "Smoothness: {}s".format(global_values.averaging_count*global_values.time_step_size/1000.0)
 
         # publish changes
         Time_Frame.main_time_frame.publish()

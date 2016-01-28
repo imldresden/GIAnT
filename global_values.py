@@ -2,6 +2,7 @@ import database
 
 samples_per_pixel = 0.2
 averaging_count = 500
+time_step_size = 50
 
 x_range = [database.min_x, database.max_x]
 y_range = [database.min_y, database.max_y]
