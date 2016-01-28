@@ -78,7 +78,6 @@ class time_frame:
             else:
                 shift_amount = -(self.__interval_range_target[1] - self.__interval_range_target[0]) * self.__zoom_strength
         else:
-            print amount
             if forwards:
                 shift_amount = amount
                 if self.__interval_range_target[1] + shift_amount > total_range[1]:
