@@ -61,6 +61,14 @@ class main_drawer(app.MainDiv):
         for userid in range(1, 5):
             user = User.User(userid)
 
+        self.main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0] - self.menu_width, self.resolution[1] - 50),
+                                                                        pos=(0, 0),
+                                                                        data_type_x=Line_Visualization.DATA_TIME,
+                                                                        data_type_y=Line_Visualization.DATA_POSITION_X,
+                                                                        data_type_thickness=Line_Visualization.DATA_POSITION_Z,
+                                                                        data_type_opacity=Line_Visualization.DATA_POSITION_Z)
+        Time_Frame.main_time_frame.subscribe(self.main_visualization)
+
         self.wall_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.menu_width, (self.resolution[1] - self.menu_height) / 2),
                                                                         pos=(self.resolution[0] - self.menu_width, 0),
                                                                         data_type_x=Line_Visualization.DATA_VIEWPOINT_X,
@@ -74,19 +82,10 @@ class main_drawer(app.MainDiv):
                                                                         data_type_x=Line_Visualization.DATA_POSITION_X,
                                                                         data_type_y=Line_Visualization.DATA_POSITION_Z,
                                                                         data_type_thickness=1.4,
-                                                                        data_type_opacity=0.01)#,
-                                                                        #show_bottom_axis=False)
+                                                                        data_type_opacity=0.01)  # ,show_bottom_axis=False)
         Time_Frame.main_time_frame.subscribe(self.room_visualization)
 
-        self.main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0] - self.menu_width, self.resolution[1]),
-                                                                        pos=(0, 0),
-                                                                        data_type_x=Line_Visualization.DATA_TIME,
-                                                                        data_type_y=Line_Visualization.DATA_POSITION_X,
-                                                                        data_type_thickness=Line_Visualization.DATA_POSITION_Z,
-                                                                        data_type_opacity=Line_Visualization.DATA_POSITION_Z)
-        Time_Frame.main_time_frame.subscribe(self.main_visualization)
-
-        #self.legend = Legend.Legend(self, 0, 1, "cm", pos=(0, 700), size=(200, 50))
+        self.legend = Legend.Legend(self, 0, 1, "cm", pos=(self.resolution[0]-self.menu_width-190, 720), size=(200, 50))
 
         # f-formations
         self.f_formations = F_Formations.F_Formations(parent=self, sensitive=False,
@@ -94,7 +93,7 @@ class main_drawer(app.MainDiv):
                                                            self.main_visualization.pos[1]),
                                                       size=(self.main_visualization.width - axis.AXIS_THICKNESS,
                                                             self.main_visualization.height - axis.AXIS_THICKNESS))
-        #Time_Frame.main_time_frame.subscribe(self.f_formations)
+        # Time_Frame.main_time_frame.subscribe(self.f_formations)
 
         # menu
         vis_nodes = [self.wall_visualization, self.room_visualization, self.main_visualization]
