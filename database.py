@@ -1,7 +1,6 @@
 import sqlite3
 import csv
 import time
-import global_values
 import Util
 
 # Positions in the database
@@ -137,6 +136,7 @@ def create_head_table():
 
     # for each user (1-4)
     for userid in range(1, 5):
+        import global_values
         last_data = 0
         datalist = []
 
@@ -309,6 +309,7 @@ def create_touch_table(wall_screen_resolution):
 
     # for each user (1-4)
     for userid in range(1, 5):
+        import global_values
         datalist = []
 
         con = sqlite3.connect("db")
