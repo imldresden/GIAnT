@@ -94,7 +94,7 @@ class main_drawer(app.MainDiv):
                                                            self.main_visualization.pos[1]),
                                                       size=(self.main_visualization.width - axis.AXIS_THICKNESS,
                                                             self.main_visualization.height - axis.AXIS_THICKNESS))
-        Time_Frame.main_time_frame.subscribe(self.f_formations)
+        #Time_Frame.main_time_frame.subscribe(self.f_formations)
 
         # menu
         vis_nodes = [self.wall_visualization, self.room_visualization, self.main_visualization]
