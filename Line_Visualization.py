@@ -87,10 +87,8 @@ class Line_Visualization(libavg.DivNode):
 
             self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.AXIS_THICKNESS, self.data_div.height), hide_rims=True, parent=self, sensitive=True, data_range=data_range, unit=unit)
 
-        x_axis_pos = (axis.AXIS_THICKNESS, self.data_div.height-axis.AXIS_THICKNESS)
-        if not show_bottom_axis:
-            x_axis_pos = (x_axis_pos[0], x_axis_pos[1]+axis.AXIS_THICKNESS)
-            self.size = (self.width, self.height-axis.AXIS_THICKNESS)
+        x_axis_pos = (axis.AXIS_THICKNESS, self.data_div.height)
+
         if self.data_type_x == DATA_TIME:
             self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, parent=self, size=(self.data_div.width, axis.AXIS_THICKNESS), data_range=Time_Frame.total_range,
                                             unit="ms")
