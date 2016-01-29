@@ -81,8 +81,10 @@ class Line_Visualization(libavg.DivNode):
                 unit = "px"
             if data_type_y == DATA_VIEWPOINT_X:
                 data_range = global_values.x_wall_range
+                unit = "cm"
             if data_type_y == DATA_VIEWPOINT_Y:
                 data_range = global_values.y_wall_range
+                unit = "cm"
 
             self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.AXIS_THICKNESS, self.data_div.height), hide_rims=True, parent=self, sensitive=True, data_range=data_range, unit=unit)
 
@@ -167,7 +169,7 @@ class Line_Visualization(libavg.DivNode):
                         if data_type == DATA_POSITION_Y:
                             data = (head_position_averaged[1] - global_values.y_range[0]) / float(global_values.y_range[1] - global_values.y_range[0])
                         if data_type == DATA_POSITION_Z:
-                            data = (head_position_averaged[2] - global_values.z_range[0]) / float(global_values.x_range[1] - global_values.z_range[0])
+                            data = (head_position_averaged[2] - global_values.z_range[0]) / float(global_values.z_range[1] - global_values.z_range[0])
 
                         if data_type == DATA_TIME:
                             data = float(sample) / float(max(1, samplecount - 1))
@@ -230,7 +232,7 @@ class Line_Visualization(libavg.DivNode):
 
 
 def calculate_thickness(data, div):
-    return 1.4 + pow(data, 4) * (min(div.width, div.height)/2)
+    return 1.4 + pow(data, 4) * (min(div.width, div.height)/6)
 
 
 def calculate_opacity(data):
