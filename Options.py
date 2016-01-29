@@ -65,7 +65,7 @@ class Options(libavg.DivNode):
 
     def __change_smoothness(self, value):
         global_values.averaging_count = int(value)
-        global_values.samples_per_pixel = max(0.1, min(0.5, 100 / value))
+        global_values.samples_per_pixel = max(0.1, min(0.3, 50 / value))
         self.smoothness_text.text = "Smoothness: {}s".format(global_values.averaging_count * global_values.time_step_size / 1000.0)
 
         # publish changes
