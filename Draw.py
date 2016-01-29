@@ -6,6 +6,7 @@ import libavg
 import Util
 import User
 import Line_Visualization
+import F_Formations
 import Options
 import Time_Frame
 import time
@@ -81,13 +82,21 @@ class main_drawer(app.MainDiv):
                                                                         data_type_opacity=Line_Visualization.DATA_POSITION_Z)
         Time_Frame.main_time_frame.subscribe(self.main_visualization)
 
+        # f-formations
+        self.f_formations = F_Formations.F_Formations(parent=self, sensitive=False,
+                                                      pos=(self.main_visualization.pos[0] + axis.AXIS_THICKNESS,
+                                                           self.main_visualization.pos[1]),
+                                                      size=(self.main_visualization.width - axis.AXIS_THICKNESS,
+                                                            self.main_visualization.height - axis.AXIS_THICKNESS))
+        Time_Frame.main_time_frame.subscribe(self.f_formations)
+
         # menu
         vis_nodes = [self.wall_visualization, self.room_visualization, self.main_visualization]
         self.menu = Options.Options(nodes=vis_nodes, parent=self,
                                     pos=(self.resolution[0] - self.menu_width + axis.AXIS_THICKNESS,
-                                         self.room_visualization.pos[1] + self.room_visualization.height + axis.AXIS_THICKNESS),
+                                         self.room_visualization.pos[1] + self.room_visualization.height),
                                     size=(self.menu_width - axis.AXIS_THICKNESS,
-                                          self.resolution[1] - self.wall_visualization.height - self.room_visualization.height - axis.AXIS_THICKNESS), )
+                                          self.resolution[1] - self.wall_visualization.height - self.room_visualization.height), )
 
         self.subscribe(avg.Node.MOUSE_WHEEL, self.onMouseWheel)
         app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward)
