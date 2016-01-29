@@ -28,7 +28,6 @@ class Variable_Width_Line:
         self.points = points
         self.widths = widths
         self.opacities = opacities
-        self.node.setBitmap(self.gradientBmp)
         self.__genMesh()
 
     def __genMesh(self):
@@ -57,9 +56,9 @@ class Variable_Width_Line:
 
             vertexes.append(linepos[0])
             vertexes.append(linepos[1])
-            texx = min(255.0/256.0,pow(self.opacities[i], 2) * 2)
-            texcoords.append((texx, texx/2.0))
-            texcoords.append((texx, 1-(texx/2.0)))
+            texx = min(255.0 / 256.0, pow(self.opacities[i], 2) * 2)
+            texcoords.append((texx, texx / 2.0))
+            texcoords.append((texx, 1 - (texx / 2.0)))
             triangles.append((i * 2, i * 2 + 1, i * 2 + 2))
             triangles.append((i * 2 + 1, i * 2 + 2, i * 2 + 3))
 

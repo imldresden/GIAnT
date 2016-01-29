@@ -58,8 +58,8 @@ class main_drawer(app.MainDiv):
 
         self.wall_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.menu_width, (self.resolution[1] - self.menu_height) / 2),
                                                                         pos=(self.resolution[0] - self.menu_width, 0),
-                                                                        data_type_x=Line_Visualization.DATA_POSITION_X,
-                                                                        data_type_y=Line_Visualization.DATA_POSITION_Y,
+                                                                        data_type_x=Line_Visualization.DATA_VIEWPOINT_X,
+                                                                        data_type_y=Line_Visualization.DATA_VIEWPOINT_Y,
                                                                         data_type_thickness=1.4,
                                                                         data_type_opacity=0.01)
         Time_Frame.main_time_frame.subscribe(self.wall_visualization)

@@ -80,10 +80,14 @@ class Line_Visualization(libavg.DivNode):
             if data_type_y == DATA_TOUCH_X:
                 data_range = global_values.x_touch_range
                 unit = "px"
+            if data_type_y == DATA_VIEWPOINT_X:
+                data_range = global_values.x_wall_range
+            if data_type_y == DATA_VIEWPOINT_Y:
+                data_range = global_values.y_wall_range
 
             self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.AXIS_THICKNESS, self.data_div.height), hide_rims=True, parent=self, sensitive=True, data_range=data_range, unit=unit)
 
-        x_axis_pos = (axis.AXIS_THICKNESS, self.data_div.height)
+        x_axis_pos = (axis.AXIS_THICKNESS, self.data_div.height-axis.AXIS_THICKNESS)
         if not show_bottom_axis:
             x_axis_pos = (x_axis_pos[0], x_axis_pos[1]+axis.AXIS_THICKNESS)
             self.size = (self.width, self.height-axis.AXIS_THICKNESS)
@@ -102,7 +106,10 @@ class Line_Visualization(libavg.DivNode):
                 data_range = global_values.y_touch_range
             if data_type_x == DATA_TOUCH_X:
                 data_range = global_values.x_touch_range
-
+            if data_type_x == DATA_VIEWPOINT_X:
+                data_range = global_values.x_wall_range
+            if data_type_x == DATA_VIEWPOINT_Y:
+                data_range = global_values.y_wall_range
             self.x_axis = axis.AxisNode(pos=x_axis_pos,
                                         size=(self.data_div.width, axis.AXIS_THICKNESS),
                                         hide_rims=True, sensitive=True,
@@ -125,19 +132,22 @@ class Line_Visualization(libavg.DivNode):
                 points = []
                 widths = []
                 opacities = []
-                samplecount = 100
+                samplecount = 200
                 if self.data_type_x == DATA_TIME:
                     samplecount = int(self.data_div.width * global_values.samples_per_pixel) + 1
                 if self.data_type_y == DATA_TIME:
                     samplecount = int(self.data_div.height * global_values.samples_per_pixel) + 1
                 for sample in range(samplecount):
-                    if len(user.head_positions) == 0:
+                    if len(user.head_positions_integral) == 0:
                         continue
                     posindex = int(
-                        len(user.head_positions) * sample * (self.end - self.start) / float(
-                            samplecount) + self.start * len(user.head_positions))
+                        len(user.head_positions_integral) * sample * (self.end - self.start) / float(
+                            samplecount) + self.start * len(user.head_positions_integral))
                     current_position = []
-                    head_position_averaged = user.get_head_position_averaged(posindex)
+                    if self.data_type_x in [DATA_POSITION_X, DATA_POSITION_Y, DATA_POSITION_Z] or self.data_type_y in [DATA_POSITION_X, DATA_POSITION_Y, DATA_POSITION_Z]:
+                        head_position_averaged = user.get_head_position_averaged(posindex)
+                    if self.data_type_x in [DATA_VIEWPOINT_X, DATA_VIEWPOINT_Y] or self.data_type_y in [DATA_VIEWPOINT_X, DATA_VIEWPOINT_Y]:
+                        view_point_averaged = user.get_view_point_averaged(posindex)
 
                     for i in range(4):
                         data = 0
@@ -155,21 +165,19 @@ class Line_Visualization(libavg.DivNode):
                             data = data_type
 
                         if data_type == DATA_POSITION_X:
-                            data = (head_position_averaged[0] - database.min_x) / float(database.max_x - database.min_x)
+                            data = (head_position_averaged[0] - global_values.x_range[0]) / float(global_values.x_range[1] - global_values.x_range[0])
                         if data_type == DATA_POSITION_Y:
-                            data = (head_position_averaged[1] - database.min_y) / float(database.max_y - database.min_y)
+                            data = (head_position_averaged[1] - global_values.y_range[0]) / float(global_values.y_range[1] - global_values.y_range[0])
                         if data_type == DATA_POSITION_Z:
-                            data = (head_position_averaged[2] - database.min_z) / float(database.max_z - database.min_z)
+                            data = (head_position_averaged[2] - global_values.z_range[0]) / float(global_values.x_range[1] - global_values.z_range[0])
 
                         if data_type == DATA_TIME:
                             data = float(sample) / float(max(1, samplecount - 1))
 
                         if data_type == DATA_VIEWPOINT_X:
-                            print "not done yet"
-                            # TODO
+                            data = (view_point_averaged[0]-global_values.x_wall_range[0]) / float(global_values.x_wall_range[1]-global_values.x_wall_range[0])
                         if data_type == DATA_VIEWPOINT_Y:
-                            print "not done yet"
-                            # TODO
+                            data = (view_point_averaged[1]-global_values.y_wall_range[0]) / float(global_values.y_wall_range[1]-global_values.y_wall_range[0])
 
                         if data_type == DATA_TOUCH_X:
                             print "not working yet"
@@ -229,4 +237,4 @@ class Line_Visualization(libavg.DivNode):
                 None
 
 def calculate_thickness(data, div):
-     return 1 + pow(data, 4) * (min(div.width, div.height) / 10)
+     return 1.4 + pow(data, 4) * (min(div.width, div.height) / 3)

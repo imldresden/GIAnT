@@ -2,7 +2,7 @@ import sqlite3
 import csv
 import time
 import global_values
-
+import Util
 
 # Positions in the database
 HEAD = 0
@@ -32,6 +32,7 @@ min_time = 0
 max_time = 0
 
 times = []
+
 
 # qry: the query to execute (string)
 # doFetch: whether data should be fetched and returned
@@ -260,15 +261,44 @@ def create_head_table_integral():
 
 def create_viewpoint_table():
     create_table("viewpointtable", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                   "user TINYINT NOT NULL,"
+                                   "x FLOAT,"
+                                   "y FLOAT,"
+                                   "time FLOAT NOT NULL")
+    for userid in range(1, 5):
+        user_head_data = executeQry("SELECT x, y, z, pitch, yaw, time FROM headtable WHERE user = " + str(userid) + " GROUP BY time ORDER BY time;", True)
+        user_view_point_data = []
+        for i in range(0, len(user_head_data)):
+
+            data = user_head_data[i]
+            pitch = data[3]
+            yaw = data[4]
+            x = data[0]
+            y = data[1]
+            z = data[2]
+            time = data[5]
+            view_vector = Util.get_look_direction(pitch, yaw)
+            multiplier = z/view_vector[2]
+            view_point = (x-view_vector[0]*multiplier, y-view_vector[1]*multiplier)
+            user_view_point_data.append([userid, view_point[0], view_point[1], time])
+
+        insert_many(user_view_point_data, "viewpointtable", ["user", "x", "y", "time"])
+
+def create_viewpoint_table_integral():
+    create_table("viewpointintegral", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
                                       "user TINYINT NOT NULL,"
                                       "x FLOAT,"
                                       "y FLOAT,"
                                       "time FLOAT NOT NULL")
     for userid in range(1, 5):
-        user_head_data = executeQry("SELECT x, y, z, pitch, yaw, roll, time FROM headtable WHERE user = " + str(userid) + " GROUP BY time ORDER BY time;", True)
-        for i in range(0, len(user_head_data)):
-            print "NOT DONE YET"
+        user_viewpoints = executeQry("SELECT user, x, y, time FROM headtable WHERE user = " + str(userid) + " GROUP BY time ORDER BY time;", True)
+        for i in range(0, len(user_viewpoints)):
+            for column in range(1, 3):
+                as_list = list(user_viewpoints[i])
+                as_list[column] += user_viewpoints[i - 1][column]
+                user_viewpoints[i] = tuple(as_list)
 
+        insert_many(user_viewpoints, "viewpointintegral", ["user", "x", "y", "time"])
 
 def create_touch_table(wall_screen_resolution):
     create_table("touchtable", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -308,9 +338,9 @@ def create_touch_table(wall_screen_resolution):
 
             data = list(row)
 
-            data[COL_X] = data[COL_X] * 490 / wall_screen_resolution[0]
+            data[COL_X] = data[COL_X] * global_values.wall_width / wall_screen_resolution[0]
 
-            data[COL_Y] = 40 + (wall_screen_resolution[1] - data[COL_Y]) * 206 / wall_screen_resolution[1]
+            data[COL_Y] = 40 + (wall_screen_resolution[1] - data[COL_Y]) * global_values.wall_height / wall_screen_resolution[1]
 
             data[COL_TIME] -= min_time  # shift time to start at 0
 
@@ -388,6 +418,7 @@ def init_values():
     except:
         print "Database not set up"
 
+
 def get_head_positions(userid):
     return executeQry("SELECT x, y, z, time FROM headtable WHERE user = " + str(userid) + " GROUP BY time ORDER BY time;", True)
 
@@ -405,11 +436,11 @@ def get_touch_positions(userid):
 
 
 def get_view_points(userid):
-    return executeQry("SELECT pitch, yaw, roll, time FROM headtable WHERE user = " + str(userid) + " GROUP BY time ORDER BY time;", True)
+    return executeQry("SELECT x, y, time FROM viewpointtable WHERE user = " + str(userid) + " GROUP BY time ORDER BY time;", True)
 
 
-def get_view_points_optimized(userid):
-    return executeQry("SELECT pitch, yaw, roll, time FROM headtableoptimized WHERE user = " + str(userid) + " ORDER BY time;", True)
+def get_view_points_integral(userid):
+    return executeQry("SELECT x, y, time FROM viewpointintegral WHERE user = " + str(userid) + " ORDER BY time;", True)
 
 
 def setup_database(wall_screen_resolution):
@@ -417,6 +448,8 @@ def setup_database(wall_screen_resolution):
     init_raw_values()
     create_head_table()
     create_head_table_integral()
+    create_viewpoint_table()
+    create_viewpoint_table_integral()
     create_touch_table(wall_screen_resolution)
 
 
