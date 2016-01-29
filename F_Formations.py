@@ -2,6 +2,7 @@ import Util
 import math
 import libavg
 import User
+import global_values
 
 
 class F_Formations(libavg.DivNode):
@@ -10,7 +11,7 @@ class F_Formations(libavg.DivNode):
         super(F_Formations, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
-        self.f_duration = 5000          # duration of f-formation in seconds
+        self.f_duration = 10000          # duration of f-formation in seconds
         self.f_formations = []          # contains all detected f_formation nodes
 
     def check_for_f_formation(self, pos1, pos2, look_vector1, look_vector2, threshold=200):
@@ -27,12 +28,12 @@ class F_Formations(libavg.DivNode):
         v2 = Util.normalize_vector(look_vector2)
         distance = Util.get_length((pos1[0] - pos2[0], pos1[1] - pos2[1]))
         if distance < threshold:
-            print "dist < thre"
+
             diff_vector = (pos2[0] - pos1[0], pos2[1] - pos1[1])
             angle1 = self.angle(v1, diff_vector)
             angle2 = self.angle(v2, (-diff_vector[0], -diff_vector[1]))
             if abs(angle1) > math.pi / 2 or abs(angle2) > math.pi / 2 or abs(angle1 - angle2) > 80:
-                print math.pi
+
                 return None
 
             angle_similarity = 1 / (0.2 + abs(angle1 - angle2))
@@ -61,10 +62,20 @@ class F_Formations(libavg.DivNode):
         # go trough time in time steps half the defined f-formation duration
         t = interval[0]
         while t <= interval[1]:
+            # for each user to user connection
+            for i, users in enumerate(user_list):
+                pos_values_1 = User.users[users[0]].get_head_position_averaged(int(t/global_values.time_step_size))
+                pos_values_2 = User.users[users[1]].get_head_position_averaged(int(t/global_values.time_step_size))
+                dir_values_1 = User.users[users[0]].get_view_point_averaged(int(t/global_values.time_step_size))
+                dir_values_2 = User.users[users[1]].get_view_point_averaged(int(t/global_values.time_step_size))
+                p1 = (pos_values_1[0], pos_values_1[1])
+                p2 = (pos_values_2[0], pos_values_2[1])
+                v1 = (dir_values_1[0], dir_values_1[1])
+                v2 = (dir_values_2[0], dir_values_2[1])
 
-            # WIP
-            # p1 = user_list
-            # self.check_for_f_formation(p1, p2, v1, v2)
+                # threshold?
+                if self.check_for_f_formation(p1, p2, v1, v2) > 1:
+                    print "TODO"
 
             # increase time step
             t += self.f_duration / 2
