@@ -12,6 +12,8 @@ import Time_Frame
 import time
 import global_values
 import axis
+import Legend
+import Variable_Width_Line
 
 
 class main_drawer(app.MainDiv):
@@ -50,6 +52,8 @@ class main_drawer(app.MainDiv):
 
         self.__play = False
         self.__last_frame_time = time.time()
+
+
         # to color background
         libavg.RectNode(parent=self, pos=(0, 0), size=self.resolution,
                         strokewidth=0, fillcolor=global_values.COLOR_BLACK, fillopacity=1)
@@ -70,17 +74,19 @@ class main_drawer(app.MainDiv):
                                                                         data_type_x=Line_Visualization.DATA_POSITION_X,
                                                                         data_type_y=Line_Visualization.DATA_POSITION_Z,
                                                                         data_type_thickness=1.4,
-                                                                        data_type_opacity=0.01,
-                                                                        show_bottom_axis=False)
+                                                                        data_type_opacity=0.01)#,
+                                                                        #show_bottom_axis=False)
         Time_Frame.main_time_frame.subscribe(self.room_visualization)
 
-        self.main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0] - self.menu_width, self.resolution[1] - 100),
+        self.main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0] - self.menu_width, self.resolution[1]),
                                                                         pos=(0, 0),
                                                                         data_type_x=Line_Visualization.DATA_TIME,
                                                                         data_type_y=Line_Visualization.DATA_POSITION_X,
                                                                         data_type_thickness=Line_Visualization.DATA_POSITION_Z,
                                                                         data_type_opacity=Line_Visualization.DATA_POSITION_Z)
         Time_Frame.main_time_frame.subscribe(self.main_visualization)
+
+        #self.legend = Legend.Legend(self, 0, 1, "cm", pos=(0, 700), size=(200, 50))
 
         # f-formations
         self.f_formations = F_Formations.F_Formations(parent=self, sensitive=False,
@@ -92,6 +98,7 @@ class main_drawer(app.MainDiv):
 
         # menu
         vis_nodes = [self.wall_visualization, self.room_visualization, self.main_visualization]
+
         self.menu = Options.Options(nodes=vis_nodes, parent=self,
                                     pos=(self.resolution[0] - self.menu_width + axis.AXIS_THICKNESS,
                                          self.room_visualization.pos[1] + self.room_visualization.height),
