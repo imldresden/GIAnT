@@ -56,7 +56,7 @@ class Variable_Width_Line:
 
             vertexes.append(linepos[0])
             vertexes.append(linepos[1])
-            texx = max(1.0/256.0,min(255.0 / 256.0, pow(self.opacities[i], 2) * 2))
+            texx = max(1.0/256.0,min(255.0 / 256.0, pow(self.opacities[i], 1) * 2))
             texcoords.append((texx, texx / 2.0))
             texcoords.append((texx, 1 - (texx / 2.0)))
             triangles.append((i * 2, i * 2 + 1, i * 2 + 2))
