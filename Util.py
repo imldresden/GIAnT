@@ -111,13 +111,8 @@ def get_user_color_as_hex(index, opacity):
             index = 0
             print "user color index out of range"
         hls = global_values.user_colors_hls[index]
-    hls = colorsys.hsv_to_rgb(hls[0], min(1, hls[1] * opacity * opacity * opacity * opacity * 4), hls[2])
+    hls = colorsys.hsv_to_rgb(hls[0], min(1, hls[1] * pow(opacity, 4) * 4), hls[2])
     color = (int(hls[0] * 255), int(hls[1] * 255), int(hls[2] * 255))
     color = '%02x%02x%02x' % color
     return color
 
-#
-# for i in range(100):
-#     pitch = random.random()*math.pi-math.pi/2
-#     yaw = random.random()*math.pi-math.pi/2
-#     print str(pitch)+"    " + str(yaw) + "    " + str(get_look_direction(pitch,yaw))

@@ -30,9 +30,9 @@ class Line_Visualization(libavg.DivNode):
         self.registerInstance(self, parent)
         self.crop = False
 
-        #here the size is first increased, so that it later can be decreased again (around line 82), effectively hiding the bottom axis but still showing its grid
+        # here the size is first increased, so that it later can be decreased again (around line 82), effectively hiding the bottom axis but still showing its grid
         if not show_bottom_axis:
-            pass  # self.size = (self.width, self.height+axis.AXIS_THICKNESS)
+            self.size = (self.width, self.height + axis.AXIS_THICKNESS)
 
         self.data_type_x = data_type_x
         self.canvasObjects = []
@@ -88,7 +88,9 @@ class Line_Visualization(libavg.DivNode):
             self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.AXIS_THICKNESS, self.data_div.height), hide_rims=True, parent=self, sensitive=True, data_range=data_range, unit=unit)
 
         x_axis_pos = (axis.AXIS_THICKNESS, self.data_div.height)
-
+        if not show_bottom_axis:
+            x_axis_pos = (x_axis_pos[0], x_axis_pos[1] + axis.AXIS_THICKNESS)
+            self.size = (self.width, self.height - axis.AXIS_THICKNESS)
         if self.data_type_x == DATA_TIME:
             self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, parent=self, size=(self.data_div.width, axis.AXIS_THICKNESS), data_range=Time_Frame.total_range,
                                             unit="ms")
@@ -105,14 +107,13 @@ class Line_Visualization(libavg.DivNode):
             if data_type_x == DATA_TOUCH_X:
                 data_range = global_values.x_touch_range
             if data_type_x == DATA_VIEWPOINT_X:
-                data_range = global_values.x_wall_range
+                data_range = global_values.x_range
             if data_type_x == DATA_VIEWPOINT_Y:
                 data_range = global_values.y_wall_range
             self.x_axis = axis.AxisNode(pos=x_axis_pos,
                                         size=(self.data_div.width, axis.AXIS_THICKNESS),
                                         hide_rims=True, sensitive=True,
                                         parent=self, data_range=data_range, unit="cm")
-
 
         self.createLine()
 
@@ -173,9 +174,9 @@ class Line_Visualization(libavg.DivNode):
                             data = float(sample) / float(max(1, samplecount - 1))
 
                         if data_type == DATA_VIEWPOINT_X:
-                            data = (view_point_averaged[0]-global_values.x_wall_range[0]) / float(global_values.x_wall_range[1]-global_values.x_wall_range[0])
+                            data = (view_point_averaged[0] - global_values.x_wall_range[0]) / float(global_values.x_wall_range[1] - global_values.x_wall_range[0])
                         if data_type == DATA_VIEWPOINT_Y:
-                            data = (view_point_averaged[1]-global_values.y_wall_range[0]) / float(global_values.y_wall_range[1]-global_values.y_wall_range[0])
+                            data = (view_point_averaged[1] - global_values.y_wall_range[0]) / float(global_values.y_wall_range[1] - global_values.y_wall_range[0])
 
                         if data_type == DATA_TOUCH_X:
                             print "not working yet"
@@ -196,7 +197,7 @@ class Line_Visualization(libavg.DivNode):
                             data = calculate_thickness(data, self)
 
                         if i == VIS_OPACITY:
-                            data = (1 - data)
+                            data = calculate_opacity(data)
                         # x or y value of the visualization depending on i being
                         current_position.append(data)
 
@@ -228,11 +229,10 @@ class Line_Visualization(libavg.DivNode):
                         Variable_Width_Line.Variable_Width_Line(points=points, widths=widths, opacities=opacities,
                                                                 userid=userid, parent=self.user_divs[userid]))
 
-    def draw(self):
-
-        for user in User.users:
-            for point in user.head_positions:
-                None
 
 def calculate_thickness(data, div):
-     return 1.4 + pow(data, 4) * (min(div.width, div.height) / 3)
+    return 1.4 + pow(data, 4) * (min(div.width, div.height)/2)
+
+
+def calculate_opacity(data):
+    return pow((1 - data), 2)
