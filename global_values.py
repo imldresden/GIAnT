@@ -1,6 +1,6 @@
 import database
 
-samples_per_pixel = 0.5
+samples_per_pixel = 0.3
 averaging_count = 500
 time_step_size = 50
 
