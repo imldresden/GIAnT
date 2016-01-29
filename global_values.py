@@ -1,14 +1,19 @@
 import database
 
-samples_per_pixel = 0.2
+samples_per_pixel = 0.5
 averaging_count = 500
 time_step_size = 50
+
+wall_width = 490
+wall_height = 206
 
 x_range = [database.min_x, database.max_x]
 y_range = [database.min_y, database.max_y]
 z_range = [database.min_z, database.max_z]
 x_touch_range = [0, 4*1920]
 y_touch_range = [0, 3*1080]
+x_wall_range = [0, wall_width]
+y_wall_range = [40, 40+wall_height]
 
 user_colors_hls = [[ 35 / float(360), 0.409, 1],    # Yellow
                    [  0 / float(360), 0.500, 1],    # Red
