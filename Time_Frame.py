@@ -22,7 +22,7 @@ class time_frame:
 
         progress = (time.time() - self.__animation_start_time) / self.__animation_duration
         if progress >= 1:
-            self.__interval_range = list(self.__interval_range_target)
+            self.reset_animation(self.__interval_range_target)
 
             self.__animation_start_time = -1
             self.publish()
@@ -68,10 +68,10 @@ class time_frame:
             self.__interval_range_target[1] = total_range[1]
 
     # shifts the interval (sets the target interval, which is later animated using update_interval_range())
-    def shift_time(self, forwards, amount = -1):
-        self.__interval_range_last = list(self.__interval_range)
+    def shift_time(self, forwards, amount=-1):
 
         self.update_interval_range()
+        self.__interval_range_last = list(self.__interval_range)
         if amount == -1:
             if forwards:
                 shift_amount = (self.__interval_range_target[1] - self.__interval_range_target[0]) * self.__zoom_strength
@@ -89,8 +89,7 @@ class time_frame:
 
             self.__interval_range_target[0] += shift_amount
             self.__interval_range_target[1] += shift_amount
-            self.__interval_range_last = list(self.__interval_range_target)
-            self.__interval_range = list(self.__interval_range_target)
+            self.reset_animation(self.__interval_range_target)
             self.publish()
             return
 
@@ -105,9 +104,7 @@ class time_frame:
         self.__interval_range_target[1] += shift_amount
 
     def set_time_frame(self, interval):
-        self.__interval_range_last = list(interval)
-        self.__interval_range_target = list(interval)
-        self.__interval_range = list(interval)
+        self.reset_animation(interval)
         self.publish()
 
     def subscribe(self, target):
@@ -117,6 +114,11 @@ class time_frame:
         for subscriber in self.__subscribers:
             subscriber.update_time_frame(self.__interval_range)
 
+    def reset_animation(self, interval):
+        self.__interval_range = list(interval)
+        self.__interval_range_last = list(interval)
+        self.__interval_range_target = list(interval)
+
     def __set_highlight_time(self, time):
         self.__highlight_time = time
 
@@ -124,5 +126,6 @@ class time_frame:
         return self.__highlight_time
 
     highlight_time = property(__get_highlight_time, __set_highlight_time)
+
 
 main_time_frame = time_frame()
