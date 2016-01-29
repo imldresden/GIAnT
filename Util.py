@@ -1,8 +1,6 @@
 import math
 import sys
-import global_values
 import colorsys
-import random
 
 timestampOffset = sys.maxint
 
@@ -105,6 +103,7 @@ def normalize_vector(vector):
 
 
 def get_user_color_as_hex(index, opacity):
+    import global_values
     if index == -1:
         hls = [0, 0, 1]
     else:
