@@ -5,6 +5,10 @@ import global_values
 import User
 import Time_Frame
 import Util
+import Line_Visualization
+import F_Formations
+
+SHOW_F_FORMATIONS = True
 
 
 class Options(libavg.DivNode):
@@ -13,26 +17,28 @@ class Options(libavg.DivNode):
         self.registerInstance(self, parent)
 
         self.nodes = nodes  # DivNodes containing user data
+        self.parent_div = parent
 
         # rect for coloured border and background
-        self.background_rect = libavg.RectNode(pos=(0, 0),
-                                               size=self.size,
-                                               parent=self, strokewidth=1, fillopacity=1,
+        self.background_rect = libavg.RectNode(pos=(0, 0), size=self.size, parent=self, strokewidth=1, fillopacity=1,
                                                color=global_values.COLOR_BACKGROUND,
                                                fillcolor=global_values.COLOR_BACKGROUND)
-
-        # customize checkbox skin
-        curr_path = os.path.dirname(os.path.abspath(__file__))
-        xml_file = "{}/skins/SimpleSkin.xml".format(curr_path)
-        skin = libavg.widget.Skin(xml_file)
 
         self.user_buttons = []
         self.user_texts = []
         for i in range(len(User.users)):
-            self.user_buttons.append(widget.CheckBox(pos=(20, (i + 1) * 20), size=(100, 100), parent=self, skinObj=skin))
+            user_color = Util.get_user_color_as_hex(i, 1)
+            size = (90, 30)
+            self.user_buttons.append(
+                widget.ToggleButton(uncheckedUpNode=avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=user_color),
+                                    uncheckedDownNode=avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=user_color),
+                                    checkedUpNode=avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=user_color, fillcolor=user_color),
+                                    checkedDownNode=avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=user_color, fillcolor=user_color),
+                                    pos=(i * 100 + 25, 25), size=size, parent=self, enabled=True))
             self.user_buttons[i].checked = True
-            self.user_texts.append(avg.WordsNode(pos=(40, (i + 1) * 20), color=Util.get_user_color_as_hex(i, 1),
-                                                 parent=self, text="User {}".format(i)))
+            self.user_texts.append(avg.WordsNode(pos=(i * 100 + 70, 32), color=global_values.COLOR_BACKGROUND,
+                                                 parent=self, sensitive=False, text="User {}".format(i + 1),
+                                                 alignment="center"))
 
         # TODO: the lambda has set the user_id always as the largest i (was always 3) when put in above for loop
         self.user_buttons[0].subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_user(checked, user_id=0))
@@ -40,33 +46,64 @@ class Options(libavg.DivNode):
         self.user_buttons[2].subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_user(checked, user_id=2))
         self.user_buttons[3].subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_user(checked, user_id=3))
 
+        # f-formations button
+        size = (120, 30)
+        self.f_button = widget.ToggleButton(uncheckedUpNode=avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=global_values.COLOR_FOREGROUND),
+                                            uncheckedDownNode=avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=global_values.COLOR_FOREGROUND),
+                                            checkedUpNode=avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_FOREGROUND),
+                                            checkedDownNode=avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_FOREGROUND),
+                                            pos=(25, 150), size=size, parent=self)
+        self.f_button.checked = SHOW_F_FORMATIONS
+        self.f_button.subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_f_formations(checked))
+        self.f_button_text = avg.WordsNode(pos=(85, 157), color=global_values.COLOR_BACKGROUND, parent=self,
+                                           text="F-Formations", sensitive=False, alignment="center")
+        if not SHOW_F_FORMATIONS: self.__toggle_f_formations(SHOW_F_FORMATIONS)
+
         # smoothness slider
-        self.smoothness_text = avg.WordsNode(pos=(20, 120), color=global_values.COLOR_FOREGROUND, parent=self,
-                                             text="Smoothness: {}s".format(global_values.averaging_count * global_values.time_step_size / 1000))
-        self.smoothness_slider = widget.Slider(pos=(20, 150), width=self.width - 40, parent=self, range=(2, 2000))
+        self.smoothness_text = avg.WordsNode(pos=(20, 80), color=global_values.COLOR_FOREGROUND, parent=self,
+                                             text="Smoothness: {}s".format(
+                                                 global_values.averaging_count * global_values.time_step_size / 1000))
+        self.smoothness_slider = widget.Slider(pos=(20, 100), width=self.width - 40, parent=self, range=(2, 2000))
         self.smoothness_slider.thumbPos = global_values.averaging_count
         self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, lambda pos: self.__change_smoothness(pos))
 
         # subscribe to global time_frame
         Time_Frame.main_time_frame.subscribe(self)
 
-    def __toggle_user(self, checked, user_id, event=None):
+    def __toggle_user(self, checked, user_id):
         if checked:
             User.users[user_id].selected = True
             for i, node in enumerate(self.nodes):
-                node.data_div.appendChild(node.user_divs[user_id])
+                if isinstance(node, Line_Visualization.Line_Visualization):
+                    node.data_div.appendChild(node.user_divs[user_id])
+                    self.user_texts[user_id].color = global_values.COLOR_BACKGROUND
         else:
             User.users[user_id].selected = False
             for i, node in enumerate(self.nodes):
-                node.user_divs[user_id].unlink()
+                if isinstance(node, Line_Visualization.Line_Visualization):
+                    node.user_divs[user_id].unlink()
+                    self.user_texts[user_id].color = global_values.COLOR_FOREGROUND
 
         # publish changes
         Time_Frame.main_time_frame.publish()
 
+    def __toggle_f_formations(self, checked):
+        if checked:
+            for i, node in enumerate(self.nodes):
+                if isinstance(node, F_Formations.F_Formations):
+                    self.parent_div.appendChild(node)
+                    self.f_button_text.color = global_values.COLOR_BACKGROUND
+        else:
+            for i, node in enumerate(self.nodes):
+                if isinstance(node, F_Formations.F_Formations):
+                    node.unlink()
+                    self.f_button_text.color = global_values.COLOR_FOREGROUND
+
     def __change_smoothness(self, value):
         global_values.averaging_count = int(value)
         global_values.samples_per_pixel = max(0.1, min(0.3, 50 / value))
-        self.smoothness_text.text = "Smoothness: {}s".format(global_values.averaging_count * global_values.time_step_size / 1000.0)
+        self.smoothness_text.text = "Smoothness: {}s".format(
+            global_values.averaging_count * global_values.time_step_size / 1000.0)
 
         # publish changes
         Time_Frame.main_time_frame.publish()
