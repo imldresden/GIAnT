@@ -15,6 +15,10 @@ class time_frame:
 
     __subscribers = []
 
+    def __init__(self):
+        self.__play = False
+        self.__last_frame_time = time.time()
+
     # updates the current interval to the interpolated value for the animation
     def update_interval_range(self):
         if self.__animation_start_time == -1:
@@ -114,6 +118,11 @@ class time_frame:
         for subscriber in self.__subscribers:
             subscriber.update_time_frame(self.__interval_range)
 
+    def play_animation(self):
+        self.__play = not self.__play
+        self.__last_frame_time = time.time()
+        self.publish()
+
     def reset_animation(self, interval):
         self.__interval_range = list(interval)
         self.__interval_range_last = list(interval)
@@ -125,7 +134,18 @@ class time_frame:
     def __get_highlight_time(self):
         return self.__highlight_time
 
+    def __get_play(self):
+        return self.__play
+
+    def __set_last_frame_time(self, t):
+        self.__last_frame_time = t
+
+    def __get_last_frame_time(self):
+        return self.__last_frame_time
+
     highlight_time = property(__get_highlight_time, __set_highlight_time)
+    play = property(__get_play)
+    last_frame_time = property(__get_last_frame_time, __set_last_frame_time)
 
 
 main_time_frame = time_frame()

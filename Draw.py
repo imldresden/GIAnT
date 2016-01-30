@@ -1,19 +1,17 @@
 import math
 
-from libavg import app, avg
-
+from libavg import app, avg, widget
 import libavg
 import Util
 import User
 import Line_Visualization
 import F_Formations
 import Options
-import Time_Frame
+from Time_Frame import main_time_frame
 import time
 import global_values
 import axis
 import Legend
-import Variable_Width_Line
 
 
 class main_drawer(app.MainDiv):
@@ -36,23 +34,14 @@ class main_drawer(app.MainDiv):
     '''
 
     def onInit(self):
-
         # main_drawer Div has margin to all sides of application window
         margin = global_values.APP_MARGIN
-        # ratio for distributing visualizations across application
-        ratio = 0.7
-        # padding
-        pad = global_values.APP_PADDING
 
         self.pos = (margin, margin)
         self.resolution = (libavg.app.instance._resolution[0] - 2 * margin, libavg.app.instance._resolution[1] - 2 * margin)
 
         self.menu_width = 500
         self.menu_height = 200
-
-        self.__play = False
-        self.__last_frame_time = time.time()
-
 
         # to color background
         libavg.RectNode(parent=self, pos=(0, 0), size=self.resolution,
@@ -61,13 +50,13 @@ class main_drawer(app.MainDiv):
         for userid in range(1, 5):
             user = User.User(userid)
 
-        self.main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0] - self.menu_width, self.resolution[1] - 50),
+        self.main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0] - self.menu_width - global_values.APP_PADDING, self.resolution[1] - 50),
                                                                         pos=(0, 0),
                                                                         data_type_x=Line_Visualization.DATA_TIME,
                                                                         data_type_y=Line_Visualization.DATA_POSITION_X,
                                                                         data_type_thickness=Line_Visualization.DATA_POSITION_Z,
                                                                         data_type_opacity=Line_Visualization.DATA_POSITION_Z)
-        Time_Frame.main_time_frame.subscribe(self.main_visualization)
+        main_time_frame.subscribe(self.main_visualization)
 
         self.wall_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.menu_width, (self.resolution[1] - self.menu_height) / 2),
                                                                         pos=(self.resolution[0] - self.menu_width, 0),
@@ -75,7 +64,7 @@ class main_drawer(app.MainDiv):
                                                                         data_type_y=Line_Visualization.DATA_VIEWPOINT_Y,
                                                                         data_type_thickness=1.4,
                                                                         data_type_opacity=0.01)
-        Time_Frame.main_time_frame.subscribe(self.wall_visualization)
+        main_time_frame.subscribe(self.wall_visualization)
 
         self.room_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.menu_width, (self.resolution[1] - self.menu_height) / 2),
                                                                         pos=(self.resolution[0] - self.menu_width, (self.wall_visualization.pos[1] + self.wall_visualization.height)),
@@ -83,9 +72,23 @@ class main_drawer(app.MainDiv):
                                                                         data_type_y=Line_Visualization.DATA_POSITION_Z,
                                                                         data_type_thickness=1.4,
                                                                         data_type_opacity=0.01)  # ,show_bottom_axis=False)
-        Time_Frame.main_time_frame.subscribe(self.room_visualization)
+        main_time_frame.subscribe(self.room_visualization)
 
-        self.legend = Legend.Legend(self, 0, 1, "cm", pos=(self.resolution[0]-self.menu_width-190, 720), size=(200, 50))
+        # lower panel with legend and play/pause button
+        self.panel = avg.DivNode(pos=(axis.AXIS_THICKNESS, self.main_visualization.height),
+                                 size=(self.main_visualization.width - axis.AXIS_THICKNESS, 50), parent=self)
+        libavg.RectNode(pos=(0, 0), size=self.panel.size, fillopacity=1, fillcolor=global_values.COLOR_BACKGROUND,
+                        strokewidth=1, color=global_values.COLOR_BACKGROUND, parent=self.panel)
+        # play button
+        self.play_button = widget.ToggleButton(uncheckedUpNode=avg.ImageNode(href="images/play.png", size=(32, 32)),
+                                               uncheckedDownNode=avg.ImageNode(href="images/play.png", size=(32, 32)),
+                                               checkedUpNode=avg.ImageNode(href="images/pause.png", size=(32, 32)),
+                                               checkedDownNode=avg.ImageNode(href="images/pause.png", size=(32, 32)),
+                                               pos=(16, self.panel.height/2 - 16), size=(32, 32), parent=self.panel)
+        self.play_button.subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__play_pause(checked))
+
+        self.legend = Legend.Legend(parent=self.panel, min_value=0, max_value=1, unit="cm", size=(200, self.panel.height))
+        self.legend.pos = (self.panel.width - self.legend.width - global_values.APP_PADDING - 70, 5)
 
         # f-formations
         self.f_formations = F_Formations.F_Formations(parent=self, sensitive=False,
@@ -93,12 +96,12 @@ class main_drawer(app.MainDiv):
                                                            self.main_visualization.pos[1]),
                                                       size=(self.main_visualization.width - axis.AXIS_THICKNESS,
                                                             self.main_visualization.height - axis.AXIS_THICKNESS))
-        # Time_Frame.main_time_frame.subscribe(self.f_formations)
+        main_time_frame.subscribe(self.f_formations)
 
         # menu
-        vis_nodes = [self.wall_visualization, self.room_visualization, self.main_visualization]
+        nodes = [self.wall_visualization, self.room_visualization, self.main_visualization, self.f_formations]
 
-        self.menu = Options.Options(nodes=vis_nodes, parent=self,
+        self.menu = Options.Options(nodes=nodes, parent=self,
                                     pos=(self.resolution[0] - self.menu_width + axis.AXIS_THICKNESS,
                                          self.room_visualization.pos[1] + self.room_visualization.height),
                                     size=(self.menu_width - axis.AXIS_THICKNESS,
@@ -109,14 +112,14 @@ class main_drawer(app.MainDiv):
         app.keyboardmanager.bindKeyDown(keyname='Left', handler=self.shift_back)
         app.keyboardmanager.bindKeyDown(keyname='Up', handler=self.zoom_in)
         app.keyboardmanager.bindKeyDown(keyname='Down', handler=self.zoom_out)
-        app.keyboardmanager.bindKeyDown(keyname='P', handler=self.play)
+        app.keyboardmanager.bindKeyDown(keyname='P', handler=main_time_frame.play_animation)
 
     def onFrame(self):
-        if self.__play:
+        if main_time_frame.play:
             current_time = time.time()
-            Time_Frame.main_time_frame.shift_time(True, (current_time - self.__last_frame_time) * 1000)
-            self.__last_frame_time = current_time
-        Time_Frame.main_time_frame.update_interval_range()
+            main_time_frame.shift_time(True, (current_time - main_time_frame.last_frame_time) * 1000)
+            main_time_frame.last_frame_time = current_time
+        main_time_frame.update_interval_range()
 
     def draw_line(self, p1, p2, color, thickness, last_thickness, opacity):
         return libavg.LineNode(pos1=p1, pos2=p2, color=color, strokewidth=thickness, parent=self)
@@ -129,28 +132,25 @@ class main_drawer(app.MainDiv):
         return [start_points[0], end_points[0], end_points[1], start_points[1]]
 
     def zoom_in(self):
-        Time_Frame.main_time_frame.zoom_in_at(0.5)
+        main_time_frame.zoom_in_at(0.5)
 
     def zoom_out(self):
-        Time_Frame.main_time_frame.zoom_out_at(0.5)
+        main_time_frame.zoom_out_at(0.5)
 
     def shift_back(self):
-        Time_Frame.main_time_frame.shift_time(False)
+        main_time_frame.shift_time(False)
 
     def shift_forward(self):
-        Time_Frame.main_time_frame.shift_time(True)
-
-    def play(self):
-        self.__play = not self.__play
-        self.__last_frame_time = time.time()
-        Time_Frame.main_time_frame.publish()
+        main_time_frame.shift_time(True)
 
     def onMouseWheel(self, event):
         if event.motion.y > 0:
-            Time_Frame.main_time_frame.zoom_in_at((event.pos[0] - axis.AXIS_THICKNESS) / (self.main_visualization.width - axis.AXIS_THICKNESS))
+            main_time_frame.zoom_in_at((event.pos[0] - axis.AXIS_THICKNESS) / (self.main_visualization.width - axis.AXIS_THICKNESS))
         else:
-            Time_Frame.main_time_frame.zoom_out_at((event.pos[0] - axis.AXIS_THICKNESS) / (self.main_visualization.width - axis.AXIS_THICKNESS))
+            main_time_frame.zoom_out_at((event.pos[0] - axis.AXIS_THICKNESS) / (self.main_visualization.width - axis.AXIS_THICKNESS))
 
+    def __play_pause(self, checked):
+        main_time_frame.play_animation()
 
 def calculate_line_intersection(p1, p2_selected, p3, thickness1, thickness2_selected, thickness3):
     thickness1 *= 0.5
