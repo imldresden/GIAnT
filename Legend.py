@@ -1,4 +1,3 @@
-__author__ = 'KillytheBid'
 import libavg
 import Line_Visualization
 import Variable_Width_Line
@@ -20,9 +19,9 @@ class Legend(libavg.DivNode):
         for i in range(0, 101):
             value = i / 100.0
             points.append((10 + (self.width - 20) * value, v_center))
-            widths.append(Line_Visualization.calculate_thickness(value, parent.main_visualization.data_div))
+            widths.append(Line_Visualization.calculate_thickness(value, parent.getParent().main_visualization.data_div))
             opacities.append(Line_Visualization.calculate_opacity(value))
         Variable_Width_Line.Variable_Width_Line(points, widths, opacities, -1, self)
         libavg.WordsNode(pos=(10, 0), text="Distance from wall", parent=self, color="FFFFFF")
-        libavg.WordsNode(pos=(10, self.height - 10), text=str(round(global_values.z_range[0], 1)) + unit, parent=self, color="FFFFFF", alignment="center")
-        libavg.WordsNode(pos=(self.width - 10, self.height - 10), text=str(round(global_values.z_range[1], 1)) + unit, parent=self, color="FFFFFF", alignment="center")
+        libavg.WordsNode(pos=(0, self.height/2), text=str(round(global_values.z_range[0], 1)) + unit, parent=self, color="FFFFFF", alignment="right")
+        libavg.WordsNode(pos=(self.width, self.height/2), text=str(round(global_values.z_range[1], 1)) + unit, parent=self, color="FFFFFF", alignment="left")
