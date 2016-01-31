@@ -160,7 +160,7 @@ class AxisNode(avg.DivNode):
             a = (end - start) / self.width
         return value / a - start / a
 
-    def _format_label_value(self, v):
+    def _format_label_value(self, v, short=False):
         """
         format label values depending on units of measurement
         """
@@ -200,18 +200,27 @@ class AxisNode(avg.DivNode):
                 str_m = "{} min ".format(m)
 
             if ms > 0:
-                str_ms = "{} ms".format(self.__format_ms(ms))
+                if short and m <= 0 and s <= 0:
+                    str_ms = "{} ms".format(self.__format_ms(ms))
+                if not short:
+                    str_ms = "{} ms".format(self.__format_ms(ms))
 
             if s > 0:
                 if ms > 0:
-                    str_s = "{},".format(s)
-                    str_ms = "{} s".format(self.__format_ms(ms))
+                    if short:
+                        str_s = "{} s".format(s)
+                    else:
+                        str_s = "{},".format(s)
+                        str_ms = "{} s".format(self.__format_ms(ms))
                 else:
                     str_s = "{} s ".format(s)
             else:
                 if m > 0 and ms > 0:
-                    str_s = "{},".format(s)
-                    str_ms = "{} s".format(self.__format_ms(ms))
+                    if short:
+                        str_s = "{} s".format(s)
+                    else:
+                        str_s = "{},".format(s)
+                        str_ms = "{} s".format(self.__format_ms(ms))
 
             str_v = "{}{}{}".format(str_m, str_s, str_ms)
 
@@ -322,7 +331,7 @@ class TimeAxisNode(AxisNode):
         self.__i_label_offset = 5                                                # offset for interval duration label
         self.__pinned = False                                                    # if highlight line is pinned
         self.__highlight_pixel = 0                                               # pixel position on axis of highlight
-        self.label_offset = 1.5 * self.tick_length                               # bigger label offset for time axis
+        self.label_offset = 0                                                    # smaller label offset for time axis
         self.vertical = False                                                    # TimeAxisNode can only be horizontal
         self.vis_height = self.parent.data_div.height                            # workaround (see comment in AxisNode)
 
@@ -331,12 +340,12 @@ class TimeAxisNode(AxisNode):
         """
         # interval lines and rectangle
         self.__i_line = libavg.LineNode(strokewidth=1, color=global_values.COLOR_SECONDARY, parent=self,
-                                        pos1=(0, 1.5 * self.tick_length),
-                                        pos2=(self.width, 1.5 * self.tick_length))
+                                        pos1=(0, 2.5 * self.tick_length),
+                                        pos2=(self.width, 2.5 * self.tick_length))
         self.__i_rect = libavg.RectNode(strokewidth=0, fillopacity=1, parent=self,
                                         color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_FOREGROUND,
-                                        pos=(self.__i_start, 1.5 * self.tick_length),
-                                        size=(self.__i_end - self.__i_start, -5))
+                                        pos=(self.__i_start, 2.5 * self.tick_length),
+                                        size=(self.__i_end - self.__i_start, 5))
         # vertical brushing & linking line
         self.__highlight_line = libavg.LineNode(strokewidth=1, color=global_values.COLOR_SECONDARY, parent=self,
                                                 pos1=(0, 0), pos2=(0, -self.parent.data_div.height), opacity=0)
@@ -344,7 +353,7 @@ class TimeAxisNode(AxisNode):
                                                   pos1=(0, self.__i_line.pos1[1]), pos2=(0, self.__i_line.pos1[1] - 5),
                                                   opacity=0)
         # interactive interval scrollbar
-        self.__i_scrollbar = custom_slider.IntervalScrollBar(pos=(0, 0), width=self.width, opacity=0,
+        self.__i_scrollbar = custom_slider.IntervalScrollBar(pos=(0, self.__i_rect.pos[1]), width=self.width, opacity=0,
                                                              range=self.data_range, parent=self)
         # label for total interval time range
         self.__i_label = libavg.WordsNode(color=global_values.COLOR_BACKGROUND, text="", opacity=0, sensitive=False,
@@ -419,16 +428,16 @@ class TimeAxisNode(AxisNode):
         super(TimeAxisNode, self).update(i_start, i_end)
 
         # update interval details on demand (hover over)
-        self.__i_label.text = "{}".format(self._format_label_value(self.end - self.start))
+        self.__i_label.text = "{}".format(self._format_label_value(self.end - self.start, True))
         if self.__i_rect.size[0] > self.__i_label.width + self.__i_label_offset:
             self.__i_label.color = global_values.COLOR_BACKGROUND
-            self.__i_label.pos = (self.__i_rect.pos[0] + self.__i_rect.size[0] / 2 - self.__i_label.width / 2, -1)
+            self.__i_label.pos = (self.__i_rect.pos[0] + self.__i_rect.size[0] / 2 - self.__i_label.width / 2, self.__i_rect.pos[1])
         else:
             self.__i_label.color = global_values.COLOR_FOREGROUND
             if self.__i_rect.pos[0] > self.__i_label.width + self.__i_label_offset:
-                self.__i_label.pos = (self.__i_rect.pos[0] - self.__i_label.width - self.__i_label_offset, -1)
+                self.__i_label.pos = (self.__i_rect.pos[0] - self.__i_label.width - self.__i_label_offset, self.__i_rect.pos[1])
             else:
-                self.__i_label.pos = (self.__i_rect.pos[0] + self.__i_rect.size[0] + self.__i_label_offset, -1)
+                self.__i_label.pos = (self.__i_rect.pos[0] + self.__i_rect.size[0] + self.__i_label_offset, self.__i_rect.pos[1])
 
         # update scrollbar
         self.__i_scrollbar.setThumbPos(self.start)
@@ -453,7 +462,7 @@ class TimeAxisNode(AxisNode):
         Called when mouse hovers over TimeAxisNodeDiv. Shows Details on demand of interval.
         """
         # make interval rect bigger
-        self.__i_rect.size = (self.__i_rect.size[0], -13)
+        self.__i_rect.size = (self.__i_rect.size[0], 13)
         # show label with current total interval time
         self.__i_label.opacity = 1
         # show interval scrollbar
@@ -464,7 +473,7 @@ class TimeAxisNode(AxisNode):
         Hide Details on Demand of interval when mouse hovers out of TimeAxisNodeDiv area.
         """
         # make interval rect normal size again
-        self.__i_rect.size = (self.__i_rect.size[0], -5)
+        self.__i_rect.size = (self.__i_rect.size[0], 5)
         # hide label with current total interval time
         self.__i_label.opacity = 0
         # hide interval scrollbar
