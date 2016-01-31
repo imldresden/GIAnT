@@ -74,22 +74,6 @@ class main_drawer(app.MainDiv):
                                                                         data_type_opacity=0.01)  # ,show_bottom_axis=False)
         main_time_frame.subscribe(self.room_visualization)
 
-        # lower panel with legend and play/pause button
-        self.panel = avg.DivNode(pos=(axis.AXIS_THICKNESS, self.main_visualization.height),
-                                 size=(self.main_visualization.width - axis.AXIS_THICKNESS, 50), parent=self)
-        libavg.RectNode(pos=(0, 0), size=self.panel.size, fillopacity=1, fillcolor=global_values.COLOR_BACKGROUND,
-                        strokewidth=1, color=global_values.COLOR_BACKGROUND, parent=self.panel)
-        # play button
-        self.play_button = widget.ToggleButton(uncheckedUpNode=avg.ImageNode(href="images/play.png", size=(32, 32)),
-                                               uncheckedDownNode=avg.ImageNode(href="images/play.png", size=(32, 32)),
-                                               checkedUpNode=avg.ImageNode(href="images/pause.png", size=(32, 32)),
-                                               checkedDownNode=avg.ImageNode(href="images/pause.png", size=(32, 32)),
-                                               pos=(16, self.panel.height/2 - 16), size=(32, 32), parent=self.panel)
-        self.play_button.subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__play_pause(checked))
-
-        self.legend = Legend.Legend(parent=self.panel, min_value=0, max_value=1, unit="cm", size=(200, self.panel.height))
-        self.legend.pos = (self.panel.width - self.legend.width - global_values.APP_PADDING - 70, 5)
-
         # f-formations
         self.f_formations = F_Formations.F_Formations(parent=self, sensitive=False,
                                                       pos=(self.main_visualization.pos[0] + axis.AXIS_THICKNESS,
@@ -102,10 +86,19 @@ class main_drawer(app.MainDiv):
         nodes = [self.wall_visualization, self.room_visualization, self.main_visualization, self.f_formations]
 
         self.menu = Options.Options(nodes=nodes, parent=self,
-                                    pos=(self.resolution[0] - self.menu_width + axis.AXIS_THICKNESS,
-                                         self.room_visualization.pos[1] + self.room_visualization.height),
-                                    size=(self.menu_width - axis.AXIS_THICKNESS,
-                                          self.resolution[1] - self.wall_visualization.height - self.room_visualization.height), )
+                                    pos=(axis.AXIS_THICKNESS, self.main_visualization.height),
+                                    size=(self.main_visualization.width - axis.AXIS_THICKNESS, 50))
+
+        self.legend = Legend.Legend(parent=self.menu, min_value=0, max_value=1, unit="cm", size=(200, self.menu.height))
+        self.legend.pos = (self.menu.width - self.legend.width - global_values.APP_PADDING - 70, 5)
+
+        # play button
+        self.play_button = widget.ToggleButton(uncheckedUpNode=avg.ImageNode(href="images/play.png", size=(32, 32)),
+                                               uncheckedDownNode=avg.ImageNode(href="images/play.png", size=(32, 32)),
+                                               checkedUpNode=avg.ImageNode(href="images/pause.png", size=(32, 32)),
+                                               checkedDownNode=avg.ImageNode(href="images/pause.png", size=(32, 32)),
+                                               pos=(0, self.menu.height/2 - 16), size=(32, 32), parent=self.menu)
+        self.play_button.subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__play_pause(checked))
 
         self.subscribe(avg.Node.MOUSE_WHEEL, self.onMouseWheel)
         app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward)

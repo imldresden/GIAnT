@@ -28,17 +28,18 @@ class Options(libavg.DivNode):
         self.user_texts = []
         for i in range(len(User.users)):
             user_color = Util.get_user_color_as_hex(i, 1)
-            size = (90, 30)
+            size = (70, 30)
             self.user_buttons.append(
                 widget.ToggleButton(uncheckedUpNode=avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=user_color),
                                     uncheckedDownNode=avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=user_color),
                                     checkedUpNode=avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=user_color, fillcolor=user_color),
                                     checkedDownNode=avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=user_color, fillcolor=user_color),
-                                    pos=(i * 100 + 25, 25), size=size, parent=self, enabled=True))
+                                    pos=(i * 80 + 50, self.height/2 - size[1]/2), size=size, parent=self, enabled=True))
             self.user_buttons[i].checked = True
-            self.user_texts.append(avg.WordsNode(pos=(i * 100 + 70, 32), color=global_values.COLOR_BACKGROUND,
+            self.user_texts.append(avg.WordsNode(color=global_values.COLOR_BACKGROUND,
                                                  parent=self, sensitive=False, text="User {}".format(i + 1),
                                                  alignment="center"))
+            self.user_texts[i].pos = (self.user_buttons[i].pos[0] + self.user_buttons[i].width/2, self.user_buttons[i].pos[1] + 6)
 
         # TODO: the lambda has set the user_id always as the largest i (was always 3) when put in above for loop
         self.user_buttons[0].subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_user(checked, user_id=0))
@@ -47,23 +48,24 @@ class Options(libavg.DivNode):
         self.user_buttons[3].subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_user(checked, user_id=3))
 
         # f-formations button
-        size = (120, 30)
+        size = (50, 30)
         self.f_button = widget.ToggleButton(uncheckedUpNode=avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=global_values.COLOR_FOREGROUND),
                                             uncheckedDownNode=avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=global_values.COLOR_FOREGROUND),
                                             checkedUpNode=avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_FOREGROUND),
                                             checkedDownNode=avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_FOREGROUND),
-                                            pos=(25, 150), size=size, parent=self)
+                                            pos=(520, self.height/2 - size[1]/2), size=size, parent=self)
         self.f_button.checked = SHOW_F_FORMATIONS
         self.f_button.subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_f_formations(checked))
-        self.f_button_text = avg.WordsNode(pos=(85, 157), color=global_values.COLOR_BACKGROUND, parent=self,
-                                           text="F-Formations", sensitive=False, alignment="center")
+        self.f_button_text = avg.WordsNode(pos=(520 + 25, self.user_buttons[i].pos[1] + 6),
+                                           color=global_values.COLOR_BACKGROUND, parent=self,
+                                           text="F-F", sensitive=False, alignment="center")
         if not SHOW_F_FORMATIONS: self.__toggle_f_formations(SHOW_F_FORMATIONS)
 
         # smoothness slider
-        self.smoothness_text = avg.WordsNode(pos=(20, 80), color=global_values.COLOR_FOREGROUND, parent=self,
+        self.smoothness_text = avg.WordsNode(pos=(370, self.height/2 - 15), color=global_values.COLOR_FOREGROUND, parent=self,
                                              text="Smoothness: {}s".format(
                                                  global_values.averaging_count * global_values.time_step_size / 1000))
-        self.smoothness_slider = widget.Slider(pos=(20, 100), width=self.width - 40, parent=self, range=(2, 2000))
+        self.smoothness_slider = widget.Slider(pos=(370, self.height/2 + 5), width=130, parent=self, range=(2, 2000))
         self.smoothness_slider.thumbPos = global_values.averaging_count
         self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, lambda pos: self.__change_smoothness(pos))
 
