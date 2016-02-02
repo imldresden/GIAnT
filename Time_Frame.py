@@ -4,7 +4,7 @@ import database
 total_range = [database.min_time, database.max_time]
 
 
-class time_frame:
+class time_frame(object):
     __interval_range = [total_range[0], total_range[1]]
     __interval_range_last = [total_range[0], total_range[1]]
     __interval_range_target = [total_range[0], total_range[1]]
@@ -58,6 +58,8 @@ class time_frame:
 
     # zooms out around the mouse (sets the target interval, which is later animated using update_interval_range())
     def zoom_out_at(self, fraction_in_timeframe):
+        if self.__interval_range_target == total_range:
+            return
         self.__interval_range_last = list(self.__interval_range)
         self.__animation_start_time = time.time()
         self.update_interval_range()
