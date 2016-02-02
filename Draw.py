@@ -12,6 +12,7 @@ import time
 import global_values
 import axis
 import Legend
+import Video
 
 
 class main_drawer(app.MainDiv):
@@ -44,12 +45,14 @@ class main_drawer(app.MainDiv):
         self.menu_height = 200
 
         # to color background
-        libavg.RectNode(parent=self, pos=(0, 0), size=self.resolution,
-                        strokewidth=0, fillcolor=global_values.COLOR_BLACK, fillopacity=1)
+        libavg.RectNode(parent=self, pos=(-1000, -1000), size=(10000, 10000),
+                        strokewidth=0, fillcolor=global_values.COLOR_BACKGROUND, fillopacity=1)
 
         for userid in range(1, 5):
             user = User.User(userid)
 
+
+        # main visualization
         self.main_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.resolution[0] - self.menu_width - global_values.APP_PADDING, self.resolution[1] - 50),
                                                                         pos=(0, 0),
                                                                         data_type_x=Line_Visualization.DATA_TIME,
@@ -58,6 +61,7 @@ class main_drawer(app.MainDiv):
                                                                         data_type_opacity=Line_Visualization.DATA_POSITION_Z)
         main_time_frame.subscribe(self.main_visualization)
 
+        # wall visualization
         self.wall_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.menu_width, (self.resolution[1] - self.menu_height) / 2),
                                                                         pos=(self.resolution[0] - self.menu_width, 0),
                                                                         data_type_x=Line_Visualization.DATA_VIEWPOINT_X,
@@ -66,6 +70,7 @@ class main_drawer(app.MainDiv):
                                                                         data_type_opacity=0.01)
         main_time_frame.subscribe(self.wall_visualization)
 
+        # room visualization
         self.room_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.menu_width, (self.resolution[1] - self.menu_height) / 2),
                                                                         pos=(self.resolution[0] - self.menu_width, (self.wall_visualization.pos[1] + self.wall_visualization.height)),
                                                                         data_type_x=Line_Visualization.DATA_POSITION_X,
@@ -74,16 +79,24 @@ class main_drawer(app.MainDiv):
                                                                         data_type_opacity=0.01)  # ,show_bottom_axis=False)
         main_time_frame.subscribe(self.room_visualization)
 
+
+        # video
+        self.video = Video.Video(pos=(self.resolution[0] - self.menu_width,
+                                self.room_visualization.pos[1] + self.room_visualization.height),
+                           size=(self.menu_width, self.menu_height),
+                           parent=self)
+        main_time_frame.subscribe(self.video)
+
         # f-formations
-        self.f_formations = F_Formations.F_Formations(parent=self, sensitive=False,
-                                                      pos=(self.main_visualization.pos[0] + axis.AXIS_THICKNESS,
-                                                           self.main_visualization.pos[1]),
-                                                      size=(self.main_visualization.width - axis.AXIS_THICKNESS,
-                                                            self.main_visualization.height - axis.AXIS_THICKNESS))
-        main_time_frame.subscribe(self.f_formations)
+        # self.f_formations = F_Formations.F_Formations(parent=self, sensitive=False,
+        #                                               pos=(self.main_visualization.pos[0] + axis.AXIS_THICKNESS,
+        #                                                    self.main_visualization.pos[1]),
+        #                                               size=(self.main_visualization.width - axis.AXIS_THICKNESS,
+        #                                                     self.main_visualization.height - axis.AXIS_THICKNESS))
+        # main_time_frame.subscribe(self.f_formations)
 
         # menu
-        nodes = [self.wall_visualization, self.room_visualization, self.main_visualization, self.f_formations]
+        nodes = [self.wall_visualization, self.room_visualization, self.main_visualization]#, self.f_formations]
 
         self.menu = Options.Options(nodes=nodes, parent=self,
                                     pos=(axis.AXIS_THICKNESS, self.main_visualization.height),
@@ -97,15 +110,15 @@ class main_drawer(app.MainDiv):
                                                uncheckedDownNode=avg.ImageNode(href="images/play.png", size=(32, 32)),
                                                checkedUpNode=avg.ImageNode(href="images/pause.png", size=(32, 32)),
                                                checkedDownNode=avg.ImageNode(href="images/pause.png", size=(32, 32)),
-                                               pos=(0, self.menu.height/2 - 16), size=(32, 32), parent=self.menu)
+                                               pos=(0, self.menu.height / 2 - 16), size=(32, 32), parent=self.menu)
         self.play_button.subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__play_pause(checked))
 
-        self.subscribe(avg.Node.MOUSE_WHEEL, self.onMouseWheel)
+        self.main_visualization.subscribe(avg.Node.MOUSE_WHEEL, self.onMouseWheel)
         app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward)
         app.keyboardmanager.bindKeyDown(keyname='Left', handler=self.shift_back)
         app.keyboardmanager.bindKeyDown(keyname='Up', handler=self.zoom_in)
         app.keyboardmanager.bindKeyDown(keyname='Down', handler=self.zoom_out)
-        app.keyboardmanager.bindKeyDown(keyname='P', handler=main_time_frame.play_animation)
+        app.keyboardmanager.bindKeyDown(keyname='Space', handler=self.__play_pause)
 
     def onFrame(self):
         if main_time_frame.play:
@@ -142,8 +155,10 @@ class main_drawer(app.MainDiv):
         else:
             main_time_frame.zoom_out_at((event.pos[0] - axis.AXIS_THICKNESS) / (self.main_visualization.width - axis.AXIS_THICKNESS))
 
-    def __play_pause(self, checked):
+    def __play_pause(self):
         main_time_frame.play_animation()
+        self.video.play_pause(main_time_frame.play)
+
 
 def calculate_line_intersection(p1, p2_selected, p3, thickness1, thickness2_selected, thickness3):
     thickness1 *= 0.5

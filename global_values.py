@@ -1,6 +1,6 @@
 import database
 
-samples_per_pixel = 0.3
+samples_per_pixel = 0.1
 averaging_count = 500
 time_step_size = 50
 
@@ -20,9 +20,9 @@ user_colors_hls = [[ 35 / float(360), 0.409, 1],    # Yellow
                    [286 / float(360), 0.567, 1],    # Purple
                    [152 / float(360), 0.568, 1]]    # Green
 
-COLOR_FOREGROUND = "FFFFFF"                         # foreground color used for axis and text
-COLOR_SECONDARY = "333333"                          # second more faint foreground color
-COLOR_BACKGROUND = "111111"                         # background color
+COLOR_FOREGROUND = "BBBBBB"                         # foreground color used for axis and text
+COLOR_SECONDARY = "888888"                          # second more faint foreground color
+COLOR_BACKGROUND = "222222"                         # background color
 COLOR_HIGHLIGHT = "FF0000"                          # distinctive highlight color
 COLOR_BLACK = "000000"                              # for black background
 
