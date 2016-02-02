@@ -43,8 +43,8 @@ class Line_Visualization(libavg.DivNode):
         self.background_rect = libavg.RectNode(pos=(axis.AXIS_THICKNESS, 0),
                                                size=(self.width - axis.AXIS_THICKNESS, self.height - axis.AXIS_THICKNESS),
                                                parent=self, strokewidth=1, fillopacity=1,
-                                               color=global_values.COLOR_BACKGROUND,
-                                               fillcolor=global_values.COLOR_BACKGROUND)
+                                               color=global_values.COLOR_FOREGROUND,
+                                               fillcolor=global_values.COLOR_BLACK)
 
         # div for visualization data
         self.data_div = libavg.DivNode(pos=(axis.AXIS_THICKNESS, 0),
@@ -132,7 +132,7 @@ class Line_Visualization(libavg.DivNode):
                 points = []
                 widths = []
                 opacities = []
-                samplecount = 200
+                samplecount = 100
                 if self.data_type_x == DATA_TIME:
                     samplecount = int(self.data_div.width * global_values.samples_per_pixel) + 1
                 if self.data_type_y == DATA_TIME:
@@ -232,8 +232,8 @@ class Line_Visualization(libavg.DivNode):
 
 
 def calculate_thickness(data, div):
-    return 1.4 + pow(data, 4) * (min(div.width, div.height)/6)
+    return 1.4 + pow(data, 3) * (min(div.width, div.height)/12)
 
 
 def calculate_opacity(data):
-    return pow((1 - data), 2)
+    return 0.05 + 0.95*pow((1 - data), 2)

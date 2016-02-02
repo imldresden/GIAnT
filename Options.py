@@ -19,11 +19,6 @@ class Options(libavg.DivNode):
         self.nodes = nodes  # DivNodes containing user data
         self.parent_div = parent
 
-        # rect for coloured border and background
-        self.background_rect = libavg.RectNode(pos=(0, 0), size=self.size, parent=self, strokewidth=1, fillopacity=1,
-                                               color=global_values.COLOR_BACKGROUND,
-                                               fillcolor=global_values.COLOR_BACKGROUND)
-
         self.user_buttons = []
         self.user_texts = []
         for i in range(len(User.users)):
