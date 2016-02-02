@@ -25,7 +25,7 @@ class User:
     def get_head_position_averaged(self, index):
         count = min(global_values.averaging_count, len(self.head_positions_integral) - index - 1)
         integral = self.head_positions_integral
-        if count == 0:
+        if count <= 0:
             count = 1
         index = min(max(0, index), len(integral) - count - 1)
 
@@ -38,7 +38,7 @@ class User:
     def get_view_point_averaged(self, index):
         count = min(global_values.averaging_count, len(self.viewpoints_integral) - index - 1)
         integral = self.viewpoints_integral
-        if count == 0:
+        if count <= 0:
             count = 1
         index = min(max(0, index), len(integral) - count - 1)
 
