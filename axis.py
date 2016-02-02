@@ -456,6 +456,8 @@ class TimeAxisNode(AxisNode):
                 self.__highlight_line.pos1 = (self.__highlight_pixel, self.__highlight_line.pos1[1])
                 self.__highlight_line.pos2 = (self.__highlight_pixel, self.__highlight_line.pos2[1])
 
+        else:
+            Time_Frame.main_time_frame.highlight_time = self.__calculate_time_from_pixel(self.__highlight_line.pos1[0])
 
     def __show_interval_slider(self, event=None):
         """
