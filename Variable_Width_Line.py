@@ -47,7 +47,7 @@ class Variable_Width_Line:
                 p1 = self.points[i - 1]
                 t1 = self.widths[i - 1]
                 if i >= len(self.points) - 1:
-                    p3 = (2 * self.points[i][0] - self.points[i - 1][0], self.points[i - 1][1])
+                    p3 = (2 * self.points[i][0] - self.points[i - 1][0], 2 * self.points[i][1] - self.points[i - 1][1])
                     t3 = self.widths[i]
                 else:
                     p3 = self.points[i + 1]
@@ -57,8 +57,8 @@ class Variable_Width_Line:
             vertexes.append(linepos[0])
             vertexes.append(linepos[1])
             texx = max(1.0/256.0,min(255.0 / 256.0, pow(self.opacities[i], 1) * 2))
-            texcoords.append((texx, texx / 2.0))
-            texcoords.append((texx, 1 - (texx / 2.0)))
+            texcoords.append((texx, 0))
+            texcoords.append((texx, 1))
             triangles.append((i * 2, i * 2 + 1, i * 2 + 2))
             triangles.append((i * 2 + 1, i * 2 + 2, i * 2 + 3))
 
@@ -72,9 +72,9 @@ class Variable_Width_Line:
         canvas_id = str("gradient " + str(self.id) + self.color)
         if hasattr(self, 'canvas'):
             self.canvas = player.deleteCanvas(canvas_id)
-        self.canvas = player.createCanvas(id=canvas_id, size=(256, 3))
+        self.canvas = player.createCanvas(id=canvas_id, size=(256, 1))
         for x in range(256):
             opacity = float(x) / 256.0
-            avg.LineNode(pos1=(x + 0.5, 1), pos2=(x + 0.5, 2), color=self.color, opacity=opacity, parent=self.canvas.getRootNode())
+            avg.LineNode(pos1=(x + 0.5, -1), pos2=(x + 0.5, 2), color=self.color, opacity=opacity, parent=self.canvas.getRootNode())
         self.canvas.render()
         self.gradientBmp = self.canvas.screenshot()
