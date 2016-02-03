@@ -9,9 +9,6 @@ class Legend(libavg.DivNode):
         super(Legend, self).__init__(**kwargs)
         self.registerInstance(self, parent)
         v_center = self.height / 2 + 5
-        # libavg.LineNode(pos1=(10, v_center), pos2=(10, self.height - 10), color=global_values.COLOR_FOREGROUND, parent=self)
-        # libavg.LineNode(pos1=(self.width - 10, v_center), pos2=(self.width - 10, self.height - 10), color=global_values.COLOR_FOREGROUND, parent=self)
-        # libavg.LineNode(pos1=(10, self.height - 10), pos2=(self.width - 10, self.height - 10), parent=self, color=global_values.COLOR_FOREGROUND)
 
         points = []
         widths = []
