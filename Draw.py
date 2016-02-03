@@ -81,44 +81,39 @@ class main_drawer(app.MainDiv):
 
 
         # video
-        self.video = Video.Video(pos=(self.resolution[0] - self.menu_width,
+        self.video = Video.Video(pos=(self.resolution[0] - self.menu_width + axis.AXIS_THICKNESS,
                                 self.room_visualization.pos[1] + self.room_visualization.height),
                            size=(self.menu_width, self.menu_height),
                            parent=self)
         main_time_frame.subscribe(self.video)
 
+        # nodes needed in self.menu
+        nodes = [self.wall_visualization, self.room_visualization, self.main_visualization]
+
         # f-formations
-        # self.f_formations = F_Formations.F_Formations(parent=self, sensitive=False,
-        #                                               pos=(self.main_visualization.pos[0] + axis.AXIS_THICKNESS,
-        #                                                    self.main_visualization.pos[1]),
-        #                                               size=(self.main_visualization.width - axis.AXIS_THICKNESS,
-        #                                                     self.main_visualization.height - axis.AXIS_THICKNESS))
-        # main_time_frame.subscribe(self.f_formations)
+        if Options.LOAD_F_FORMATIONS:
+            self.f_formations = F_Formations.F_Formations(parent=self, sensitive=False,
+                                                          pos=(self.main_visualization.pos[0] + axis.AXIS_THICKNESS,
+                                                               self.main_visualization.pos[1]),
+                                                          size=(self.main_visualization.width - axis.AXIS_THICKNESS,
+                                                                self.main_visualization.height - axis.AXIS_THICKNESS))
+            main_time_frame.subscribe(self.f_formations)
+            nodes.append(self.f_formations)
 
         # menu
-        nodes = [self.wall_visualization, self.room_visualization, self.main_visualization]#, self.f_formations]
-
         self.menu = Options.Options(nodes=nodes, parent=self,
-                                    pos=(axis.AXIS_THICKNESS, self.main_visualization.height),
-                                    size=(self.main_visualization.width - axis.AXIS_THICKNESS, 50))
+                                    pos=(0, self.main_visualization.height),
+                                    size=(self.main_visualization.width, 50))
 
         self.legend = Legend.Legend(parent=self.menu, min_value=0, max_value=1, unit="cm", size=(200, self.menu.height))
-        self.legend.pos = (self.menu.width - self.legend.width - global_values.APP_PADDING - 70, 5)
-
-        # play button
-        self.play_button = widget.ToggleButton(uncheckedUpNode=avg.ImageNode(href="images/play.png", size=(32, 32)),
-                                               uncheckedDownNode=avg.ImageNode(href="images/play.png", size=(32, 32)),
-                                               checkedUpNode=avg.ImageNode(href="images/pause.png", size=(32, 32)),
-                                               checkedDownNode=avg.ImageNode(href="images/pause.png", size=(32, 32)),
-                                               pos=(0, self.menu.height / 2 - 16), size=(32, 32), parent=self.menu)
-        self.play_button.subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__play_pause(checked))
+        self.legend.pos = (self.menu.width - self.legend.width - 60, 5)
 
         self.main_visualization.subscribe(avg.Node.MOUSE_WHEEL, self.onMouseWheel)
         app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward)
         app.keyboardmanager.bindKeyDown(keyname='Left', handler=self.shift_back)
         app.keyboardmanager.bindKeyDown(keyname='Up', handler=self.zoom_in)
         app.keyboardmanager.bindKeyDown(keyname='Down', handler=self.zoom_out)
-        app.keyboardmanager.bindKeyDown(keyname='Space', handler=self.__play_pause)
+        app.keyboardmanager.bindKeyDown(keyname='Space', handler=self.play_pause)
 
     def onFrame(self):
         if main_time_frame.play:
@@ -155,7 +150,7 @@ class main_drawer(app.MainDiv):
         else:
             main_time_frame.zoom_out_at((event.pos[0] - axis.AXIS_THICKNESS) / (self.main_visualization.width - axis.AXIS_THICKNESS))
 
-    def __play_pause(self):
+    def play_pause(self):
         main_time_frame.play_animation()
         self.video.play_pause(main_time_frame.play)
 

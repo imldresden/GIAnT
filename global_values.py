@@ -25,6 +25,7 @@ COLOR_SECONDARY = "888888"                          # second more faint foregrou
 COLOR_BACKGROUND = "222222"                         # background color
 COLOR_HIGHLIGHT = "FF0000"                          # distinctive highlight color
 COLOR_BLACK = "000000"                              # for black background
+COLOR_WHITE = "FFFFFF"                              # for bright highlights
 
 APP_MARGIN = 15                                     # space of content to application window in px
 APP_PADDING = 10                                    # space between content of application in px
