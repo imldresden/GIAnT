@@ -66,8 +66,8 @@ class main_drawer(app.MainDiv):
                                                                         pos=(self.resolution[0] - self.menu_width, 0),
                                                                         data_type_x=Line_Visualization.DATA_VIEWPOINT_X,
                                                                         data_type_y=Line_Visualization.DATA_VIEWPOINT_Y,
-                                                                        data_type_thickness=1.4,
-                                                                        data_type_opacity=0.01)
+                                                                        data_type_thickness=Line_Visualization.DATA_POSITION_Z,
+                                                                        data_type_opacity=Line_Visualization.DATA_POSITION_Z)
         main_time_frame.subscribe(self.wall_visualization)
 
         # room visualization
@@ -82,9 +82,9 @@ class main_drawer(app.MainDiv):
 
         # video
         self.video = Video.Video(pos=(self.resolution[0] - self.menu_width + axis.AXIS_THICKNESS,
-                                self.room_visualization.pos[1] + self.room_visualization.height),
-                           size=(self.menu_width, self.menu_height),
-                           parent=self)
+                                      self.room_visualization.pos[1] + self.room_visualization.height),
+                                 size=(self.menu_width-50, self.menu_height),
+                                 parent=self)
         main_time_frame.subscribe(self.video)
 
         # nodes needed in self.menu
