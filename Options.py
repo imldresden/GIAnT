@@ -1,14 +1,14 @@
-import os
 import libavg
 from libavg import widget, avg
+from Time_Frame import main_time_frame
 import global_values
 import User
-import Time_Frame
 import Util
 import Line_Visualization
 import F_Formations
 
 SHOW_F_FORMATIONS = True
+LOAD_F_FORMATIONS = True
 
 
 class Options(libavg.DivNode):
@@ -18,6 +18,28 @@ class Options(libavg.DivNode):
 
         self.nodes = nodes  # DivNodes containing user data
         self.parent_div = parent
+
+        # rect for coloured border and background
+        self.background_rect = libavg.RectNode(pos=(0, 0), size=self.size, parent=self, strokewidth=1, fillopacity=1,
+                                               color=global_values.COLOR_BACKGROUND,
+                                               fillcolor=global_values.COLOR_BACKGROUND)
+
+        icon_size = (15, 15)
+        button_size = (30, 30)
+        # rect for play button border
+        self.play_rect = libavg.RectNode(pos=(0, self.height/2 - button_size[1]/2), size=button_size, parent=self,
+                                         strokewidth=1, fillopacity=0, color=global_values.COLOR_FOREGROUND,
+                                         sensitive=False)
+
+        # play button
+        icon_h_size = (icon_size[0]/2, icon_size[1]/2)
+        self.play_button = widget.ToggleButton(uncheckedUpNode=avg.ImageNode(href="images/play.png", pos=icon_h_size, size=icon_size),
+                                               uncheckedDownNode=avg.ImageNode(href="images/play.png", pos=icon_h_size, size=icon_size),
+                                               checkedUpNode=avg.ImageNode(href="images/pause.png", pos=icon_h_size, size=icon_size),
+                                               checkedDownNode=avg.ImageNode(href="images/pause.png", pos=icon_h_size, size=icon_size),
+                                               # activeAreaNode=avg.DivNode(pos=(-15, -15), size=(30, 30)),
+                                               pos=(0, self.play_rect.pos[1]), size=button_size, parent=self)
+        self.play_button.subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__play_pause(checked))
 
         self.user_buttons = []
         self.user_texts = []
@@ -46,8 +68,10 @@ class Options(libavg.DivNode):
         size = (50, 30)
         self.f_button = widget.ToggleButton(uncheckedUpNode=avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=global_values.COLOR_FOREGROUND),
                                             uncheckedDownNode=avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=global_values.COLOR_FOREGROUND),
+                                            uncheckedDisabledNode=avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=global_values.COLOR_SECONDARY),
                                             checkedUpNode=avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_FOREGROUND),
                                             checkedDownNode=avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_FOREGROUND),
+                                            checkedDisabledNode=avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=global_values.COLOR_SECONDARY, fillcolor=global_values.COLOR_SECONDARY),
                                             pos=(520, self.height/2 - size[1]/2), size=size, parent=self)
         self.f_button.checked = SHOW_F_FORMATIONS
         self.f_button.subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_f_formations(checked))
@@ -55,6 +79,7 @@ class Options(libavg.DivNode):
                                            color=global_values.COLOR_BACKGROUND, parent=self,
                                            text="F-F", sensitive=False, alignment="center")
         if not SHOW_F_FORMATIONS: self.__toggle_f_formations(SHOW_F_FORMATIONS)
+        if not LOAD_F_FORMATIONS: self.f_button.enabled = False
 
         # smoothness slider
         self.smoothness_text = avg.WordsNode(pos=(370, self.height/2 - 15), color=global_values.COLOR_FOREGROUND, parent=self,
@@ -65,7 +90,7 @@ class Options(libavg.DivNode):
         self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, lambda pos: self.__change_smoothness(pos))
 
         # subscribe to global time_frame
-        Time_Frame.main_time_frame.subscribe(self)
+        main_time_frame.subscribe(self)
 
     def __toggle_user(self, checked, user_id):
         if checked:
@@ -82,7 +107,7 @@ class Options(libavg.DivNode):
                     self.user_texts[user_id].color = global_values.COLOR_FOREGROUND
 
         # publish changes
-        Time_Frame.main_time_frame.publish()
+        main_time_frame.publish()
 
     def __toggle_f_formations(self, checked):
         if checked:
@@ -103,11 +128,15 @@ class Options(libavg.DivNode):
             global_values.averaging_count * global_values.time_step_size / 1000.0)
 
         # publish changes
-        Time_Frame.main_time_frame.publish()
+        main_time_frame.publish()
+
+    def __play_pause(self, checked):
+        self.parent_div.play_pause()
 
     def update_time_frame(self, interval):
         """
-        Called by the publisher time_frame to update the visualization to the new interval.
+        Called by the publisher time_frame to update the visualization if changes are made.
         :param interval: (start, end): new interval start and end as list
         """
-        pass
+        if self.play_button.checked is not main_time_frame.play:
+            self.play_button.checked = main_time_frame.play
