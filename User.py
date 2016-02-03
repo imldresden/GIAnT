@@ -42,10 +42,10 @@ class User:
             count = 1
         index = min(max(0, index), len(integral) - count - 1)
 
-        head_position = [(integral[index + count][0] - integral[index][0]) / count,
-                         (integral[index + count][1] - integral[index][1]) / count,
-                         integral[index + count][2]]
-        return head_position
+        view_point = [(integral[index + count][0] - integral[index][0]) / count,
+                      (integral[index + count][1] - integral[index][1]) / count,
+                      integral[index + count][2]]
+        return view_point
 
     def clearViewpoints(self):
         self.viewpoints = []
