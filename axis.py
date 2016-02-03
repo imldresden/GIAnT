@@ -113,7 +113,7 @@ class AxisNode(avg.DivNode):
         for i, pos in enumerate(self.__label_pos):
             if type(self.__ticks[i]) is not "libavg.avg.LineNode":
                 # create new axis tick, label and grid line
-                self.__grid[i] = libavg.LineNode(strokewidth=1, color=global_values.COLOR_SECONDARY, parent=self)
+                self.__grid[i] = libavg.LineNode(strokewidth=1, color=global_values.COLOR_BACKGROUND, parent=self)
                 self.__ticks[i] = libavg.LineNode(strokewidth=1, color=global_values.COLOR_FOREGROUND, parent=self)
                 self.__label_nodes[i] = libavg.WordsNode(color=global_values.COLOR_FOREGROUND, parent=self)
 
@@ -350,7 +350,7 @@ class TimeAxisNode(AxisNode):
         self.__highlight_line = libavg.LineNode(strokewidth=1, color=global_values.COLOR_SECONDARY, parent=self,
                                                 pos1=(0, 0), pos2=(0, -self.parent.data_div.height), opacity=0)
         self.__highlight_marker = libavg.LineNode(strokewidth=1, color=global_values.COLOR_FOREGROUND, parent=self,
-                                                  pos1=(0, self.__i_line.pos1[1]), pos2=(0, self.__i_line.pos1[1] - 5),
+                                                  pos1=(0, self.__i_line.pos1[1]), pos2=(0, self.__i_line.pos1[1] + 5),
                                                   opacity=0)
         # interactive interval scrollbar
         self.__i_scrollbar = custom_slider.IntervalScrollBar(pos=(0, self.__i_rect.pos[1]), width=self.width, opacity=0,
@@ -491,6 +491,7 @@ class TimeAxisNode(AxisNode):
         # let line appear in front of every other child in this div
         self.removeChild(self.__highlight_line)
         self.appendChild(self.__highlight_line)
+        Time_Frame.main_time_frame.publish()
 
     def __show_highlight_line(self, event=None):
         """
@@ -531,9 +532,10 @@ class TimeAxisNode(AxisNode):
             self.__highlight_marker.pos1 = (marker_pos, self.__highlight_marker.pos1[1])
             self.__highlight_marker.pos2 = (marker_pos, self.__highlight_marker.pos2[1])
             self.__highlight_marker.opacity = 1
-            self.__highlight_line.color = global_values.COLOR_FOREGROUND
+            self.__highlight_line.color = global_values.COLOR_WHITE
             self.parent.data_div.unsubscribe(avg.Node.CURSOR_MOTION, self.__hover_id)
             self.__pinned = True
+        Time_Frame.main_time_frame.publish()
 
     def __calculate_time_from_pixel(self, pixel):
         """
