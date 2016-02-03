@@ -14,6 +14,9 @@ DATA_VIEWPOINT_Y = -5
 DATA_TOUCH_X = -6
 DATA_TOUCH_Y = -7
 
+DATA_POSITION = [DATA_POSITION_X, DATA_POSITION_Y, DATA_POSITION_Z]
+DATA_VIEWPOINT = [DATA_VIEWPOINT_X, DATA_VIEWPOINT_Y]
+
 VIS_X = 0
 VIS_Y = 1
 VIS_THICKNESS = 2
@@ -38,6 +41,9 @@ class Line_Visualization(libavg.DivNode):
         self.data_type_y = data_type_y
         self.data_type_thickness = data_type_thickness
         self.data_type_opacity = data_type_opacity
+
+        self.data_types = [self.data_type_x, self.data_type_y, self.data_type_opacity, self.data_type_thickness]
+
 
         # rect for coloured border and background
         self.background_rect = libavg.RectNode(pos=(axis.AXIS_THICKNESS, 0),
@@ -144,9 +150,10 @@ class Line_Visualization(libavg.DivNode):
                         len(user.head_positions_integral) * sample * (self.end - self.start) / float(
                             samplecount) + self.start * len(user.head_positions_integral))
                     current_position = []
-                    if self.data_type_x in [DATA_POSITION_X, DATA_POSITION_Y, DATA_POSITION_Z] or self.data_type_y in [DATA_POSITION_X, DATA_POSITION_Y, DATA_POSITION_Z]:
+
+                    if any(data_type in self.data_types for data_type in DATA_POSITION):
                         head_position_averaged = user.get_head_position_averaged(posindex)
-                    if self.data_type_x in [DATA_VIEWPOINT_X, DATA_VIEWPOINT_Y] or self.data_type_y in [DATA_VIEWPOINT_X, DATA_VIEWPOINT_Y]:
+                    if any(data_type in self.data_types for data_type in DATA_VIEWPOINT):
                         view_point_averaged = user.get_view_point_averaged(posindex)
 
                     for i in range(4):
@@ -178,6 +185,8 @@ class Line_Visualization(libavg.DivNode):
                             data = (view_point_averaged[0] - global_values.x_wall_range[0]) / float(global_values.x_wall_range[1] - global_values.x_wall_range[0])
                         if data_type == DATA_VIEWPOINT_Y:
                             data = (view_point_averaged[1] - global_values.y_wall_range[0]) / float(global_values.y_wall_range[1] - global_values.y_wall_range[0])
+                            data = 1 - data
+
 
                         if data_type == DATA_TOUCH_X:
                             print "not working yet"
@@ -205,22 +214,6 @@ class Line_Visualization(libavg.DivNode):
                     points.append((current_position[VIS_X], current_position[VIS_Y]))
                     widths.append(current_position[VIS_THICKNESS])
                     opacities.append(current_position[VIS_OPACITY])
-                    '''
-                    if last_position == 0:
-                        last_position = current_position
-                    else:
-                        if len(self.canvasObjects) <= userid:
-                            user_objects.append(
-                                Draw.main_drawer.draw_line(self.parent, tuple(current_position), tuple(last_position),
-                                                         global_values.get_color_as_hex(userid, 1), thickness, thickness, opacity))
-                        else:
-                            if len(self.canvasObjects[userid]) > i:
-                                self.canvasObjects[userid][i].pos1 = current_position
-                                self.canvasObjects[userid][i].pos2 = last_position
-                                self.canvasObjects[userid][i].strokewidth = thickness
-                                self.canvasObjects[userid][i].opacity = opacity
-                        last_position = current_position
-                    '''
 
                 if len(self.canvasObjects) > userid:
                     userline = self.canvasObjects[userid]
