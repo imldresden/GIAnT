@@ -77,7 +77,8 @@ class main_drawer(app.MainDiv):
                                                                         data_type_x=Line_Visualization.DATA_POSITION_X,
                                                                         data_type_y=Line_Visualization.DATA_POSITION_Z,
                                                                         data_type_thickness=1.4,
-                                                                        data_type_opacity=0.01)  # ,show_bottom_axis=False)
+                                                                        data_type_opacity=0.01,
+                                                                        top_axis=True)
         main_time_frame.subscribe(self.room_visualization)
 
 

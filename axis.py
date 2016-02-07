@@ -15,7 +15,7 @@ class AxisNode(avg.DivNode):
     Custom AxisNode with axis lines and labeling. Vertical if horizontal=False
     """
 
-    def __init__(self, data_range, unit="cm", hide_rims=False, parent=None, **kwargs):
+    def __init__(self, data_range, unit="cm", hide_rims=False, top_axis=False, parent=None, **kwargs):
         super(AxisNode, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
@@ -23,7 +23,11 @@ class AxisNode(avg.DivNode):
         attributes
         """
         self.__parent = parent
-        self.__h_tick_length = 5                             # half of the length of the tick marks on the axis
+        self.__top_axis = top_axis                           # determines if the x-axis should be displayed at the top
+        if self.__top_axis:
+            self.__h_tick_length = -5                        # half of the length of the tick marks on the axis
+        else:
+            self.__h_tick_length = 5
         self.__tick_length = self.__h_tick_length * 2        # length of the tick marks on the axis
         self.__label_offset = self.__tick_length             # offset of tick labels from axis line
         self.__label_values = []                             # contains the data values of the tick labels of the axis
@@ -115,28 +119,36 @@ class AxisNode(avg.DivNode):
                 # create new axis tick, label and grid line
                 self.__grid[i] = libavg.LineNode(strokewidth=1, color=global_values.COLOR_BACKGROUND, parent=self)
                 self.__ticks[i] = libavg.LineNode(strokewidth=1, color=global_values.COLOR_FOREGROUND, parent=self)
-                self.__label_nodes[i] = libavg.WordsNode(color=global_values.COLOR_FOREGROUND, parent=self)
+                if not self.__top_axis:
+                    self.__label_nodes[i] = libavg.WordsNode(color=global_values.COLOR_FOREGROUND, parent=self)
 
             # set label value
-            self.__label_nodes[i].text = "{}".format(self.__labels[i])
+            if not self.__top_axis:
+                self.__label_nodes[i].text = "{}".format(self.__labels[i])
 
             # set position of tick, label and grid on axis
-            center = self.__label_nodes[i].width / 2
-            v_center = self.__label_nodes[i].fontsize / 2
+            if not self.__top_axis:
+                center = self.__label_nodes[i].width / 2
+                v_center = self.__label_nodes[i].fontsize / 2
             if self.__vertical:
-                self.__label_nodes[i].alignment = "right"
                 self.__grid[i].pos1 = (self.__axis_line.pos1[0], pos)
                 self.__grid[i].pos2 = (self.__axis_line.pos1[0] + self.parent.data_div.width, pos)
                 self.__ticks[i].pos1 = (self.__axis_line.pos1[0], pos)
                 self.__ticks[i].pos2 = (self.__axis_line.pos1[0] + self.__tick_length, pos)
-                self.__label_nodes[i].pos = (self.__axis_line.pos1[0] - self.__tick_length, pos - v_center - 1)
+                if not self.__top_axis:
+                    self.__label_nodes[i].alignment = "right"
+                    self.__label_nodes[i].pos = (self.__axis_line.pos1[0] - self.__tick_length, pos - v_center - 1)
             else:
                 self.__grid[i].pos1 = (pos, self.__axis_line.pos1[0])
-                self.__grid[i].pos2 = (pos, - self.__vis_height)
+                if self.__top_axis:
+                    self.__grid[i].pos2 = (pos, + self.__vis_height)
+                else:
+                    self.__grid[i].pos2 = (pos, - self.__vis_height)
                 self.__ticks[i].pos1 = (pos, self.__axis_line.pos1[0] - self.__tick_length)
                 self.__ticks[i].pos2 = (pos, self.__axis_line.pos1[0])
-                self.__label_nodes[i].pos = (pos - center,
-                                             self.__axis_line.pos1[0] + self.__h_tick_length + self.__label_offset)
+                if not self.__top_axis:
+                    self.__label_nodes[i].pos = (pos - center,
+                                                 self.__axis_line.pos1[0] + self.__h_tick_length + self.__label_offset)
 
         # delete first and last grid line (because it is not really needed and can overlap other axis lines)
         self.__grid[0].unlink()
@@ -145,10 +157,10 @@ class AxisNode(avg.DivNode):
         # delete first and last tick except it is min or max of data range
         if self.__label_values[0] not in self.__data_range or self.__hide_rims:
             self.__ticks[0].unlink()
-            self.__label_nodes[0].unlink()
+            if not self.__top_axis: self.__label_nodes[0].unlink()
         if self.__label_values[len(self.__label_values) - 1] not in self.__data_range or self.__hide_rims:
             self.__ticks[len(self.__label_values) - 1].unlink()
-            self.__label_nodes[len(self.__label_values) - 1].unlink()
+            if not self.__top_axis: self.__label_nodes[len(self.__label_values) - 1].unlink()
 
     def _value_to_pixel(self, value, start, end):
         """
