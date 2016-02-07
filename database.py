@@ -432,6 +432,10 @@ def get_head_positions_optimized(userid):
     return executeQry("SELECT x, y, z, time FROM headtableoptimized WHERE user = " + str(userid) + " ORDER BY time;", True)
 
 
+def get_head_orientations_integral(userid):
+    return executeQry("SELECT pitch, yaw, roll, time FROM headtableintegral WHERE user = " + str(userid) + " GROUP BY time ORDER BY time;", True)
+
+
 def get_touch_positions(userid):
     return executeQry("SELECT x, y, time FROM touchtable WHERE user = " + str(userid) + ";", True)
 

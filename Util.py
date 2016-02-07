@@ -1,6 +1,7 @@
 import math
 import sys
 import colorsys
+import Options
 
 timestampOffset = sys.maxint
 
@@ -13,14 +14,6 @@ def addVectors(vec1, vec2):
     for index in range(0, len(vec1)):
         newTuple += (vec1[index] + vec2[index]),
     return newTuple
-
-
-def get_length(vector):
-    value = 0
-    for component in vector:
-        value += component * component
-
-    return math.sqrt(value)
 
 
 def cleanString(string):
@@ -94,14 +87,6 @@ def get_look_direction(pitch, yaw):
     return (x, y, z)
 
 
-def normalize_vector(vector):
-    result = []
-    length = get_length(vector)
-    for i in range(0, len(vector)):
-        result.append(float(vector[i]) / float(length))
-    return result
-
-
 def get_user_color_as_hex(index, opacity):
     import global_values
     if index == -1:
@@ -110,9 +95,8 @@ def get_user_color_as_hex(index, opacity):
         if index < 0 or index > 3:
             index = 0
             print "user color index out of range"
-        hls = global_values.user_colors_hls[index]
+        hls = global_values.user_color_schemes[Options.COLOR_SCHEME][index]
     hls = colorsys.hsv_to_rgb(hls[0], min(1, hls[1] * pow(opacity, 4) * 4), hls[2])
     color = (int(hls[0] * 255), int(hls[1] * 255), int(hls[2] * 255))
     color = '%02x%02x%02x' % color
     return color
-
