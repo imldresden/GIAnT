@@ -269,7 +269,6 @@ def create_viewpoint_table():
         user_head_data = executeQry("SELECT x, y, z, pitch, yaw, time FROM headtable WHERE user = " + str(userid) + " GROUP BY time ORDER BY time;", True)
         user_view_point_data = []
         for i in range(0, len(user_head_data)):
-
             data = user_head_data[i]
             pitch = data[3]
             yaw = data[4]
@@ -278,11 +277,12 @@ def create_viewpoint_table():
             z = data[2]
             time = data[5]
             view_vector = Util.get_look_direction(pitch, yaw)
-            multiplier = z/view_vector[2]
-            view_point = (x-view_vector[0]*multiplier, y-view_vector[1]*multiplier)
+            multiplier = z / view_vector[2]
+            view_point = (x - view_vector[0] * multiplier, y - view_vector[1] * multiplier)
             user_view_point_data.append([userid, view_point[0], view_point[1], time])
 
         insert_many(user_view_point_data, "viewpointtable", ["user", "x", "y", "time"])
+
 
 def create_viewpoint_table_integral():
     create_table("viewpointintegral", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -299,6 +299,7 @@ def create_viewpoint_table_integral():
                 user_viewpoints[i] = tuple(as_list)
 
         insert_many(user_viewpoints, "viewpointintegral", ["user", "x", "y", "time"])
+
 
 def create_touch_table(wall_screen_resolution):
     create_table("touchtable", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -353,7 +354,6 @@ def create_touch_table(wall_screen_resolution):
             cur.executemany("INSERT INTO touchtable (user, x, y, time) VALUES (?,?,?,?);", datalist)
             con.commit()
             datalist = []
-
 
     con.close()
 
@@ -429,6 +429,10 @@ def get_head_positions_integral(userid):
 
 def get_head_positions_optimized(userid):
     return executeQry("SELECT x, y, z, time FROM headtableoptimized WHERE user = " + str(userid) + " ORDER BY time;", True)
+
+
+def get_head_orientations_integral(userid):
+    return executeQry("SELECT pitch, yaw, roll, time FROM headtableintegral WHERE user = " + str(userid) + " GROUP BY time ORDER BY time;", True)
 
 
 def get_touch_positions(userid):

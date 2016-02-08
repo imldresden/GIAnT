@@ -1,5 +1,6 @@
 import math
 import sys
+import colorsys
 
 timestampOffset = sys.maxint
 
@@ -69,6 +70,11 @@ def line_intersection(line1, line2):
     return result1
 
 
+def get_index_from_time_percentage(percentage):
+    import User
+    return int(percentage * float(len(User.users[0].head_positions)))
+
+
 def get_look_direction(pitch, yaw):
     x = 0
     y = 0
@@ -110,9 +116,8 @@ def get_user_color_as_hex(index, opacity):
         if index < 0 or index > 3:
             index = 0
             print "user color index out of range"
-        hls = global_values.user_colors_hls[index]
+        hls = global_values.user_color_schemes[0][index]
     hls = colorsys.hsv_to_rgb(hls[0], min(1, hls[1] * pow(opacity, 4) * 4), hls[2])
     color = (int(hls[0] * 255), int(hls[1] * 255), int(hls[2] * 255))
     color = '%02x%02x%02x' % color
     return color
-

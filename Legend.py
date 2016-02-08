@@ -8,10 +8,6 @@ class Legend(libavg.DivNode):
     def __init__(self, parent, min_value, max_value, unit, **kwargs):
         super(Legend, self).__init__(**kwargs)
         self.registerInstance(self, parent)
-<<<<<<< HEAD
-        v_center = self.height / 2 + 5
-=======
->>>>>>> origin/master
 
         points = []
         widths = []

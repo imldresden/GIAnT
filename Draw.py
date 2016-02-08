@@ -1,14 +1,16 @@
 import math
+import time
 
-from libavg import app, avg, widget
+from libavg import app, avg
 import libavg
+import Highlight_Visualization
+
 import Util
 import User
 import Line_Visualization
 import F_Formations
 import Options
 from Time_Frame import main_time_frame
-import time
 import global_values
 import axis
 import Legend
@@ -79,7 +81,15 @@ class main_drawer(app.MainDiv):
                                                                         data_type_thickness=1.4,
                                                                         data_type_opacity=0.01,
                                                                         top_axis=True)
+
+        self.room_highlight = Highlight_Visualization.Highlight_Visualization(parent=self, size=self.room_visualization.background_rect.size,
+                                                                              pos=self.room_visualization.pos,
+                                                                              data_type_x=Line_Visualization.DATA_POSITION_X,
+                                                                              data_type_y=Line_Visualization.DATA_POSITION_Z,
+                                                                              data_type_radius=15,
+                                                                              data_type_opacity=0.01)
         main_time_frame.subscribe(self.room_visualization)
+        main_time_frame.subscribe(self.room_highlight)
 
 
         # video
