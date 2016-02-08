@@ -28,7 +28,7 @@ class Line_Visualization(libavg.DivNode):
     end = 1
 
     def __init__(self, parent, data_type_x, data_type_y, data_type_thickness, data_type_opacity, top_axis=False,
-                 invert_x=False, invert_y=False, **kwargs):
+                 invert_x=False, invert_y=False, name="", **kwargs):
         super(Line_Visualization, self).__init__(**kwargs)
         self.registerInstance(self, parent)
         self.crop = False
@@ -122,6 +122,10 @@ class Line_Visualization(libavg.DivNode):
             self.x_axis.pos = (axis.AXIS_THICKNESS, 0)
 
         self.createLine()
+
+        # name
+        libavg.WordsNode(pos=(axis.AXIS_THICKNESS + global_values.APP_PADDING, global_values.APP_PADDING), parent=self,
+                         color=global_values.COLOR_FOREGROUND, text=name, sensitive=False, alignment="left")
 
     # make start and end values in 0..1
     def update_time_frame(self, interval):

@@ -62,7 +62,8 @@ class main_drawer(app.MainDiv):
                                                                         data_type_y=Line_Visualization.DATA_POSITION_X,
                                                                         data_type_thickness=Line_Visualization.DATA_POSITION_Z,
                                                                         data_type_opacity=Line_Visualization.DATA_POSITION_Z,
-                                                                        invert_y=True)
+                                                                        invert_y=True,
+                                                                        name="Movement over Time")
         main_time_frame.subscribe(self.main_visualization)
 
         # wall visualization
@@ -72,7 +73,8 @@ class main_drawer(app.MainDiv):
                                                                         data_type_y=Line_Visualization.DATA_VIEWPOINT_Y,
                                                                         data_type_thickness=Line_Visualization.DATA_POSITION_Z,
                                                                         data_type_opacity=Line_Visualization.DATA_POSITION_Z,
-                                                                        invert_y=True)
+                                                                        invert_y=True,
+                                                                        name="Wall Front")
         main_time_frame.subscribe(self.wall_visualization)
 
         # room visualization
@@ -82,7 +84,8 @@ class main_drawer(app.MainDiv):
                                                                         data_type_y=Line_Visualization.DATA_POSITION_Z,
                                                                         data_type_thickness=1.4,
                                                                         data_type_opacity=0.01,
-                                                                        top_axis=True)
+                                                                        top_axis=True,
+                                                                        name="Room Top")
 
         self.room_highlight = Highlight_Visualization.Highlight_Visualization(parent=self, size=self.room_visualization.background_rect.size,
                                                                               pos=self.room_visualization.pos,
