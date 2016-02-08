@@ -27,14 +27,11 @@ class Line_Visualization(libavg.DivNode):
     start = 0
     end = 1
 
-    def __init__(self, parent, data_type_x, data_type_y, data_type_thickness, data_type_opacity, show_bottom_axis=True, **kwargs):
+    def __init__(self, parent, data_type_x, data_type_y, data_type_thickness, data_type_opacity, top_axis=False,
+                 **kwargs):
         super(Line_Visualization, self).__init__(**kwargs)
         self.registerInstance(self, parent)
         self.crop = False
-
-        # here the size is first increased, so that it later can be decreased again (around line 82), effectively hiding the bottom axis but still showing its grid
-        if not show_bottom_axis:
-            self.size = (self.width, self.height + axis.AXIS_THICKNESS)
 
         self.data_type_x = data_type_x
         self.canvasObjects = []
@@ -62,10 +59,10 @@ class Line_Visualization(libavg.DivNode):
         for i in range((len(User.users))):
             self.user_divs.append(libavg.DivNode(pos=(0, 0), parent=self.data_div, crop=True, size=self.size))
 
-        # axes
+        # y-axis
         if data_type_y == DATA_TIME:
-            self.y_axis = axis.TimeAxisNode(pos=(0, 0), parent=self, size=(axis.AXIS_THICKNESS, self.data_div.height), data_range=Time_Frame.total_range, unit="ms")
-
+            self.y_axis = axis.TimeAxisNode(pos=(0, 0), parent=self, size=(axis.AXIS_THICKNESS, self.data_div.height),
+                                            data_range=Time_Frame.total_range, unit="ms")
         else:
             data_range = [0, 10]
             unit = ""
@@ -92,15 +89,14 @@ class Line_Visualization(libavg.DivNode):
                 data_range = global_values.y_wall_range
                 unit = "cm"
 
-            self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.AXIS_THICKNESS, self.data_div.height), hide_rims=True, parent=self, sensitive=True, data_range=data_range, unit=unit)
+            self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.AXIS_THICKNESS, self.data_div.height), parent=self,
+                                        sensitive=True, data_range=data_range, unit=unit, hide_rims=True)
 
+        # x-axis
         x_axis_pos = (axis.AXIS_THICKNESS, self.data_div.height)
-        if not show_bottom_axis:
-            x_axis_pos = (x_axis_pos[0], x_axis_pos[1] + axis.AXIS_THICKNESS)
-            self.size = (self.width, self.height - axis.AXIS_THICKNESS)
         if self.data_type_x == DATA_TIME:
-            self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, parent=self, size=(self.data_div.width, axis.AXIS_THICKNESS), data_range=Time_Frame.total_range,
-                                            unit="ms")
+            self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, parent=self, unit="ms", data_range=Time_Frame.total_range,
+                                            size=(self.data_div.width, axis.AXIS_THICKNESS))
         else:
             # set data_range according to data input
             if data_type_x == DATA_POSITION_X:
@@ -117,10 +113,12 @@ class Line_Visualization(libavg.DivNode):
                 data_range = global_values.x_range
             if data_type_x == DATA_VIEWPOINT_Y:
                 data_range = global_values.y_wall_range
-            self.x_axis = axis.AxisNode(pos=x_axis_pos,
-                                        size=(self.data_div.width, axis.AXIS_THICKNESS),
-                                        hide_rims=True, sensitive=True,
-                                        parent=self, data_range=data_range, unit="cm")
+            self.x_axis = axis.AxisNode(pos=x_axis_pos, size=(self.data_div.width, axis.AXIS_THICKNESS), hide_rims=True,
+                                        sensitive=True, parent=self, data_range=data_range, unit="cm",
+                                        top_axis=top_axis)
+
+        if top_axis:
+            self.x_axis.pos=(axis.AXIS_THICKNESS, 0)
 
         self.createLine()
 

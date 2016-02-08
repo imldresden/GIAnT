@@ -1,6 +1,5 @@
 import math
 import sys
-import colorsys
 
 timestampOffset = sys.maxint
 
@@ -33,6 +32,7 @@ def cleanString(string):
 
 def convertTimestamp(timestamp):  # turns the Timestring into a Number of milliseconds
     global timestampOffset
+    timestamp = str(timestamp).replace(".", "")
     split = timestamp.split(":")
     split[2] = float(str(split[2])) * 1000  # converting into whole milliseconds
     hours = int(split[0]) * 60 * 60 * 1000

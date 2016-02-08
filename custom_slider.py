@@ -93,9 +93,9 @@ class IntervalScrollBar(IntervalSliderBase):
         super(IntervalScrollBar, self).__init__(cfg=cfg, **kwargs)
 
     def _initThumb(self, cfg):
-        thumbUpBmp = avg.ImageNode(href="images/quad_white.png", size=(128, 128)).getBitmap()
-        thumbDownBmp = avg.ImageNode(href="images/quad_white.png", size=(128, 128)).getBitmap()
-        thumbDisabledBmp = avg.ImageNode(href="images/quad_white.png", size=(128, 128)).getBitmap()
+        thumbUpBmp = avg.ImageNode(href="images/quad.png", size=(128, 128)).getBitmap()
+        thumbDownBmp = avg.ImageNode(href="images/quad.png", size=(128, 128)).getBitmap()
+        thumbDisabledBmp = avg.ImageNode(href="images/quad.png", size=(128, 128)).getBitmap()
         endsExtent = 1
 
         self._thumbNode = IntervalScrollBarThumb(upBmp=thumbUpBmp, downBmp=thumbDownBmp,

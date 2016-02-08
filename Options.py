@@ -9,6 +9,7 @@ import F_Formations
 
 SHOW_F_FORMATIONS = True
 LOAD_F_FORMATIONS = True
+COLOR_SCHEME = 1
 
 
 class Options(libavg.DivNode):
@@ -27,7 +28,7 @@ class Options(libavg.DivNode):
         icon_size = (15, 15)
         button_size = (30, 30)
         # rect for play button border
-        self.play_rect = libavg.RectNode(pos=(0, self.height/2 - button_size[1]/2), size=button_size, parent=self,
+        self.play_rect = libavg.RectNode(pos=(0, self.height - button_size[1]), size=button_size, parent=self,
                                          strokewidth=1, fillopacity=0, color=global_values.COLOR_FOREGROUND,
                                          sensitive=False)
 
@@ -41,6 +42,7 @@ class Options(libavg.DivNode):
                                                pos=(0, self.play_rect.pos[1]), size=button_size, parent=self)
         self.play_button.subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__play_pause(checked))
 
+        # user buttons
         self.user_buttons = []
         self.user_texts = []
         for i in range(len(User.users)):
@@ -51,7 +53,7 @@ class Options(libavg.DivNode):
                                     uncheckedDownNode=avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=user_color),
                                     checkedUpNode=avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=user_color, fillcolor=user_color),
                                     checkedDownNode=avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=user_color, fillcolor=user_color),
-                                    pos=(i * 80 + 50, self.height/2 - size[1]/2), size=size, parent=self, enabled=True))
+                                    pos=(i * 80 + 50, self.height - size[1]), size=size, parent=self, enabled=True))
             self.user_buttons[i].checked = True
             self.user_texts.append(avg.WordsNode(color=global_values.COLOR_BACKGROUND,
                                                  parent=self, sensitive=False, text="User {}".format(i + 1),
@@ -64,30 +66,43 @@ class Options(libavg.DivNode):
         self.user_buttons[2].subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_user(checked, user_id=2))
         self.user_buttons[3].subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_user(checked, user_id=3))
 
+        # smoothness slider
+        self.smoothness_text = avg.WordsNode(pos=(500, self.height - 32), color=global_values.COLOR_FOREGROUND,
+                                             parent=self, text="Smoothness: {}s".format(
+                                                 global_values.averaging_count * global_values.time_step_size / 1000))
+        self.smoothness_slider = widget.Slider(pos=(495, self.height - 12), width=180, parent=self, range=(2, 2000))
+        self.smoothness_slider.thumbPos = global_values.averaging_count
+        self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, lambda pos: self.__change_smoothness(pos))
+        # smoothness default button
+        icon_size = (12, 12)
+        button_size = (20, 20)
+        icon_h_size = (icon_size[0]/2, icon_size[1]/2)
+        self.default_button = widget.ToggleButton(uncheckedUpNode=avg.ImageNode(href="images/reload.png", pos=icon_h_size, size=icon_size),
+                                                  uncheckedDownNode=avg.ImageNode(href="images/reload.png", pos=icon_h_size, size=icon_size),
+                                                  checkedUpNode=avg.ImageNode(href="images/reload.png", pos=icon_h_size, size=icon_size),
+                                                  checkedDownNode=avg.ImageNode(href="images/reload.png", pos=icon_h_size, size=icon_size),
+                                                  pos=(650, self.height - 32), size=button_size, parent=self)
+        self.default_button.subscribe(widget.CheckBox.TOGGLED, lambda pos: self.__default_smoothness(global_values.default_averaging_count))
+
         # f-formations button
-        size = (50, 30)
+        size = (100, 30)
         self.f_button = widget.ToggleButton(uncheckedUpNode=avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=global_values.COLOR_FOREGROUND),
                                             uncheckedDownNode=avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=global_values.COLOR_FOREGROUND),
                                             uncheckedDisabledNode=avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=global_values.COLOR_SECONDARY),
                                             checkedUpNode=avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_FOREGROUND),
                                             checkedDownNode=avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_FOREGROUND),
-                                            checkedDisabledNode=avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=global_values.COLOR_SECONDARY, fillcolor=global_values.COLOR_SECONDARY),
-                                            pos=(520, self.height/2 - size[1]/2), size=size, parent=self)
-        self.f_button.checked = SHOW_F_FORMATIONS
+                                            checkedDisabledNode=avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=global_values.COLOR_SECONDARY),
+                                            pos=(self.user_buttons[3].pos[0] + self.user_buttons[3].width + 20, self.height - size[1]),
+                                            size=size, parent=self)
+        self.f_button.checked = SHOW_F_FORMATIONS and LOAD_F_FORMATIONS
         self.f_button.subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_f_formations(checked))
-        self.f_button_text = avg.WordsNode(pos=(520 + 25, self.user_buttons[i].pos[1] + 6),
+        self.f_button_text = avg.WordsNode(pos=(self.f_button.pos[0] + 50, self.f_button.pos[1] + 6),
                                            color=global_values.COLOR_BACKGROUND, parent=self,
-                                           text="F-F", sensitive=False, alignment="center")
-        if not SHOW_F_FORMATIONS: self.__toggle_f_formations(SHOW_F_FORMATIONS)
-        if not LOAD_F_FORMATIONS: self.f_button.enabled = False
-
-        # smoothness slider
-        self.smoothness_text = avg.WordsNode(pos=(370, self.height/2 - 15), color=global_values.COLOR_FOREGROUND, parent=self,
-                                             text="Smoothness: {}s".format(
-                                                 global_values.averaging_count * global_values.time_step_size / 1000))
-        self.smoothness_slider = widget.Slider(pos=(370, self.height/2 + 5), width=130, parent=self, range=(2, 2000))
-        self.smoothness_slider.thumbPos = global_values.averaging_count
-        self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, lambda pos: self.__change_smoothness(pos))
+                                           text="F-Formations", sensitive=False, alignment="center")
+        if not SHOW_F_FORMATIONS: self.__toggle_f_formations(SHOW_F_FORMATIONS and LOAD_F_FORMATIONS)
+        if not LOAD_F_FORMATIONS:
+            self.f_button.enabled = False
+            self.f_button_text.color = global_values.COLOR_FOREGROUND
 
         # subscribe to global time_frame
         main_time_frame.subscribe(self)
@@ -129,6 +144,10 @@ class Options(libavg.DivNode):
 
         # publish changes
         main_time_frame.publish()
+
+    def __default_smoothness(self, value):
+        self.__change_smoothness(value)
+        self.smoothness_slider.thumbPos = global_values.averaging_count
 
     def __play_pause(self, checked):
         self.parent_div.play_pause()
