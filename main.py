@@ -7,7 +7,7 @@ import F_Formations
 """start parameter"""
 Options.SHOW_F_FORMATIONS = True
 Options.LOAD_F_FORMATIONS = False
-Options.COLOR_SCHEME = 1
+Options.COLOR_SCHEME = 0
 F_Formations.DURATION = 5000
 F_Formations.DISTANCE = 150
 F_Formations.ANGLE = 100
