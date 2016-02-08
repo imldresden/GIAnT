@@ -354,7 +354,6 @@ def create_touch_table(wall_screen_resolution):
             con.commit()
             datalist = []
 
-    print "done in " + str(time.time() - user_start_time)
 
     con.close()
 
@@ -445,13 +444,21 @@ def get_view_points_integral(userid):
 
 
 def setup_database(wall_screen_resolution):
+    print "loading csv files into database:"
     setup_raw_table()
+    print "tables created 1/7"
     init_raw_values()
+    print "tables created 2/7"
     create_head_table()
+    print "tables created 3/7"
     create_head_table_integral()
+    print "tables created 4/7"
     create_viewpoint_table()
+    print "tables created 5/7"
     create_viewpoint_table_integral()
+    print "tables created 6/7"
     create_touch_table(wall_screen_resolution)
+    print "tables created 7/7"
 
 
 init_values()
