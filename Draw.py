@@ -61,7 +61,8 @@ class main_drawer(app.MainDiv):
                                                                         data_type_x=Line_Visualization.DATA_TIME,
                                                                         data_type_y=Line_Visualization.DATA_POSITION_X,
                                                                         data_type_thickness=Line_Visualization.DATA_POSITION_Z,
-                                                                        data_type_opacity=Line_Visualization.DATA_POSITION_Z)
+                                                                        data_type_opacity=Line_Visualization.DATA_POSITION_Z,
+                                                                        invert_y=True)
         main_time_frame.subscribe(self.main_visualization)
 
         # wall visualization
@@ -70,7 +71,8 @@ class main_drawer(app.MainDiv):
                                                                         data_type_x=Line_Visualization.DATA_VIEWPOINT_X,
                                                                         data_type_y=Line_Visualization.DATA_VIEWPOINT_Y,
                                                                         data_type_thickness=Line_Visualization.DATA_POSITION_Z,
-                                                                        data_type_opacity=Line_Visualization.DATA_POSITION_Z)
+                                                                        data_type_opacity=Line_Visualization.DATA_POSITION_Z,
+                                                                        invert_y=True)
         main_time_frame.subscribe(self.wall_visualization)
 
         # room visualization

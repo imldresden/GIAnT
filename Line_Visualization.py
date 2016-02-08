@@ -28,7 +28,7 @@ class Line_Visualization(libavg.DivNode):
     end = 1
 
     def __init__(self, parent, data_type_x, data_type_y, data_type_thickness, data_type_opacity, top_axis=False,
-                 **kwargs):
+                 invert_x=False, invert_y=False, **kwargs):
         super(Line_Visualization, self).__init__(**kwargs)
         self.registerInstance(self, parent)
         self.crop = False
@@ -62,7 +62,7 @@ class Line_Visualization(libavg.DivNode):
         # y-axis
         if data_type_y == DATA_TIME:
             self.y_axis = axis.TimeAxisNode(pos=(0, 0), parent=self, size=(axis.AXIS_THICKNESS, self.data_div.height),
-                                            data_range=Time_Frame.total_range, unit="ms")
+                                            data_range=Time_Frame.total_range, unit="ms", inverted=invert_y)
         else:
             data_range = [0, 10]
             unit = ""
@@ -90,13 +90,14 @@ class Line_Visualization(libavg.DivNode):
                 unit = "cm"
 
             self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.AXIS_THICKNESS, self.data_div.height), parent=self,
-                                        sensitive=True, data_range=data_range, unit=unit, hide_rims=True)
+                                        sensitive=True, data_range=data_range, unit=unit, hide_rims=True,
+                                        inverted=invert_y)
 
         # x-axis
         x_axis_pos = (axis.AXIS_THICKNESS, self.data_div.height)
         if self.data_type_x == DATA_TIME:
             self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, parent=self, unit="ms", data_range=Time_Frame.total_range,
-                                            size=(self.data_div.width, axis.AXIS_THICKNESS))
+                                            size=(self.data_div.width, axis.AXIS_THICKNESS), inverted=invert_x)
         else:
             # set data_range according to data input
             if data_type_x == DATA_POSITION_X:
@@ -115,10 +116,10 @@ class Line_Visualization(libavg.DivNode):
                 data_range = global_values.y_wall_range
             self.x_axis = axis.AxisNode(pos=x_axis_pos, size=(self.data_div.width, axis.AXIS_THICKNESS), hide_rims=True,
                                         sensitive=True, parent=self, data_range=data_range, unit="cm",
-                                        top_axis=top_axis)
+                                        top_axis=top_axis, inverted=invert_x)
 
         if top_axis:
-            self.x_axis.pos=(axis.AXIS_THICKNESS, 0)
+            self.x_axis.pos = (axis.AXIS_THICKNESS, 0)
 
         self.createLine()
 
