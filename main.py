@@ -8,9 +8,9 @@ import F_Formations
 Options.SHOW_F_FORMATIONS = True
 Options.LOAD_F_FORMATIONS = False
 Options.COLOR_SCHEME = 1
-F_Formations.DURATION = 50000
-F_Formations.DISTANCE = 100
+F_Formations.DURATION = 5000
+F_Formations.DISTANCE = 150
 F_Formations.ANGLE = 100
-F_Formations.MOVEMENT = 300
+F_Formations.MOVEMENT = 50
 
 app.App().run(main_drawer(), app_resolution='1500x800')

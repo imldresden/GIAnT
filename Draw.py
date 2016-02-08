@@ -116,11 +116,11 @@ class main_drawer(app.MainDiv):
 
         # menu
         self.menu = Options.Options(nodes=nodes, parent=self,
-                                    pos=(axis.AXIS_THICKNESS/2, self.main_visualization.height),
+                                    pos=(axis.AXIS_THICKNESS, self.main_visualization.height - 5),
                                     size=(self.main_visualization.width, 40))
 
         self.legend = Legend.Legend(parent=self.menu, min_value=0, max_value=1, unit="cm", size=(200, 200))
-        self.legend.pos = (self.menu.width - self.legend.width + 10, 40 - self.legend.height)
+        self.legend.pos = (self.menu.width - self.legend.width - 10, 45 - self.legend.height)
 
         self.main_visualization.subscribe(avg.Node.MOUSE_WHEEL, self.onMouseWheel)
         app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward)

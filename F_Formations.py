@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import Util
 import math
 import libavg
@@ -8,9 +7,9 @@ import global_values
 import Time_Frame
 import time
 
-DURATION = 100000   # minimal duration in ms for formation to be counted as f-formation
+DURATION = 10000    # minimal duration in ms for formation to be counted as f-formation
 DISTANCE = 100      # maximum distance in cm between users
-ANGLE = 100         # maximum viewing angle between users
+ANGLE = 90         # maximum viewing angle between users
 MOVEMENT = 100      # movement limit for users in cm (they need to be standing approx at one spot for a f-formation)
 
 
@@ -32,18 +31,15 @@ class F_Formations(libavg.DivNode):
         self.__user_colors = [Util.get_user_color_as_hex(i, 1) for i in range(len(User.users))]  # colors from scheme
 
         # load f-formations (can take a few seconds)
-        self.load_f_formations(duration=DURATION, distance_threshold=DISTANCE, angle_threshold=ANGLE)
+        self.load_f_formations()
 
         # initial update
         self.update_time_frame(Time_Frame.total_range)
 
-    def load_f_formations(self, duration, distance_threshold, angle_threshold):
+    def load_f_formations(self):
         """
         Loading of F-Formation with given specific parameters.
         Iterates over the whole time span for each possible unique user-to-user combination.
-        :param duration: Minimal duration in ms for formation to be counted as f-formation
-        :param distance_threshold:  Maximum distance in cm between users
-        :param angle_threshold: Maximum viewing angle between users
         """
         # create tuple of users to check against existing f-formation
         user_list = []
@@ -55,10 +51,9 @@ class F_Formations(libavg.DivNode):
         print "Searching for F-Formations..."
         start_time = time.time()
 
-        t = Time_Frame.total_range[0]
-
         # for each user-to-user connection
         for i, users in enumerate(user_list):
+            t = Time_Frame.total_range[0]
             timer = 0
             flag = False
             initial_p1 = initial_p2 = (-1000, -1000)
@@ -74,15 +69,15 @@ class F_Formations(libavg.DivNode):
                 v1 = (dir_values_1[0], dir_values_1[1])
                 v2 = (dir_values_2[0], dir_values_2[1])
 
-                formation = self.check_for_f_formation(p1, p2, v1, v2, distance_threshold, angle_threshold)
+                formation = self.check_for_f_formation(p1, p2, v1, v2)
 
-                if formation > 0 and delta_p1 <= MOVEMENT and delta_p2 <= MOVEMENT:
+                if formation >= 1:
                     if timer == 0:
                         initial_p1 = User.users[users[0]].get_head_position_averaged(int(t/global_values.time_step_size))
                         initial_p1 = (initial_p1[0], initial_p1[1])
                         initial_p2 = User.users[users[1]].get_head_position_averaged(int(t/global_values.time_step_size))
                         initial_p2 = (initial_p2[0], initial_p2[1])
-                    if timer >= duration:
+                    if timer >= DURATION:
                         flag = True
 
                     delta_p1 = point_distance(initial_p1, p1)
@@ -99,17 +94,16 @@ class F_Formations(libavg.DivNode):
 
                 t += global_values.time_step_size
 
-        print "Searching for F-Formations done ({}s).".format(round((time.time() - start_time), 3))
+        print "Searching done ({}s). Found {} F-Formations.".format(round((time.time() - start_time), 3),
+                                                                    len(self.f_formations))
 
-    def check_for_f_formation(self, pos1, pos2, look_vector1, look_vector2, distance_threshold, angle_threshold):
+    def check_for_f_formation(self, pos1, pos2, look_vector1, look_vector2):
         """
         Check if two positions, each with a looking direction, are in a F-Formation.
         :param pos1: Position in cm.
         :param pos2: Position in cm.
         :param look_vector1:
         :param look_vector2:
-        :param distance_threshold: Distance in cm separating the two positions.
-        :param angle_threshold: in degrees
         :return: Strength of F-Formation.
         """
 
@@ -117,7 +111,7 @@ class F_Formations(libavg.DivNode):
 
         # Distance of positions. (1m seems a good approx. Distance for a f-formation. 2m is already pretty far!)
         distance = point_distance(pos1, pos2)
-        if distance <= distance_threshold:
+        if distance <= DISTANCE:
             strength = 0.5
 
             # Viewing angle between the two positions.
@@ -128,7 +122,7 @@ class F_Formations(libavg.DivNode):
             diff_angle_1 = math.degrees(angle(v1, pos1_2_dir))
             diff_angle_2 = math.degrees(angle(v2, pos2_1_dir))
 
-            if diff_angle_1 <= angle_threshold and diff_angle_2 <= angle_threshold:
+            if diff_angle_1 <= ANGLE and diff_angle_2 <= ANGLE:
                 strength = 1
 
         return strength
@@ -138,21 +132,19 @@ class F_Formations(libavg.DivNode):
         Called by the publisher time_frame to update the visualization to the new interval.
         :param interval: (start, end): new interval start and end as list
         """
-
         # delete old line nodes and indicators
         for i, node in enumerate(self.f_formation_nodes):
             node.unlink()
         for i, node in enumerate(self.f_formation_line_nodes):
             node.unlink()
 
-        self.__draw_f_formations2(interval)
+        self.__draw_f_formations(interval=interval, colored=True)
 
-    def __draw_f_formations2(self, interval):
+    def __draw_f_formations(self, interval, colored=False):
         """
         Colored Polygon for F-Formations.
         :param interval: Current time interval.
         """
-
         # update f-formation positions (a formation has [time, duration, user1, user2])
         for i, formation in enumerate(self.f_formations):
             duration = formation[1]
@@ -182,11 +174,13 @@ class F_Formations(libavg.DivNode):
                 else:
                     y_1 -= thickness_1
                     y_2 += thickness_2
-                y_half = (y_2 - y_1)/2
 
                 positions_user_1.append((x, y_1))
                 positions_user_2.append((x, y_2))
-                position_middle.append((x, y_1 + y_half))
+
+                if colored:
+                    y_half = (y_2 - y_1)/2
+                    position_middle.append((x, y_1 + y_half))
 
                 curr_time += self.__step_size
             # add last points to make clean cut at end of interval if step_size > global_values.time_step_size
@@ -206,73 +200,28 @@ class F_Formations(libavg.DivNode):
                 else:
                     y_1 -= thickness_1
                     y_2 += thickness_2
-                y_half = (y_2 - y_1)/2
 
                 positions_user_1.append((x, y_1))
                 positions_user_2.append((x, y_2))
-                position_middle.append((x, y_1 + y_half))
+                if colored:
+                    y_half = (y_2 - y_1)/2
+                    position_middle.append((x, y_1 + y_half))
 
             # create polygon with points of user 1 and 2
-            positions_user_1.extend(list(reversed(position_middle)))
-            positions_user_2.extend(list(reversed(position_middle)))
-            self.f_formation_nodes.append(libavg.PolygonNode(pos=positions_user_1, parent=self, opacity=0,
-                                                             fillcolor=self.__user_colors[user_1], fillopacity=1,
-                                                             blendmode="add"))
-            self.f_formation_nodes.append(libavg.PolygonNode(pos=positions_user_2, parent=self, opacity=0,
-                                                             fillcolor=self.__user_colors[user_2], fillopacity=1,
-                                                             blendmode="add"))
-
-            # create indication line
-            start_px = value_to_pixel(start, self.width, interval)
-            end_px = value_to_pixel(end, self.width, interval)
-            self.f_formation_line_nodes.append(libavg.LineNode(pos1=(start_px, 10), pos2=(end_px, 10), strokewidth=5,
-                                                               color=global_values.COLOR_FOREGROUND, blendmode="add",
-                                                               parent=self))
-
-    def __draw_f_formations(self, interval):
-        """
-        Polygon for F-Formations.
-        :param interval:
-        """
-
-        # update f-formation positions (a formation has [time, duration, user1, user2])
-        for i, formation in enumerate(self.f_formations):
-            duration = formation[1]
-            start = max(formation[0] - duration, interval[0])
-            end = min(formation[0], interval[1])
-            user_1 = formation[2]
-            user_2 = formation[3]
-
-            positions_user_1 = []
-            positions_user_2 = []
-
-            curr_time = start
-            step_size = global_values.time_step_size * 32
-            while curr_time <= end:
-                x = value_to_pixel(curr_time, self.width, interval)
-                y_1 = value_to_pixel(User.users[user_1].get_head_position_averaged(
-                    int(curr_time/global_values.time_step_size))[0], self.height, global_values.x_range)
-                y_2 = value_to_pixel(User.users[user_2].get_head_position_averaged(
-                    int(curr_time/global_values.time_step_size))[0], self.height, global_values.x_range)
-                positions_user_1.append((x, y_1 + self.__get_thickness(user_1, curr_time)))
-                positions_user_2.append((x, y_2 + self.__get_thickness(user_2, curr_time)))
-
-                curr_time += step_size
-
-            # add last points to make clean cut at end of interval if step_size > global_values.time_step_size
-            x = value_to_pixel(end, self.width, interval)
-            y_1 = value_to_pixel(User.users[user_1].get_head_position_averaged(
-                int(end/global_values.time_step_size))[0], self.height, global_values.x_range)
-            y_2 = value_to_pixel(User.users[user_2].get_head_position_averaged(
-                int(end/global_values.time_step_size))[0], self.height, global_values.x_range)
-            positions_user_2.append((x, y_2))
-            positions_user_1.append((x, y_1))
-
-            # create polygon with points of user 1 and 2
-            positions_user_1.extend(list(reversed(positions_user_2)))
-            self.f_formation_nodes.append(libavg.PolygonNode(pos=positions_user_1, parent=self, opacity=0,
-                                                             fillcolor=global_values.COLOR_FOREGROUND, fillopacity=1,
-                                                             blendmode="add"))
+            if colored:
+                positions_user_1.extend(list(reversed(position_middle)))
+                positions_user_2.extend(list(reversed(position_middle)))
+                self.f_formation_nodes.append(libavg.PolygonNode(pos=positions_user_1, parent=self, opacity=0,
+                                                                 fillcolor=self.__user_colors[user_1], fillopacity=1,
+                                                                 blendmode="add"))
+                self.f_formation_nodes.append(libavg.PolygonNode(pos=positions_user_2, parent=self, opacity=0,
+                                                                 fillcolor=self.__user_colors[user_2], fillopacity=1,
+                                                                 blendmode="add"))
+            else:
+                positions_user_1.extend(list(reversed(positions_user_2)))
+                self.f_formation_nodes.append(libavg.PolygonNode(pos=positions_user_1, parent=self, opacity=0,
+                                                                 fillcolor=global_values.COLOR_FOREGROUND,
+                                                                 fillopacity=1, blendmode="add"))
 
             # create indication line
             start_px = value_to_pixel(start, self.width, interval)
