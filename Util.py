@@ -110,13 +110,14 @@ def normalize_vector(vector):
 
 def get_user_color_as_hex(index, opacity):
     import global_values
+    import Options
     if index == -1:
         hls = [0, 0, 1]
     else:
         if index < 0 or index > 3:
             index = 0
             print "user color index out of range"
-        hls = global_values.user_color_schemes[0][index]
+        hls = global_values.user_color_schemes[Options.COLOR_SCHEME][index]
     hls = colorsys.hsv_to_rgb(hls[0], min(1, hls[1] * pow(opacity, 4) * 4), hls[2])
     color = (int(hls[0] * 255), int(hls[1] * 255), int(hls[2] * 255))
     color = '%02x%02x%02x' % color

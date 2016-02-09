@@ -11,11 +11,17 @@ AXIS_THICKNESS = 50
 
 
 class AxisNode(avg.DivNode):
-    """
-    Custom AxisNode with axis lines and labeling. Vertical if horizontal=False
-    """
-
-    def __init__(self, data_range, unit="cm", hide_rims=False, top_axis=False, parent=None, **kwargs):
+    def __init__(self, data_range, unit="cm", hide_rims=False, top_axis=False, inverted=False, parent=None, **kwargs):
+        """
+        Custom AxisNode with axis lines, grid lines and labeling.
+        :param data_range: The minimum and maximum data range to be displayed
+        :param unit: Unit of measurement (time: ms, length: cm)
+        :param hide_rims: Hides first and last ticks if True
+        :param top_axis: Determines if a slimmed x-axis should be displayed at the top instead of the bottom
+        :param inverted: If True, values on axis are displayed inverted
+        :param parent: The parent DivNode
+        :param kwargs: Other parameters needed for a DivNode
+        """
         super(AxisNode, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
@@ -42,6 +48,7 @@ class AxisNode(avg.DivNode):
         self.__end = data_range[1]                           # current maximal data value of visualization data
         self.__unit = unit                                   # unit of measurement (time: ms, length: cm)
         self.__hide_rims = hide_rims                         # determines if the first and last tick are shown
+        self.__inverted = inverted                           # shows values on axis inverted if true
 
         """
         TODO:
@@ -89,7 +96,10 @@ class AxisNode(avg.DivNode):
         self.__labels = [self._format_label_value(v) for v in self.__label_values]
 
         # calculate positions of ticks within AxisNode
-        offset = self._value_to_pixel(start, 0, self.__end - self.__start)
+        if self.__inverted:
+            offset = self._value_to_pixel(end, 0, self.__end - self.__start)
+        else:
+            offset = self._value_to_pixel(start, 0, self.__end - self.__start)
         self.__label_pos = [self._value_to_pixel(t, 0, self.__end - self.__start) - offset for t in self.__label_values]
 
         self.__draw_ticks()
@@ -167,10 +177,17 @@ class AxisNode(avg.DivNode):
         calculate pixel position on axis line of label value
         """
         if self.__vertical:
-            a = (end - start) / self.height
+            length = self.height
         else:
-            a = (end - start) / self.width
-        return value / a - start / a
+            length = self.width
+
+        a = (end - start) / length
+        pixel_pos = value / a - start / a
+
+        if self.__inverted:
+            return length - pixel_pos
+        else:
+            return pixel_pos
 
     def _format_label_value(self, v, short=False):
         """
