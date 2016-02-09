@@ -1,0 +1,1 @@
+- allow scroll over other visualizations (zoom in/out at middle of time interval)

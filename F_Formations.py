@@ -7,10 +7,10 @@ import global_values
 import Time_Frame
 import time
 
-DURATION = 10000    # minimal duration in ms for formation to be counted as f-formation
-DISTANCE = 100      # maximum distance in cm between users
+DURATION = 5000    # minimal duration in ms for formation to be counted as f-formation
+DISTANCE = 80      # maximum distance in cm between users
+MAX_DRIFT = 30      # movement limit for users in cm (they need to be standing approx at one spot for a f-formation)
 ANGLE = 90         # maximum viewing angle between users
-MOVEMENT = 100      # movement limit for users in cm (they need to be standing approx at one spot for a f-formation)
 
 
 class F_Formations(libavg.DivNode):
@@ -51,81 +51,59 @@ class F_Formations(libavg.DivNode):
         print "Searching for F-Formations..."
         start_time = time.time()
 
-        # for each user-to-user connection
-        for i, users in enumerate(user_list):
-            t = Time_Frame.total_range[0]
-            timer = 0
-            flag = False
-            initial_p1 = initial_p2 = (-1000, -1000)
-            delta_p1 = delta_p2 = 0
-            # go through time by global_values.time_step_size steps
-            while t < Time_Frame.total_range[1]:
-                pos_values_1 = User.users[users[0]].get_head_position_averaged(int(t/global_values.time_step_size))
-                pos_values_2 = User.users[users[1]].get_head_position_averaged(int(t/global_values.time_step_size))
-                dir_values_1 = User.users[users[0]].get_head_orientation(int(t/global_values.time_step_size))
-                dir_values_2 = User.users[users[1]].get_head_orientation(int(t/global_values.time_step_size))
-                p1 = (pos_values_1[0], pos_values_1[1])
-                p2 = (pos_values_2[0], pos_values_2[1])
-                v1 = (dir_values_1[0], dir_values_1[1])
-                v2 = (dir_values_2[0], dir_values_2[1])
+        # pre-definitions for following loops
+        t = Time_Frame.total_range[0]
+        f_timer = [0 for i in range(len(user_list))]
+        long_enough = [False for i in range(len(user_list))]
+        init_pos = [(-1000, -1000) for i in range(len(user_list))]
+        drift = [False for i in range(len(user_list))]
+        curr_drift = [0 for i in range(len(user_list))]
 
-                formation = self.check_for_f_formation(p1, p2, v1, v2)
+        # for every time step
+        while t < Time_Frame.total_range[1]:
 
-                if formation >= 1:
-                    if timer == 0:
-                        initial_p1 = User.users[users[0]].get_head_position_averaged(int(t/global_values.time_step_size))
-                        initial_p1 = (initial_p1[0], initial_p1[1])
-                        initial_p2 = User.users[users[1]].get_head_position_averaged(int(t/global_values.time_step_size))
-                        initial_p2 = (initial_p2[0], initial_p2[1])
-                    if timer >= DURATION:
-                        flag = True
+            # pre-definitions for following for loop
+            curr_time_index = int(t/global_values.time_step_size)
 
-                    delta_p1 = point_distance(initial_p1, p1)
-                    delta_p2 = point_distance(initial_p2, p2)
+            # for each user combination
+            for i, users in enumerate(user_list):
+                pos_values_1 = User.users[users[0]].get_head_position_averaged(curr_time_index)
+                pos_values_2 = User.users[users[1]].get_head_position_averaged(curr_time_index)
+                pos_1 = (pos_values_1[0], pos_values_1[1])
+                pos_2 = (pos_values_2[0], pos_values_2[1])
+                distance = point_distance(pos_1, pos_2)
 
-                    timer += global_values.time_step_size
+                # check if the two users are close enough together
+                if distance <= DISTANCE and not drift[i]:
+                    if f_timer[i] == 0:
+                        init_pos[i] = middle(pos_1, pos_2)
+                        curr_drift[i] = 0
+                    else:
+                        curr_drift[i] = point_distance(init_pos[i], middle(pos_1, pos_2))
+
+                    if curr_drift[i] >= MAX_DRIFT:
+                        drift[i] = True
+
+                    if f_timer[i] >= DURATION and not long_enough[i]:
+                        long_enough[i] = True
+
+                    # increase ongoing f-formation duration
+                    f_timer[i] += global_values.time_step_size
                 else:
-                    if flag:
-                        # time, dur, user1, user2
-                        self.f_formations.append([t, timer, users[0], users[1]])
-                        flag = False
-                    timer = 0
-                    initial_p1 = initial_p2 = (-1000, -1000)
+                    if long_enough[i]:
+                        # end time of formation, duration, user1, user2
+                        self.f_formations.append([t, f_timer[i], users[0], users[1]])
+                        long_enough[i] = False
+                        drift[i] = False
+                    init_pos[i] = (-1000, -1000)
 
-                t += global_values.time_step_size
+                    # reset ongoing f-formation timer
+                    f_timer[i] = 0
+
+            t += global_values.time_step_size
 
         print "Searching done ({}s). Found {} F-Formations.".format(round((time.time() - start_time), 3),
                                                                     len(self.f_formations))
-
-    def check_for_f_formation(self, pos1, pos2, look_vector1, look_vector2):
-        """
-        Check if two positions, each with a looking direction, are in a F-Formation.
-        :param pos1: Position in cm.
-        :param pos2: Position in cm.
-        :param look_vector1:
-        :param look_vector2:
-        :return: Strength of F-Formation.
-        """
-
-        strength = 0
-
-        # Distance of positions. (1m seems a good approx. Distance for a f-formation. 2m is already pretty far!)
-        distance = point_distance(pos1, pos2)
-        if distance <= DISTANCE:
-            strength = 0.5
-
-            # Viewing angle between the two positions.
-            v1 = normalize(look_vector1)
-            v2 = normalize(look_vector2)
-            pos1_2_dir = normalize((look_vector2[0] - look_vector1[0], look_vector2[1] - look_vector1[1]))
-            pos2_1_dir = normalize((look_vector1[0] - look_vector2[0], look_vector1[1] - look_vector2[1]))
-            diff_angle_1 = math.degrees(angle(v1, pos1_2_dir))
-            diff_angle_2 = math.degrees(angle(v2, pos2_1_dir))
-
-            if diff_angle_1 <= ANGLE and diff_angle_2 <= ANGLE:
-                strength = 1
-
-        return strength
 
     def update_time_frame(self, interval):
         """
@@ -138,11 +116,11 @@ class F_Formations(libavg.DivNode):
         for i, node in enumerate(self.f_formation_line_nodes):
             node.unlink()
 
-        self.__draw_f_formations(interval=interval, colored=True)
+        self.__draw_f_formations(interval=interval)
 
-    def __draw_f_formations(self, interval, colored=False):
+    def __draw_f_formations(self, interval):
         """
-        Colored Polygon for F-Formations.
+        Polygon for F-Formations.
         :param interval: Current time interval.
         """
         # update f-formation positions (a formation has [time, duration, user1, user2])
@@ -155,7 +133,6 @@ class F_Formations(libavg.DivNode):
 
             positions_user_1 = []
             positions_user_2 = []
-            position_middle = []
 
             curr_time = start
             while curr_time <= end:
@@ -178,10 +155,6 @@ class F_Formations(libavg.DivNode):
                 positions_user_1.append((x, y_1))
                 positions_user_2.append((x, y_2))
 
-                if colored:
-                    y_half = (y_2 - y_1)/2
-                    position_middle.append((x, y_1 + y_half))
-
                 curr_time += self.__step_size
             # add last points to make clean cut at end of interval if step_size > global_values.time_step_size
             else:
@@ -203,25 +176,12 @@ class F_Formations(libavg.DivNode):
 
                 positions_user_1.append((x, y_1))
                 positions_user_2.append((x, y_2))
-                if colored:
-                    y_half = (y_2 - y_1)/2
-                    position_middle.append((x, y_1 + y_half))
 
             # create polygon with points of user 1 and 2
-            if colored:
-                positions_user_1.extend(list(reversed(position_middle)))
-                positions_user_2.extend(list(reversed(position_middle)))
-                self.f_formation_nodes.append(libavg.PolygonNode(pos=positions_user_1, parent=self, opacity=0,
-                                                                 fillcolor=self.__user_colors[user_1], fillopacity=1,
-                                                                 blendmode="add"))
-                self.f_formation_nodes.append(libavg.PolygonNode(pos=positions_user_2, parent=self, opacity=0,
-                                                                 fillcolor=self.__user_colors[user_2], fillopacity=1,
-                                                                 blendmode="add"))
-            else:
-                positions_user_1.extend(list(reversed(positions_user_2)))
-                self.f_formation_nodes.append(libavg.PolygonNode(pos=positions_user_1, parent=self, opacity=0,
-                                                                 fillcolor=global_values.COLOR_FOREGROUND,
-                                                                 fillopacity=1, blendmode="add"))
+            positions_user_1.extend(list(reversed(positions_user_2)))
+            self.f_formation_nodes.append(libavg.PolygonNode(pos=positions_user_1, parent=self, opacity=0,
+                                                             fillcolor=global_values.COLOR_FOREGROUND,
+                                                             fillopacity=1, blendmode="add"))
 
             # create indication line
             start_px = value_to_pixel(start, self.width, interval)
@@ -283,6 +243,10 @@ def length(v):
     :return: Length
     """
     return math.sqrt(dot_product(v, v))
+
+
+def middle(p1, p2):
+    return (p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2
 
 
 def normalize(v):
