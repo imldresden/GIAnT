@@ -450,7 +450,7 @@ def get_view_points_integral(userid):
 
 def setup_database(wall_screen_resolution):
     print "loading csv files into database:"
-    #setup_raw_table()
+    setup_raw_table()
     print "tables created 1/7"
     init_raw_values()
     print "tables created 2/7"
