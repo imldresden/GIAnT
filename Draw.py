@@ -46,6 +46,8 @@ class main_drawer(app.MainDiv):
         self.menu_width = 500
         self.menu_height = 200
 
+        #self.elementoutlinecolor="FF0000"
+
         # to color background
         libavg.RectNode(parent=self, pos=(-1000, -1000), size=(10000, 10000),
                         strokewidth=0, fillcolor=global_values.COLOR_BACKGROUND, fillopacity=1)
@@ -71,7 +73,16 @@ class main_drawer(app.MainDiv):
                                                                         data_type_y=Line_Visualization.DATA_VIEWPOINT_Y,
                                                                         data_type_thickness=Line_Visualization.DATA_POSITION_Z,
                                                                         data_type_opacity=Line_Visualization.DATA_POSITION_Z)
+
+        self.wall_highlight = Highlight_Visualization.Highlight_Visualization(parent=self, size=self.wall_visualization.background_rect.size,
+                                                                              pos=self.wall_visualization.pos,
+                                                                              data_type_x=Line_Visualization.DATA_VIEWPOINT_X,
+                                                                              data_type_y=Line_Visualization.DATA_VIEWPOINT_Y,
+                                                                              data_type_radius=15,
+                                                                              draw_view_line=False,
+                                                                              data_type_opacity=0.01)
         main_time_frame.subscribe(self.wall_visualization)
+        main_time_frame.subscribe(self.wall_highlight)
 
         # room visualization
         self.room_visualization = Line_Visualization.Line_Visualization(parent=self, size=(self.menu_width, (self.resolution[1] - self.menu_height) / 2),
@@ -87,6 +98,7 @@ class main_drawer(app.MainDiv):
                                                                               data_type_x=Line_Visualization.DATA_POSITION_X,
                                                                               data_type_y=Line_Visualization.DATA_POSITION_Z,
                                                                               data_type_radius=15,
+                                                                              draw_view_line=True,
                                                                               data_type_opacity=0.01)
         main_time_frame.subscribe(self.room_visualization)
         main_time_frame.subscribe(self.room_highlight)

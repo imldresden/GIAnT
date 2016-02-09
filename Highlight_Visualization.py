@@ -27,9 +27,11 @@ VIS_OPACITY = 3
 class Highlight_Visualization(libavg.DivNode):
     time = 0
     end = 1
+    view_line_length = 30
 
-    def __init__(self, parent, data_type_x, data_type_y, data_type_radius, data_type_opacity, **kwargs):
+    def __init__(self, parent, data_type_x, data_type_y, data_type_radius, data_type_opacity, draw_view_line, **kwargs):
         super(Highlight_Visualization, self).__init__(**kwargs)
+        self.elementoutlinecolor = "FFFF00"
         self.registerInstance(self, parent)
         self.crop = False
 
@@ -41,11 +43,13 @@ class Highlight_Visualization(libavg.DivNode):
 
         self.data_types = [self.data_type_x, self.data_type_y, self.data_type_opacity, self.data_type_radius]
 
+        self.draw_view_line = draw_view_line
+        self.pos = (self.pos[0] + axis.AXIS_THICKNESS, self.pos[1])
 
 
         # div for visualization data
-        self.data_div = libavg.DivNode(pos=(axis.AXIS_THICKNESS, 0),
-                                       size=(self.width - axis.AXIS_THICKNESS, self.height - axis.AXIS_THICKNESS),
+        self.data_div = libavg.DivNode(pos=(0, 0),
+                                       size=(self.width, self.height),
                                        parent=self, crop=True)
 
         # user divs to distinguish MeshNodes in data_div by user (user_divs are initialized as self.data_div's)
@@ -54,8 +58,11 @@ class Highlight_Visualization(libavg.DivNode):
             user_div = libavg.DivNode(pos=(0, 0), parent=self.data_div, crop=True, size=self.size)
             self.user_divs.append(user_div)
             pos = User.users[i].get_head_position_averaged(0)
-
-            libavg.CircleNode(pos=(pos[0], pos[1]), r=(self.size[0] + self.size[1]) / 100, parent=user_div, fillcolor=Util.get_user_color_as_hex(i, 1))
+            look_dir = User.users[i].get_head_orientation(0)
+            user_color = Util.get_user_color_as_hex(i, 1)
+            libavg.CircleNode(pos=(pos[0], pos[1]), r=(self.size[0] + self.size[1]) / 100, parent=user_div, color=global_values.COLOR_BLACK, fillcolor=user_color, strokewidth=1, fillopacity=1)
+            if self.draw_view_line:
+                libavg.LineNode(parent=user_div, pos1=(pos[0], pos[1]), pos2=(pos[0], pos[1] + self.view_line_length), color=user_color, strokewidth=3)
 
         self.set_positions()
 
@@ -68,11 +75,31 @@ class Highlight_Visualization(libavg.DivNode):
 
         for i in range(len(self.user_divs)):
             user_div = self.user_divs[i]
-            new_pos = User.users[i].get_head_position_averaged(Util.get_index_from_time_percentage(self.time))
-            new_pos[0] = (new_pos[0] - global_values.x_range[0]) / (global_values.x_range[1] - global_values.x_range[0])
-            new_pos[1] = (new_pos[1] - global_values.x_range[0]) / (global_values.x_range[1] - global_values.x_range[0])
-            new_pos[2] = (new_pos[2] - global_values.x_range[0]) / (global_values.x_range[1] - global_values.x_range[0])
-            user_div.getChild(0).pos = (new_pos[0] * self.width, new_pos[2] * self.height)
+            highlight_time = Util.get_index_from_time_percentage(self.time)
+            if self.data_type_x == DATA_POSITION_X:
+                if self.data_type_y == DATA_POSITION_Z:
+                    new_pos = User.users[i].get_head_position_averaged(highlight_time)
+                    new_pos[0] = (new_pos[0] - global_values.x_range[0]) / (global_values.x_range[1] - global_values.x_range[0])
+                    new_pos[1] = (new_pos[1] - global_values.y_range[0]) / (global_values.y_range[1] - global_values.y_range[0])
+                    new_pos[2] = (new_pos[2] - global_values.z_range[0]) / (global_values.z_range[1] - global_values.z_range[0])
+                    pos = (new_pos[0] * self.width, new_pos[2] * self.height)
+                    user_div.getChild(0).pos = pos
+
+
+                if self.draw_view_line:
+                    look_dir = User.users[i].get_head_orientation(highlight_time)
+                    look_dir = Util.get_look_direction(look_dir[0], look_dir[1])
+                    user_div.getChild(1).pos1 = tuple(pos)
+                    user_div.getChild(1).pos2 = (pos[0] - self.view_line_length * look_dir[0], pos[1] - self.view_line_length * look_dir[2])
+
+            else:
+                if self.data_type_x == DATA_VIEWPOINT_X and self.data_type_y == DATA_VIEWPOINT_Y:
+                    new_pos = User.users[i].get_view_point_averaged(highlight_time)
+                    new_pos[0] = (new_pos[0] - global_values.x_wall_range[0]) / (global_values.x_wall_range[1] - global_values.x_wall_range[0])
+                    new_pos[1] = 1 - (new_pos[1] - global_values.y_wall_range[0]) / (global_values.y_wall_range[1] - global_values.y_wall_range[0])
+                    pos = (new_pos[0] * self.width, new_pos[1] * self.height)
+                    user_div.getChild(0).pos = pos
+
 
         '''
         userid = -1

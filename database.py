@@ -164,6 +164,7 @@ def create_head_table():
                 # upload
                 cur.executemany("INSERT INTO headtable (user, x, y, z, pitch, yaw, roll, time) VALUES (?,?,?,?,?,?,?,?);", datalist)
                 datalist = []  # clear
+                print "inserting 5000 a"
                 con.commit()
 
             new_data = list(row)
@@ -194,7 +195,7 @@ def create_head_table():
                     newest_time = new_data[COL_TIME]
                     # for each skipped step
                     interpolated_list = []
-                    for interpolated_time in range(last_time_step, new_data[COL_TIME], global_values.time_step_size):
+                    for interpolated_time in range(last_time_step, int(new_data[COL_TIME]), global_values.time_step_size):
                         # progress/percentage of the step between the last time and the new time
                         percentage = min(1, max(0, (interpolated_time - last_time) / float(newest_time - last_time)))
 
@@ -431,7 +432,7 @@ def get_head_positions_optimized(userid):
     return executeQry("SELECT x, y, z, time FROM headtableoptimized WHERE user = " + str(userid) + " ORDER BY time;", True)
 
 
-def get_head_orientations_integral(userid):
+def get_head_orientations(userid):
     return executeQry("SELECT pitch, yaw, roll, time FROM headtableintegral WHERE user = " + str(userid) + " GROUP BY time ORDER BY time;", True)
 
 
@@ -449,7 +450,7 @@ def get_view_points_integral(userid):
 
 def setup_database(wall_screen_resolution):
     print "loading csv files into database:"
-    setup_raw_table()
+    #setup_raw_table()
     print "tables created 1/7"
     init_raw_values()
     print "tables created 2/7"
