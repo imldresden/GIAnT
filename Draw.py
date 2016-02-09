@@ -77,7 +77,6 @@ class main_drawer(app.MainDiv):
                                                                         data_type_opacity=Line_Visualization.DATA_POSITION_Z,
                                                                         invert_y=True,
                                                                         name="Wall Front")
-                                                                        data_type_opacity=Line_Visualization.DATA_POSITION_Z)
 
         self.wall_highlight = Highlight_Visualization.Highlight_Visualization(parent=self, size=self.wall_visualization.background_rect.size,
                                                                               pos=self.wall_visualization.pos,
