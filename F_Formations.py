@@ -67,8 +67,8 @@ class F_Formations(libavg.DivNode):
             while t < Time_Frame.total_range[1]:
                 pos_values_1 = User.users[users[0]].get_head_position_averaged(int(t/global_values.time_step_size))
                 pos_values_2 = User.users[users[1]].get_head_position_averaged(int(t/global_values.time_step_size))
-                dir_values_1 = User.users[users[0]].get_head_orientation_averaged(int(t/global_values.time_step_size))
-                dir_values_2 = User.users[users[1]].get_head_orientation_averaged(int(t/global_values.time_step_size))
+                dir_values_1 = User.users[users[0]].get_head_orientation(int(t/global_values.time_step_size))
+                dir_values_2 = User.users[users[1]].get_head_orientation(int(t/global_values.time_step_size))
                 p1 = (pos_values_1[0], pos_values_1[1])
                 p2 = (pos_values_2[0], pos_values_2[1])
                 v1 = (dir_values_1[0], dir_values_1[1])

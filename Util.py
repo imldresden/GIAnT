@@ -72,7 +72,7 @@ def line_intersection(line1, line2):
 
 def get_index_from_time_percentage(percentage):
     import User
-    return int(percentage * float(len(User.users[0].head_positions)))
+    return int(percentage * float(len(User.users[0].head_positions_integral)))
 
 
 def get_look_direction(pitch, yaw):
@@ -97,7 +97,7 @@ def get_look_direction(pitch, yaw):
     x = new_x
     z = new_z
 
-    return (x, y, z)
+    return (-x, y, z)
 
 
 def normalize_vector(vector):
