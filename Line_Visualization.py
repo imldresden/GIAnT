@@ -38,6 +38,7 @@ class Line_Visualization(libavg.DivNode):
         self.data_type_y = data_type_y
         self.data_type_thickness = data_type_thickness
         self.data_type_opacity = data_type_opacity
+        custom_label_offset = -1
 
         self.data_types = [self.data_type_x, self.data_type_y, self.data_type_opacity, self.data_type_thickness]
 
@@ -70,6 +71,7 @@ class Line_Visualization(libavg.DivNode):
             if data_type_y == DATA_POSITION_X:
                 data_range = global_values.x_range
                 unit = "cm"
+                custom_label_offset = 23
             elif data_type_y == DATA_POSITION_Y:
                 data_range = global_values.y_range
                 unit = "cm"
@@ -89,9 +91,14 @@ class Line_Visualization(libavg.DivNode):
                 data_range = global_values.y_wall_range
                 unit = "cm"
 
-            self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.AXIS_THICKNESS, self.data_div.height), parent=self,
-                                        sensitive=True, data_range=data_range, unit=unit, hide_rims=True,
-                                        inverted=invert_y)
+            if custom_label_offset == -1:
+                self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.AXIS_THICKNESS, self.data_div.height), parent=self,
+                                            sensitive=True, data_range=data_range, unit=unit, hide_rims=True,
+                                            inverted=invert_y)
+            else:
+                self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.AXIS_THICKNESS, self.data_div.height), parent=self,
+                                            sensitive=True, data_range=data_range, unit=unit, hide_rims=True,
+                                            inverted=invert_y, label_offset=custom_label_offset)
 
         # x-axis
         x_axis_pos = (axis.AXIS_THICKNESS, self.data_div.height)

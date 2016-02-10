@@ -55,6 +55,13 @@ class main_drawer(app.MainDiv):
         for userid in range(1, 5):
             user = User.User(userid)
 
+        # cosmetics
+        self.cosmetics_wall = libavg.PolygonNode(parent=self, opacity=0, fillopacity=1,
+                                                 fillcolor=global_values.COLOR_DARK_GREY)
+        self.cosmetics_main = libavg.PolygonNode(parent=self, opacity=0, fillopacity=1,
+                                                 fillcolor=global_values.COLOR_DARK_GREY)
+        self.cosmetics_main_screen = libavg.PolygonNode(parent=self, opacity=0, fillopacity=1,
+                                                 fillcolor=global_values.COLOR_BLACK)
 
         # main visualization
         self.main_visualization = Line_Visualization.Line_Visualization(parent=self,
@@ -137,6 +144,8 @@ class main_drawer(app.MainDiv):
         self.legend = Legend.Legend(parent=self.menu, min_value=0, max_value=1, unit="cm", size=(200, 200))
         self.legend.pos = (self.menu.width - self.legend.width - 10, 45 - self.legend.height)
 
+        self.draw_cosmetics()
+
         self.main_visualization.subscribe(avg.Node.MOUSE_WHEEL, self.onMouseWheel)
         app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward)
         app.keyboardmanager.bindKeyDown(keyname='Left', handler=self.shift_back)
@@ -183,6 +192,40 @@ class main_drawer(app.MainDiv):
         main_time_frame.play_animation()
         self.video.play_pause(main_time_frame.play)
 
+    def draw_cosmetics(self):
+        # set position of cosmetic wall image left of the main visualization
+        main_pos = (self.main_visualization.pos[0] + axis.AXIS_THICKNESS, self.main_visualization.pos[1])
+        main_size = (self.main_visualization.width - axis.AXIS_THICKNESS, self.main_visualization.size[1] - axis.AXIS_THICKNESS)
+        cos_offset = 9
+        cos_vis_offset = 4
+        cos_screen_offset = 2
+        cos_wall_height = 83
+        cos_wall_top = 55
+        cos_wall_width = 16
+        self.cosmetics_main.pos = (
+            (main_pos[0] - cos_vis_offset, main_pos[1] + cos_wall_top),                             # top right
+            (main_pos[0] - cos_vis_offset, main_size[1] - cos_wall_height),                         # bottom right
+            (main_pos[0] - cos_vis_offset - cos_wall_width, main_size[1] - cos_wall_height),        # bottom mid
+            (main_pos[0] - cos_vis_offset - cos_wall_width - cos_offset, main_size[1] - cos_offset - cos_wall_height),  # bottom left
+            (main_pos[0] - cos_vis_offset - cos_wall_width - cos_offset, main_pos[1] - cos_offset + cos_wall_top),  # top left
+            (main_pos[0] - cos_vis_offset - cos_offset, main_pos[1] - cos_offset + cos_wall_top))    # top mid
+        self.cosmetics_main_screen.pos = (
+            (main_pos[0] - cos_vis_offset - cos_screen_offset, main_pos[1] + cos_wall_top + cos_screen_offset),
+            (main_pos[0] - cos_vis_offset - cos_screen_offset, main_size[1] - cos_wall_height - cos_screen_offset),
+            (main_pos[0] - cos_vis_offset - cos_offset, main_size[1] - cos_wall_height - cos_offset - cos_screen_offset),
+            (main_pos[0] - cos_vis_offset - cos_offset, main_pos[1] - cos_offset + cos_wall_top + cos_screen_offset))
+
+        # set position of cosmetic wall image behind wall visualization
+        wall_pos = (self.wall_visualization.pos[0] + axis.AXIS_THICKNESS, self.wall_visualization.pos[1])
+        wall_size = (self.wall_visualization.width - axis.AXIS_THICKNESS, self.wall_visualization.height - axis.AXIS_THICKNESS)
+        cos_offset = 6
+        self.cosmetics_wall.pos = (
+            wall_pos,
+            (wall_pos[0] + wall_size[0], wall_pos[1]),
+            (wall_pos[0] + wall_size[0], wall_pos[1] + wall_size[1]),
+            (wall_pos[0] + wall_size[0] + cos_offset, wall_pos[1] + wall_size[1] - cos_offset),
+            (wall_pos[0] + wall_size[0] + cos_offset, wall_pos[1] - cos_offset),
+            (wall_pos[0] + cos_offset, wall_pos[1] - cos_offset))
 
 def calculate_line_intersection(p1, p2_selected, p3, thickness1, thickness2_selected, thickness3):
     thickness1 *= 0.5

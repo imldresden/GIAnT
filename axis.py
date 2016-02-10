@@ -11,7 +11,8 @@ AXIS_THICKNESS = 50
 
 
 class AxisNode(avg.DivNode):
-    def __init__(self, data_range, unit="cm", hide_rims=False, top_axis=False, inverted=False, parent=None, **kwargs):
+    def __init__(self, data_range, unit="cm", hide_rims=False, top_axis=False, inverted=False, parent=None,
+                 label_offset=5, **kwargs):
         """
         Custom AxisNode with axis lines, grid lines and labeling.
         :param data_range: The minimum and maximum data range to be displayed
@@ -35,7 +36,7 @@ class AxisNode(avg.DivNode):
         else:
             self.__h_tick_length = 5
         self.__tick_length = self.__h_tick_length * 2        # length of the tick marks on the axis
-        self.__label_offset = self.__tick_length             # offset of tick labels from axis line
+        self.__label_offset = label_offset                   # offset of tick labels from axis line
         self.__label_values = []                             # contains the data values of the tick labels of the axis
         self.__label_pos = []                                # contains the pos at axis for each label in __label_values
         self.__ticks = []                                    # separation lines (ticks) for axis
@@ -147,7 +148,8 @@ class AxisNode(avg.DivNode):
                 self.__ticks[i].pos2 = (self.__axis_line.pos1[0] + self.__tick_length, pos)
                 if not self.__top_axis:
                     self.__label_nodes[i].alignment = "right"
-                    self.__label_nodes[i].pos = (self.__axis_line.pos1[0] - self.__tick_length, pos - v_center - 1)
+                    self.__label_nodes[i].pos = (self.__axis_line.pos1[0] - self.__tick_length - self.__label_offset,
+                                                 pos - v_center - 1)
             else:
                 self.__grid[i].pos1 = (pos, self.__axis_line.pos1[0])
                 if self.__top_axis:
