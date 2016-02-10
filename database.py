@@ -164,7 +164,6 @@ def create_head_table():
                 # upload
                 cur.executemany("INSERT INTO headtable (user, x, y, z, pitch, yaw, roll, time) VALUES (?,?,?,?,?,?,?,?);", datalist)
                 datalist = []  # clear
-                print "inserting 5000 a"
                 con.commit()
 
             new_data = list(row)

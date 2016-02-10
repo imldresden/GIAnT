@@ -4,7 +4,7 @@ import Time_Frame
 
 
 class Video:
-    offset = (60 * 6 + 8.1) * 1000
+    offset = (60 * 6 + 8.8) * 1000
     path = ""
     def __init__(self, pos, size, parent):
         global path
