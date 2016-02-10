@@ -131,7 +131,7 @@ class main_drawer(app.MainDiv):
 
         # menu
         self.menu = Options.Options(nodes=nodes, parent=self,
-                                    pos=(axis.AXIS_THICKNESS, self.main_visualization.height - 5),
+                                    pos=(0, self.main_visualization.height - 5),
                                     size=(self.main_visualization.width, 40))
 
         self.legend = Legend.Legend(parent=self.menu, min_value=0, max_value=1, unit="cm", size=(200, 200))

@@ -148,7 +148,7 @@ class F_Formations(libavg.DivNode):
             curr_time = start
             offset = 215
             while curr_time <= end:
-                x = value_to_pixel(curr_time+self.__step_size, self.width, interval)
+                x = value_to_pixel(curr_time, self.width, interval)
                 y_1 = value_to_pixel(self.height-offset-User.users[user_1].get_head_position_averaged(
                     int(curr_time/global_values.time_step_size))[0], self.height, global_values.x_range)
                 y_2 = value_to_pixel(self.height-offset-User.users[user_2].get_head_position_averaged(
@@ -170,7 +170,7 @@ class F_Formations(libavg.DivNode):
                 curr_time += self.__step_size
             # add last points to make clean cut at end of interval if step_size > global_values.time_step_size
             else:
-                x = value_to_pixel(end+self.__step_size/2, self.width, interval)
+                x = value_to_pixel(end, self.width, interval)
                 y_1 = value_to_pixel(self.height-offset-User.users[user_1].get_head_position_averaged(
                     int(end/global_values.time_step_size))[0], self.height, global_values.x_range)
                 y_2 = value_to_pixel(self.height-offset-User.users[user_2].get_head_position_averaged(
@@ -194,6 +194,7 @@ class F_Formations(libavg.DivNode):
             self.f_formation_nodes.append(libavg.PolygonNode(pos=positions_user_1, parent=self, opacity=0,
                                                              fillcolor=global_values.COLOR_BACKGROUND,
                                                              fillopacity=1, blendmode="add"))
+            self.f_formation_nodes.append(libavg.MeshNode())
 
             # create indication line
             start_px = value_to_pixel(start, self.width, interval)
