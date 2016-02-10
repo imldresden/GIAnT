@@ -164,11 +164,11 @@ class Line_Visualization(libavg.DivNode):
 
                         if i == VIS_X:
                             data_type = self.data_type_x
-                        if i == VIS_Y:
+                        elif i == VIS_Y:
                             data_type = self.data_type_y
-                        if i == VIS_THICKNESS:
+                        elif i == VIS_THICKNESS:
                             data_type = self.data_type_thickness
-                        if i == VIS_OPACITY:
+                        elif i == VIS_OPACITY:
                             data_type = self.data_type_opacity
 
                         if data_type > 0:
@@ -176,26 +176,28 @@ class Line_Visualization(libavg.DivNode):
 
                         if data_type == DATA_POSITION_X:
                             data = (head_position_averaged[0] - global_values.x_range[0]) / float(global_values.x_range[1] - global_values.x_range[0])
-                        if data_type == DATA_POSITION_Y:
+                            if i == VIS_Y:
+                                data = 1 - data
+                        elif data_type == DATA_POSITION_Y:
                             data = (head_position_averaged[1] - global_values.y_range[0]) / float(global_values.y_range[1] - global_values.y_range[0])
-                        if data_type == DATA_POSITION_Z:
+                        elif data_type == DATA_POSITION_Z:
                             data = (head_position_averaged[2] - global_values.z_range[0]) / float(global_values.z_range[1] - global_values.z_range[0])
 
-                        if data_type == DATA_TIME:
+                        elif data_type == DATA_TIME:
                             data = float(sample) / float(max(1, samplecount - 1))
 
-                        if data_type == DATA_VIEWPOINT_X:
+                        elif data_type == DATA_VIEWPOINT_X:
                             data = (view_point_averaged[0] - global_values.x_wall_range[0]) / float(global_values.x_wall_range[1] - global_values.x_wall_range[0])
-                        if data_type == DATA_VIEWPOINT_Y:
+                        elif data_type == DATA_VIEWPOINT_Y:
                             data = (view_point_averaged[1] - global_values.y_wall_range[0]) / float(global_values.y_wall_range[1] - global_values.y_wall_range[0])
                             data = 1 - data
 
 
-                        if data_type == DATA_TOUCH_X:
+                        elif data_type == DATA_TOUCH_X:
                             print "not working yet"
                             # touch_x = (user.touches[posindex][0]-database.min_touch_x)/float(database.max_touch_x-database.min_touch_x)
 
-                        if data_type == DATA_TOUCH_Y:
+                        elif data_type == DATA_TOUCH_Y:
                             print "not working yet"
                             # touch_y = (user.touches[posindex][1]-database.min_touch_y)/float(database.max_touch_y-database.min_touch_y)
                             # touch_time = (user.touches[posindex][2]-database.min_time)/float(database.max_time-database.min_time)

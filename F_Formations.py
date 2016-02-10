@@ -146,11 +146,12 @@ class F_Formations(libavg.DivNode):
             positions_user_2 = []
 
             curr_time = start
+            offset = 215
             while curr_time <= end:
-                x = value_to_pixel(curr_time, self.width, interval)
-                y_1 = value_to_pixel(User.users[user_1].get_head_position_averaged(
+                x = value_to_pixel(curr_time+self.__step_size, self.width, interval)
+                y_1 = value_to_pixel(self.height-offset-User.users[user_1].get_head_position_averaged(
                     int(curr_time/global_values.time_step_size))[0], self.height, global_values.x_range)
-                y_2 = value_to_pixel(User.users[user_2].get_head_position_averaged(
+                y_2 = value_to_pixel(self.height-offset-User.users[user_2].get_head_position_averaged(
                     int(curr_time/global_values.time_step_size))[0], self.height, global_values.x_range)
                 thickness_1 = self.__get_thickness(user_1, curr_time)
                 thickness_2 = self.__get_thickness(user_2, curr_time)
@@ -169,10 +170,10 @@ class F_Formations(libavg.DivNode):
                 curr_time += self.__step_size
             # add last points to make clean cut at end of interval if step_size > global_values.time_step_size
             else:
-                x = value_to_pixel(end, self.width, interval)
-                y_1 = value_to_pixel(User.users[user_1].get_head_position_averaged(
+                x = value_to_pixel(end+self.__step_size/2, self.width, interval)
+                y_1 = value_to_pixel(self.height-offset-User.users[user_1].get_head_position_averaged(
                     int(end/global_values.time_step_size))[0], self.height, global_values.x_range)
-                y_2 = value_to_pixel(User.users[user_2].get_head_position_averaged(
+                y_2 = value_to_pixel(self.height-offset-User.users[user_2].get_head_position_averaged(
                     int(end/global_values.time_step_size))[0], self.height, global_values.x_range)
                 thickness_1 = self.__get_thickness(user_1, end)
                 thickness_2 = self.__get_thickness(user_2, end)
