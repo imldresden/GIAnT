@@ -70,22 +70,22 @@ class Line_Visualization(libavg.DivNode):
             if data_type_y == DATA_POSITION_X:
                 data_range = global_values.x_range
                 unit = "cm"
-            if data_type_y == DATA_POSITION_Y:
+            elif data_type_y == DATA_POSITION_Y:
                 data_range = global_values.y_range
                 unit = "cm"
-            if data_type_y == DATA_POSITION_Z:
+            elif data_type_y == DATA_POSITION_Z:
                 data_range = global_values.z_range
                 unit = "cm"
-            if data_type_y == DATA_TOUCH_Y:
+            elif data_type_y == DATA_TOUCH_Y:
                 data_range = global_values.y_touch_range
                 unit = "px"
-            if data_type_y == DATA_TOUCH_X:
+            elif data_type_y == DATA_TOUCH_X:
                 data_range = global_values.x_touch_range
                 unit = "px"
-            if data_type_y == DATA_VIEWPOINT_X:
+            elif data_type_y == DATA_VIEWPOINT_X:
                 data_range = global_values.x_wall_range
                 unit = "cm"
-            if data_type_y == DATA_VIEWPOINT_Y:
+            elif data_type_y == DATA_VIEWPOINT_Y:
                 data_range = global_values.y_wall_range
                 unit = "cm"
 
@@ -102,17 +102,17 @@ class Line_Visualization(libavg.DivNode):
             # set data_range according to data input
             if data_type_x == DATA_POSITION_X:
                 data_range = global_values.x_range
-            if data_type_x == DATA_POSITION_Y:
+            elif data_type_x == DATA_POSITION_Y:
                 data_range = global_values.y_range
-            if data_type_x == DATA_POSITION_Z:
+            elif data_type_x == DATA_POSITION_Z:
                 data_range = global_values.z_range
-            if data_type_x == DATA_TOUCH_Y:
+            elif data_type_x == DATA_TOUCH_Y:
                 data_range = global_values.y_touch_range
-            if data_type_x == DATA_TOUCH_X:
+            elif data_type_x == DATA_TOUCH_X:
                 data_range = global_values.x_touch_range
-            if data_type_x == DATA_VIEWPOINT_X:
+            elif data_type_x == DATA_VIEWPOINT_X:
                 data_range = global_values.x_range
-            if data_type_x == DATA_VIEWPOINT_Y:
+            elif data_type_x == DATA_VIEWPOINT_Y:
                 data_range = global_values.y_wall_range
             self.x_axis = axis.AxisNode(pos=x_axis_pos, size=(self.data_div.width, axis.AXIS_THICKNESS), hide_rims=True,
                                         sensitive=True, parent=self, data_range=data_range, unit="cm",
@@ -177,7 +177,7 @@ class Line_Visualization(libavg.DivNode):
                         if data_type > 0:
                             data = data_type
 
-                        if data_type == DATA_POSITION_X:
+                        elif data_type == DATA_POSITION_X:
                             data = (head_position_averaged[0] - global_values.x_range[0]) / float(global_values.x_range[1] - global_values.x_range[0])
                             if i == VIS_Y:
                                 data = 1 - data
@@ -208,13 +208,13 @@ class Line_Visualization(libavg.DivNode):
                         if i == VIS_X:
                             data *= self.data_div.width
 
-                        if i == VIS_Y:
+                        elif i == VIS_Y:
                             data *= self.data_div.height
 
-                        if i == VIS_THICKNESS and data_type <= 0:
+                        elif i == VIS_THICKNESS and data_type <= 0:
                             data = calculate_thickness(data, self)
 
-                        if i == VIS_OPACITY:
+                        elif i == VIS_OPACITY:
                             data = calculate_opacity(data)
                         # x or y value of the visualization depending on i being
                         current_position.append(data)
