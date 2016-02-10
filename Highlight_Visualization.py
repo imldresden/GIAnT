@@ -31,7 +31,6 @@ class Highlight_Visualization(libavg.DivNode):
 
     def __init__(self, parent, data_type_x, data_type_y, data_type_radius, data_type_opacity, draw_view_line, **kwargs):
         super(Highlight_Visualization, self).__init__(**kwargs)
-        self.elementoutlinecolor = "FFFF00"
         self.registerInstance(self, parent)
         self.crop = False
 
