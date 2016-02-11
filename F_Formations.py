@@ -204,14 +204,12 @@ class F_Formations(libavg.DivNode):
                 self.f_formation_nodes.append(libavg.PolygonNode(pos=positions_user_1, parent=self, opacity=0,
                                                                  fillcolor=global_values.COLOR_BACKGROUND,
                                                                  fillopacity=1, blendmode="add"))
-                self.f_formation_nodes.append(libavg.MeshNode())
 
                 # create indication line
                 start_px = value_to_pixel(start, self.width, interval)
                 end_px = value_to_pixel(end, self.width, interval)
-
-                self.f_formation_line_nodes.append(libavg.LineNode(pos1=(start_px, 5), pos2=(end_px, 10), strokewidth=2,
-                                                                   color=global_values.COLOR_FOREGROUND, blendmode="add",
+                self.f_formation_line_nodes.append(libavg.LineNode(pos1=(start_px, 5), pos2=(end_px, 5), strokewidth=4,
+                                                                   color=global_values.COLOR_DARK_GREY, blendmode="add",
                                                                    parent=self))
 
     def __get_thickness(self, user_id, t):
