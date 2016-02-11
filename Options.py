@@ -143,7 +143,7 @@ class Options(libavg.DivNode):
             global_values.averaging_count * global_values.time_step_size / 1000.0)
 
         # publish changes
-        main_time_frame.publish()
+        main_time_frame.publish(draw_lines=True)
 
     def __default_smoothness(self, value):
         self.__change_smoothness(value)
@@ -152,7 +152,7 @@ class Options(libavg.DivNode):
     def __play_pause(self, checked):
         self.parent_div.play_pause()
 
-    def update_time_frame(self, interval):
+    def update_time_frame(self, interval, draw_lines):
         """
         Called by the publisher time_frame to update the visualization if changes are made.
         :param interval: (start, end): new interval start and end as list

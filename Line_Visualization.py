@@ -135,12 +135,14 @@ class Line_Visualization(libavg.DivNode):
                          color=global_values.COLOR_FOREGROUND, text=name, sensitive=False, alignment="left")
 
     # make start and end values in 0..1
-    def update_time_frame(self, interval):
+    def update_time_frame(self, interval, draw_lines):
         start_orig = self.start
         end_orig = self.end
         self.start = interval[0] / (Time_Frame.total_range[1] - Time_Frame.total_range[0])
         self.end = interval[1] / (Time_Frame.total_range[1] - Time_Frame.total_range[0])
-        if self.start != start_orig or self.end != end_orig:
+        if draw_lines:
+            self.createLine()
+        elif self.start != start_orig or self.end != end_orig or draw_lines:
             self.createLine()
 
     def createLine(self):

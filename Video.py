@@ -26,7 +26,7 @@ class Video:
 
         Time_Frame.main_time_frame.subscribe(self)
 
-    def update_time_frame(self, time_frame):
+    def update_time_frame(self, time_frame, draw_lines):
         if not self.is_playing:
             if self.frames % 3 == 0:
                 self.videoNode.seekToTime(int(Time_Frame.main_time_frame.highlight_time + self.offset))

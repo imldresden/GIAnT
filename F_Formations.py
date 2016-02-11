@@ -41,7 +41,7 @@ class F_Formations(libavg.DivNode):
         self.load_f_formations()
 
         # initial update
-        self.update_time_frame(Time_Frame.total_range)
+        self.update_time_frame(Time_Frame.total_range, True)
 
     def load_f_formations(self):
         """
@@ -116,93 +116,103 @@ class F_Formations(libavg.DivNode):
         print "Searching done ({}s). Found {} F-Formations.".format(round((time.time() - start_time), 3),
                                                                     len(self.f_formations))
 
-    def update_time_frame(self, interval):
+    def update_time_frame(self, interval, draw_lines):
         """
         Called by the publisher time_frame to update the visualization to the new interval.
         :param interval: (start, end): new interval start and end as list
         """
+        self.__draw_f_formations(interval=interval)
+
+    def __draw_f_formations(self, interval):
+        """
+        Polygon for F-Formations.
+        @TODO: OPTIMIZE FOR PERFORMANCE!
+        :param interval: Current time interval.
+        """
+
         # delete old line nodes and indicators
         for i, node in enumerate(self.f_formation_nodes):
             node.unlink()
         for i, node in enumerate(self.f_formation_line_nodes):
             node.unlink()
 
-        self.__draw_f_formations(interval=interval)
+        offset = 215
 
-    def __draw_f_formations(self, interval):
-        """
-        Polygon for F-Formations.
-        :param interval: Current time interval.
-        """
         # update f-formation positions (a formation has [time, duration, user1, user2])
         for i, formation in enumerate(self.f_formations):
+
             duration = formation[1]
-            start = max(formation[0] - duration, interval[0])
-            end = min(formation[0], interval[1])
-            user_1 = formation[2]
-            user_2 = formation[3]
+            f_end = formation[0]
+            f_begin = f_end - duration
 
-            positions_user_1 = []
-            positions_user_2 = []
+            # only draw f-formations within interval
+            if (f_begin > interval[0] or f_end > interval[0]) and (f_begin < interval[1] or f_end < interval[1]):
 
-            curr_time = start
-            offset = 215
-            while curr_time <= end:
-                x = value_to_pixel(curr_time, self.width, interval)
-                y_1 = value_to_pixel(self.height-offset-User.users[user_1].get_head_position_averaged(
-                    int(curr_time/global_values.time_step_size))[0], self.height, global_values.x_range)
-                y_2 = value_to_pixel(self.height-offset-User.users[user_2].get_head_position_averaged(
-                    int(curr_time/global_values.time_step_size))[0], self.height, global_values.x_range)
-                thickness_1 = self.__get_thickness(user_1, curr_time)
-                thickness_2 = self.__get_thickness(user_2, curr_time)
-                if y_1 <= y_2:
-                    y_1 += thickness_1
-                    y_2 -= thickness_2
-                elif abs(y_2 - y_1) <= thickness_1 + thickness_2:
-                    pass
+                start = max(formation[0] - duration, interval[0])
+                end = min(formation[0], interval[1])
+                user_1 = formation[2]
+                user_2 = formation[3]
+
+                positions_user_1 = []
+                positions_user_2 = []
+
+                curr_time = start
+                while curr_time <= end:
+                    x = value_to_pixel(curr_time, self.width, interval)
+                    y_1 = value_to_pixel(self.height-offset-User.users[user_1].get_head_position_averaged(
+                        int(curr_time/global_values.time_step_size))[0], self.height, global_values.x_range)
+                    y_2 = value_to_pixel(self.height-offset-User.users[user_2].get_head_position_averaged(
+                        int(curr_time/global_values.time_step_size))[0], self.height, global_values.x_range)
+                    thickness_1 = self.__get_thickness(user_1, curr_time)
+                    thickness_2 = self.__get_thickness(user_2, curr_time)
+                    if y_1 <= y_2:
+                        y_1 += thickness_1
+                        y_2 -= thickness_2
+                    elif abs(y_2 - y_1) <= thickness_1 + thickness_2:
+                        pass
+                    else:
+                        y_1 -= thickness_1
+                        y_2 += thickness_2
+
+                    positions_user_1.append((x, y_1))
+                    positions_user_2.append((x, y_2))
+
+                    curr_time += self.__step_size
+                # add last points to make clean cut at end of interval if step_size > global_values.time_step_size
                 else:
-                    y_1 -= thickness_1
-                    y_2 += thickness_2
+                    x = value_to_pixel(end, self.width, interval)
+                    y_1 = value_to_pixel(self.height-offset-User.users[user_1].get_head_position_averaged(
+                        int(end/global_values.time_step_size))[0], self.height, global_values.x_range)
+                    y_2 = value_to_pixel(self.height-offset-User.users[user_2].get_head_position_averaged(
+                        int(end/global_values.time_step_size))[0], self.height, global_values.x_range)
+                    thickness_1 = self.__get_thickness(user_1, end)
+                    thickness_2 = self.__get_thickness(user_2, end)
+                    if y_1 <= y_2:
+                        y_1 += thickness_1
+                        y_2 -= thickness_2
+                    elif abs(y_2 - y_1) <= thickness_1 + thickness_2:
+                        pass
+                    else:
+                        y_1 -= thickness_1
+                        y_2 += thickness_2
 
-                positions_user_1.append((x, y_1))
-                positions_user_2.append((x, y_2))
+                    positions_user_1.append((x, y_1))
+                    positions_user_2.append((x, y_2))
 
-                curr_time += self.__step_size
-            # add last points to make clean cut at end of interval if step_size > global_values.time_step_size
-            else:
-                x = value_to_pixel(end, self.width, interval)
-                y_1 = value_to_pixel(self.height-offset-User.users[user_1].get_head_position_averaged(
-                    int(end/global_values.time_step_size))[0], self.height, global_values.x_range)
-                y_2 = value_to_pixel(self.height-offset-User.users[user_2].get_head_position_averaged(
-                    int(end/global_values.time_step_size))[0], self.height, global_values.x_range)
-                thickness_1 = self.__get_thickness(user_1, end)
-                thickness_2 = self.__get_thickness(user_2, end)
-                if y_1 <= y_2:
-                    y_1 += thickness_1
-                    y_2 -= thickness_2
-                elif abs(y_2 - y_1) <= thickness_1 + thickness_2:
-                    pass
-                else:
-                    y_1 -= thickness_1
-                    y_2 += thickness_2
+                # create polygon with points of user 1 and 2
+                positions_user_1.extend(list(reversed(positions_user_2)))
+                self.f_formation_nodes.append(libavg.PolygonNode(pos=positions_user_1, parent=self, opacity=0,
+                                                                 fillcolor=global_values.COLOR_BACKGROUND,
+                                                                 fillopacity=1, blendmode="add"))
+                self.f_formation_nodes.append(libavg.MeshNode())
 
-                positions_user_1.append((x, y_1))
-                positions_user_2.append((x, y_2))
+                # create indication line
+                start_px = value_to_pixel(start, self.width, interval)
+                end_px = value_to_pixel(end, self.width, interval)
 
-            # create polygon with points of user 1 and 2
-            positions_user_1.extend(list(reversed(positions_user_2)))
-            self.f_formation_nodes.append(libavg.PolygonNode(pos=positions_user_1, parent=self, opacity=0,
-                                                             fillcolor=global_values.COLOR_BACKGROUND,
-                                                             fillopacity=1, blendmode="add"))
-            self.f_formation_nodes.append(libavg.MeshNode())
-
-            # create indication line
-            start_px = value_to_pixel(start, self.width, interval)
-            end_px = value_to_pixel(end, self.width, interval)
-
-            self.f_formation_line_nodes.append(libavg.LineNode(pos1=(start_px, 5), pos2=(end_px, 10), strokewidth=2,
-                                                               color=global_values.COLOR_FOREGROUND, blendmode="add",
-                                                               parent=self))
+                self.f_formation_line_nodes.append(libavg.LineNode(pos1=(start_px, 5), pos2=(end_px, 10), strokewidth=2,
+                                                                   color=global_values.COLOR_FOREGROUND, blendmode="add",
+                                                                   parent=self))
 
     def __get_thickness(self, user_id, t):
         """

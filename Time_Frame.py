@@ -116,9 +116,9 @@ class time_frame(object):
     def subscribe(self, target):
         self.__subscribers.append(target)
 
-    def publish(self):
+    def publish(self, draw_lines=True):
         for subscriber in self.__subscribers:
-            subscriber.update_time_frame(self.__interval_range)
+            subscriber.update_time_frame(self.__interval_range, draw_lines)
 
     def play_animation(self):
         self.__play = not self.__play

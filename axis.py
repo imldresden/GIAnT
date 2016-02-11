@@ -60,7 +60,7 @@ class AxisNode(avg.DivNode):
             self.__vis_height = self.parent.data_div.height
         except:
             self.__vis_height = 0
-            print "Error getting height of data_div in {}!".format(self)
+            print "Info: Could not get height of data_div in {}!".format(self)
 
         # axis is displayed vertical if width smaller than height
         if self.height > self.width:
@@ -415,7 +415,7 @@ class TimeAxisNode(AxisNode):
         """
         self.update(self.start, self.end)
 
-    def update_time_frame(self, interval):
+    def update_time_frame(self, interval, draw_lines):
         """
         Called by the publisher time_frame to update the visualization to the new interval.
         :param interval: (start, end): new interval start and end as list
