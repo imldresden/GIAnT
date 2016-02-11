@@ -142,7 +142,7 @@ class Line_Visualization(libavg.DivNode):
         self.end = interval[1] / (Time_Frame.total_range[1] - Time_Frame.total_range[0])
         if draw_lines:
             self.createLine()
-        elif self.start != start_orig or self.end != end_orig or draw_lines:
+        elif self.start != start_orig or self.end != end_orig:
             self.createLine()
 
     def createLine(self):
