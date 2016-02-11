@@ -27,7 +27,7 @@ class F_Formations(libavg.DivNode):
         self.f_formations = []                                      # contains all detected f_formations
         self.f_formation_nodes = []                                 # contains libavg f-formation nodes
         self.f_formation_line_nodes = []                            # contains f-formation indication lines
-        self.__step_size = global_values.time_step_size * 32        # step size for drawing f-formations
+        self.__step_size = 0                                        # step size for drawing f-formations
         self.__user_colors = [Util.get_user_color_as_hex(i, 1) for i in range(len(User.users))]  # colors from scheme
 
         # create tuple of users to check against existing f-formation
@@ -121,6 +121,7 @@ class F_Formations(libavg.DivNode):
         Called by the publisher time_frame to update the visualization to the new interval.
         :param interval: (start, end): new interval start and end as list
         """
+        self.__step_size = (interval[1] - interval[0])/200
         self.__draw_f_formations(interval=interval)
 
     def __draw_f_formations(self, interval):
