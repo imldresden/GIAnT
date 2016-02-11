@@ -141,8 +141,8 @@ class main_drawer(app.MainDiv):
                                     pos=(0, self.main_visualization.height - 5),
                                     size=(self.main_visualization.width, 40))
 
-        self.legend = Legend.Legend(parent=self.menu, min_value=0, max_value=1, unit="cm", size=(200, 200))
-        self.legend.pos = (self.menu.width - self.legend.width - 10, 45 - self.legend.height)
+        self.legend = Legend.Legend(parent=self.menu, min_value=0, max_value=1, unit="cm", size=(210, 200))
+        self.legend.pos = (self.menu.width - self.legend.width, 45 - self.legend.height)
 
         self.draw_cosmetics()
 
