@@ -5,7 +5,7 @@ import F_Formations
 import Video
 
 """start parameter"""
-Options.SHOW_F_FORMATIONS = True
+Options.SHOW_F_FORMATIONS = False
 Options.LOAD_F_FORMATIONS = True
 Options.COLOR_SCHEME = 0
 F_Formations.DURATION = 4000
