@@ -70,7 +70,7 @@ def check_for_f_formation(pos1, pos2, look_vector1, look_vector2):
         diff_vector = (pos2[0] - pos1[0], pos2[1] - pos1[1])
         angle1 = angle(v1, diff_vector)
         angle2 = angle(v2, (-diff_vector[0], -diff_vector[1]))
-        if abs(angle1) > math.pi / 2 or abs(angle2) > math.pi / 2 or abs(angle1 - angle2) > 80:
+        if abs(angle1) > math.pi / 2 or abs(angle2) > math.pi / 2 or abs(angle1 - angle2) > ANGLE:
             return 0
 
         angle_similarity = 1 / (0.2 + abs(angle1 - angle2))
