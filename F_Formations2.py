@@ -53,6 +53,7 @@ class F_Formations(libavg.DivNode):
 
 
 def check_for_f_formation(pos1, pos2, look_vector1, look_vector2):
+    import Util
     """
     Check if two positions, each with a looking direction, are in a F-Formation.
     :param pos1: Position in cm.
@@ -62,25 +63,25 @@ def check_for_f_formation(pos1, pos2, look_vector1, look_vector2):
     :return: Strength of F-Formation.
     """
 
-    strength = 0
+    v1 = Util.normalize_vector(look_vector1)
+    v2 = Util.normalize_vector(look_vector2)
+    distance = Util.get_length((pos1[0] - pos2[0], pos1[1] - pos2[1]))
+    if distance < DISTANCE:
+        diff_vector = (pos2[0] - pos1[0], pos2[1] - pos1[1])
+        angle1 = angle(v1, diff_vector)
+        angle2 = angle(v2, (-diff_vector[0], -diff_vector[1]))
+        if abs(angle1) > math.pi / 2 or abs(angle2) > math.pi / 2 or abs(angle1 - angle2) > 80:
+            return 0
 
-    # Distance of positions. (1m seems a good approx. Distance for a f-formation. 2m is already pretty far!)
-    distance = point_distance(pos1, pos2)
-    if distance <= DISTANCE:
-        strength = 0.5
+        angle_similarity = 1 / (0.2 + abs(angle1 - angle2))
+        average_angle = abs((angle1 + angle2) / 2)
+        print "similarity : " + str(angle_similarity)
+        print "average    : " + str(average_angle)
 
-        # Viewing angle between the two positions.
-        v1 = normalize(look_vector1)
-        v2 = normalize(look_vector2)
-        pos1_2_dir = normalize((look_vector2[0] - look_vector1[0], look_vector2[1] - look_vector1[1]))
-        pos2_1_dir = normalize((look_vector1[0] - look_vector2[0], look_vector1[1] - look_vector2[1]))
-        diff_angle_1 = math.degrees(angle(v1, pos1_2_dir))
-        diff_angle_2 = math.degrees(angle(v2, pos2_1_dir))
+        return 20 / Util.get_length((pos1[0] + 100 * v1[0] - pos2[0] + 100 * v2[0], pos1[1] + 100 * v1[1] - pos2[1] + 100 * v2[1])) * angle_similarity
 
-        if diff_angle_1 <= ANGLE and diff_angle_2 <= ANGLE:
-            strength = 1
-
-    return strength
+    else:
+        return 0
 
 
 def point_distance(p1, p2):
