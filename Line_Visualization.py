@@ -34,7 +34,7 @@ class Line_Visualization(libavg.DivNode):
         self.crop = False
 
         self.data_type_x = data_type_x
-        self.canvasObjects = []
+        self.canvas_objects = []
         self.data_type_y = data_type_y
         self.data_type_thickness = data_type_thickness
         self.data_type_opacity = data_type_opacity
@@ -232,11 +232,11 @@ class Line_Visualization(libavg.DivNode):
                     widths.append(current_position[VIS_THICKNESS])
                     opacities.append(current_position[VIS_OPACITY])
 
-                if len(self.canvasObjects) > userid:
-                    userline = self.canvasObjects[userid]
+                if len(self.canvas_objects) > userid:
+                    userline = self.canvas_objects[userid]
                     userline.set_values(points, widths, opacities)
                 else:
-                    self.canvasObjects.append(
+                    self.canvas_objects.append(
                         Variable_Width_Line.Variable_Width_Line(points=points, widths=widths, opacities=opacities,
                                                                 userid=userid, parent=self.user_divs[userid]))
 
