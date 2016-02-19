@@ -1,3 +1,5 @@
+from database import load_file
+
 __author__ = 'KillytheBid'
 from libavg import player, avg
 import Time_Frame
@@ -5,9 +7,19 @@ import Time_Frame
 
 class Video:
     offset = (60 * 6 + 8.8) * 1000
-    path = ""
+
     def __init__(self, pos, size, parent):
-        global path
+        self.path = ""
+        file_paths = load_file('csv/filelist.txt')
+        video_extensions = ["mpg", "mpeg", "mpeg2", "mpeg4",  "xvid", "mjpeg", "vp6", "h264"]
+        for file_path in file_paths:
+            path = file_path[0].lower()
+            if path.endswith(".csv"):
+                continue
+
+            if path.endswith(tuple(video_extensions)):
+                self.path = "csv/"+file_path[0]
+                break
         self.frames = 0
         vid_size = (size[0], size[0] * 9.0 / 16.0)
         if size[0] / size[1] > 16.0 / 9.0:
@@ -16,15 +28,19 @@ class Video:
         pos = (pos[0] + (size[0] - vid_size[0]) / 2, pos[1] + (size[1] - vid_size[1]) / 2)
 
         self.is_playing = False
-        self.videoNode = avg.VideoNode(href=path, pos=pos,
+        self.videoNode = avg.VideoNode(href=self.path, pos=pos,
                                        parent=parent, size=vid_size, loop=True,
                                        mipmap=True,
                                        enablesound=False)
         self.videoNode.volume = 0
-        self.videoNode.play()
-        self.videoNode.pause()
+        try:
+            self.videoNode.play()
+            self.videoNode.pause()
 
-        Time_Frame.main_time_frame.subscribe(self)
+            Time_Frame.main_time_frame.subscribe(self)
+        except:
+            print "No video found"
+
 
     def update_time_frame(self, time_frame, draw_lines):
         if not self.is_playing:
