@@ -5,9 +5,9 @@ total_range = [database.min_time, database.max_time]
 
 
 class time_frame(object):
-    __interval_range = [total_range[0], total_range[1]]
-    __interval_range_last = [total_range[0], total_range[1]]
-    __interval_range_target = [total_range[0], total_range[1]]
+    __interval_range = list(total_range)
+    __interval_range_last = list(__interval_range)
+    __interval_range_target = list(__interval_range)
     __highlight_time = 0
     __animation_start_time = -1
     __animation_duration = 1
