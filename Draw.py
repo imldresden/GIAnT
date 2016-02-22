@@ -6,15 +6,14 @@ import libavg
 import Highlight_Visualization
 
 import Util
-import User
 import Line_Visualization
-import F_Formations
 import Options
 from Time_Frame import main_time_frame
 import global_values
 import axis
 import Legend
 import Video
+import F_Formations
 
 
 class main_drawer(app.MainDiv):
@@ -46,14 +45,13 @@ class main_drawer(app.MainDiv):
         self.menu_width = 500
         self.menu_height = 200
 
-        #self.elementoutlinecolor="FF0000"
+        # self.elementoutlinecolor="FF0000"
 
         # to color background
         libavg.RectNode(parent=self, pos=(-1000, -1000), size=(10000, 10000),
                         strokewidth=0, fillcolor=global_values.COLOR_BACKGROUND, fillopacity=1)
 
-        for userid in range(1, 5):
-            user = User.User(userid)
+
 
         # cosmetics
         self.cosmetics_wall = libavg.PolygonNode(parent=self, opacity=0, fillopacity=1,
@@ -61,7 +59,7 @@ class main_drawer(app.MainDiv):
         self.cosmetics_main = libavg.PolygonNode(parent=self, opacity=0, fillopacity=1,
                                                  fillcolor=global_values.COLOR_DARK_GREY)
         self.cosmetics_main_screen = libavg.PolygonNode(parent=self, opacity=0, fillopacity=1,
-                                                 fillcolor=global_values.COLOR_BLACK)
+                                                        fillcolor=global_values.COLOR_BLACK)
 
         # main visualization
         self.main_visualization = Line_Visualization.Line_Visualization(parent=self,
@@ -119,7 +117,7 @@ class main_drawer(app.MainDiv):
         # video
         self.video = Video.Video(pos=(self.resolution[0] - self.menu_width + axis.AXIS_THICKNESS,
                                       self.room_visualization.pos[1] + self.room_visualization.height),
-                                 size=(self.menu_width-50, self.menu_height),
+                                 size=(self.menu_width - 50, self.menu_height),
                                  parent=self)
         main_time_frame.subscribe(self.video)
 
@@ -129,10 +127,10 @@ class main_drawer(app.MainDiv):
         # f-formations
         if Options.LOAD_F_FORMATIONS:
             self.f_formations = F_Formations.F_Formations(parent=self, sensitive=False,
-                                                          pos=(self.main_visualization.pos[0] + axis.AXIS_THICKNESS,
-                                                               self.main_visualization.pos[1]),
-                                                          size=(self.main_visualization.width - axis.AXIS_THICKNESS,
-                                                                self.main_visualization.height - axis.AXIS_THICKNESS))
+                                                           pos=(self.main_visualization.pos[0] + axis.AXIS_THICKNESS,
+                                                                self.main_visualization.pos[1]),
+                                                           size=(self.main_visualization.width - axis.AXIS_THICKNESS,
+                                                                 self.main_visualization.height - axis.AXIS_THICKNESS))
             main_time_frame.subscribe(self.f_formations)
             nodes.append(self.f_formations)
 
@@ -203,12 +201,12 @@ class main_drawer(app.MainDiv):
         cos_wall_top = 55
         cos_wall_width = 16
         self.cosmetics_main.pos = (
-            (main_pos[0] - cos_vis_offset, main_pos[1] + cos_wall_top),                             # top right
-            (main_pos[0] - cos_vis_offset, main_size[1] - cos_wall_height),                         # bottom right
-            (main_pos[0] - cos_vis_offset - cos_wall_width, main_size[1] - cos_wall_height),        # bottom mid
+            (main_pos[0] - cos_vis_offset, main_pos[1] + cos_wall_top),  # top right
+            (main_pos[0] - cos_vis_offset, main_size[1] - cos_wall_height),  # bottom right
+            (main_pos[0] - cos_vis_offset - cos_wall_width, main_size[1] - cos_wall_height),  # bottom mid
             (main_pos[0] - cos_vis_offset - cos_wall_width - cos_offset, main_size[1] - cos_offset - cos_wall_height),  # bottom left
             (main_pos[0] - cos_vis_offset - cos_wall_width - cos_offset, main_pos[1] - cos_offset + cos_wall_top),  # top left
-            (main_pos[0] - cos_vis_offset - cos_offset, main_pos[1] - cos_offset + cos_wall_top))    # top mid
+            (main_pos[0] - cos_vis_offset - cos_offset, main_pos[1] - cos_offset + cos_wall_top))  # top mid
         self.cosmetics_main_screen.pos = (
             (main_pos[0] - cos_vis_offset - cos_screen_offset, main_pos[1] + cos_wall_top + cos_screen_offset),
             (main_pos[0] - cos_vis_offset - cos_screen_offset, main_size[1] - cos_wall_height - cos_screen_offset),
@@ -226,6 +224,7 @@ class main_drawer(app.MainDiv):
             (wall_pos[0] + wall_size[0] + cos_offset, wall_pos[1] + wall_size[1] - cos_offset),
             (wall_pos[0] + wall_size[0] + cos_offset, wall_pos[1] - cos_offset),
             (wall_pos[0] + cos_offset, wall_pos[1] - cos_offset))
+
 
 def calculate_line_intersection(p1, p2_selected, p3, thickness1, thickness2_selected, thickness3):
     thickness1 *= 0.5

@@ -15,4 +15,4 @@ F_Formations.ANGLE = 90
 
 Video.path = "csv/M2U00003.MPG"
 
-app.App().run(main_drawer(), app_resolution='1500x800')
+app.App().run(main_drawer(), app_resolution='1920x1080')

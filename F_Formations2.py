@@ -10,7 +10,8 @@ Y_2 = 3
 USER_1 = 4
 USER_2 = 5
 INTENSITY = 6
-TIME = 7
+NUMBER = 7
+TIME = 8
 
 
 class F_Formations(libavg.DivNode):
@@ -21,14 +22,14 @@ class F_Formations(libavg.DivNode):
         global all_f_formations
         self.all_f_formations = database.get_f_formations()
 
-    def __init__(self, **kwargs):
+    def __init__(self, parent, **kwargs):
         super(F_Formations, self).__init__(**kwargs)
-        self.registerInstance(self, self.parent)
+        self.registerInstance(self, parent)
         self.load_f_formations()
         self.points = []
         self.opacities = []
-
-        self.variable_width_line = Variable_Width_Line.Variable_Width_Line(points=self.points, widths=None, opacities=self.opacities, userid=-1, parent=self, set_points_directly=True)
+        self.calculate_dataset()
+        self.variable_width_line = Variable_Width_Line.Variable_Width_Line(points=self.points, widths=None, opacities=self.opacities, userid=1, parent=self, set_points_directly=True)
 
     def calculate_dataset(self):
 
@@ -37,15 +38,37 @@ class F_Formations(libavg.DivNode):
         range_step = (range_max - range_min) / (self.width * global_values.samples_per_pixel)
         selection = []
         current_index = 0
-        for sample_time in xrange(range_min, range_max, range_step):
-            while self.all_f_formations[current_index][TIME] < sample_time:
+        previous_selected = None
+        last_number = 0
+        for sample_time in xrange(int(range_min), int(range_max), int(range_step)):
+            while self.all_f_formations[current_index][TIME] < sample_time and current_index < len(self.all_f_formations)-1:
                 current_index += 1
             if current_index != 0:
-                selected = self.all_f_formations[sample_time]
+                selected = self.all_f_formations[current_index]
                 selection.append(selected)
+                number = selected[NUMBER]
+                if previous_selected == None:
+                    previous_selected = selected
+
+                    # if len(self.points) <= number+1:
+                    # self.points.append([])
+                    # if len(self.points) == number:
+                    if last_number < number:
+                        self.points.append((previous_selected[X_2], previous_selected[Y_2]))
+                        self.points.append((previous_selected[X_2], previous_selected[Y_2]))
+                        self.opacities.append(min(1, max(0, previous_selected[INTENSITY])))
+                        self.opacities.append(min(1, max(0, selected[INTENSITY])))
+                        last_number = number
+                        self.points.append((selected[X_1], selected[Y_1]))
+                        self.points.append((selected[X_1], selected[Y_1]))
+                        self.opacities.append(min(1, max(0, selected[INTENSITY])))
+                        self.opacities.append(min(1, max(0, selected[INTENSITY])))
+
                 self.points.append((selected[X_1], selected[Y_1]))
                 self.points.append((selected[X_2], selected[Y_2]))
                 self.opacities.append(min(1, max(0, selected[INTENSITY])))
+                self.opacities.append(min(1, max(0, selected[INTENSITY])))
+                previous_selected = selected
 
     def update_time_frame(self, interval, draw_lines):
         self.calculate_dataset()
@@ -74,9 +97,7 @@ def check_for_f_formation(pos1, pos2, look_vector1, look_vector2):
             return 0
 
         angle_similarity = 1 / (0.2 + abs(angle1 - angle2))
-        average_angle = abs((angle1 + angle2) / 2)
         print "similarity : " + str(angle_similarity)
-        print "average    : " + str(average_angle)
 
         return 20 / Util.get_length((pos1[0] + 100 * v1[0] - pos2[0] + 100 * v2[0], pos1[1] + 100 * v1[1] - pos2[1] + 100 * v2[1])) * angle_similarity
 

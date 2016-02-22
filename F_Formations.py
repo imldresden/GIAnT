@@ -136,7 +136,7 @@ class F_Formations(libavg.DivNode):
         for i, node in enumerate(self.f_formation_line_nodes):
             node.unlink()
 
-        offset = 215
+        offset = 495
 
         # update f-formation positions (a formation has [time, duration, user1, user2])
         for i, formation in enumerate(self.f_formations):
@@ -198,6 +198,7 @@ class F_Formations(libavg.DivNode):
 
                     positions_user_1.append((x, y_1))
                     positions_user_2.append((x, y_2))
+
 
                 # create polygon with points of user 1 and 2
                 positions_user_1.extend(list(reversed(positions_user_2)))

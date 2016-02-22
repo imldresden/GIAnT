@@ -315,9 +315,11 @@ def create_f_formation_table():
                                  "y1 FLOAT,"
                                  "y2 FLOAT,"
                                  "intensity FLOAT,"
+                                 "number int,"
                                  "time FLOAT NOT NULL")
 
     f_formations = []
+    number = 0
     for user in User.users:
         for user2 in User.users:
             if user.index < user2.index:
@@ -332,16 +334,17 @@ def create_f_formation_table():
 
                     if f_intensity > 0:
                         current_length += 1
-                        current_dataset.append([pos1[0], pos1[1], pos2[0], pos2[1], user.index, user2.index, f_intensity, i * global_values.time_step_size])
+                        current_dataset.append([pos1[0], pos1[1], pos2[0], pos2[1], user.index, user2.index, f_intensity, number, i * global_values.time_step_size])
                     else:
                         if current_length > 100:
                             f_formations.append(list(current_dataset))
+                            number += 1;
                         current_length = 0
                         current_dataset = []
 
     print str(len(f_formations)) + " F-Formations found"
     for f_list in f_formations:
-        insert_many(f_list, "f_formations", ["x1", "x2", "y1", "y2", "user1", "user2", "intensity", "time"])
+        insert_many(f_list, "f_formations", ["x1", "x2", "y1", "y2", "user1", "user2", "intensity", "number", "time"])
         # cur.executemany("INSERT INTO f_formations (x1, x2, y1, y2, user1, user2, intensity, time) VALUES (?,?,?,?,?,?,?,?);", f_list)
 
 
@@ -490,8 +493,9 @@ def get_view_points(userid):
 def get_view_points_integral(userid):
     return executeQry("SELECT x, y, time FROM viewpointintegral WHERE user = " + str(userid) + " ORDER BY time;", True)
 
+
 def get_f_formations():
-    return executeQry("SELECT x1, x2, y1, y2, user1, user2, intensity, time ORDER BY time;", True)
+    return executeQry("SELECT x1, x2, y1, y2, user1, user2, intensity, number, time FROM f_formations ORDER BY number, time;", True)
 
 
 def setup_database(wall_screen_resolution):
