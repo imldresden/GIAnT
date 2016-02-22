@@ -1,7 +1,7 @@
-from database import load_file
+# -*- coding: utf-8 -*-
 
-__author__ = 'KillytheBid'
-from libavg import player, avg
+from libavg import avg
+from database import load_file
 import Time_Frame
 
 

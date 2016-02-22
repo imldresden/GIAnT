@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import database
 import global_values
 
@@ -23,7 +25,7 @@ class User:
     def addViewpoint(self, point):
         self.viewpoints.append(point)
 
-    def get_head_position_averaged(self, index, averaging_count = global_values.averaging_count):
+    def get_head_position_averaged(self, index, averaging_count=global_values.averaging_count):
         count = min(averaging_count, len(self.head_positions_integral) - index - 1)
         integral = self.head_positions_integral
         if count <= 0:
@@ -59,12 +61,7 @@ class User:
     def __init__(self, index):
         self.index = index - 1
 
-        # self.head_positions = database.get_head_positions(index)
         self.head_positions_integral = database.get_head_positions_integral(index)
-        # self.head_times = []
-        # for head_position in self.head_positions:
-        #     self.head_times.append(head_position[3])
-
         self.head_orientations = database.get_head_orientations(index)
 
         self.viewpoints_integral = database.get_view_points_integral(index)

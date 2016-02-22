@@ -43,7 +43,7 @@ class Highlight_Visualization(libavg.DivNode):
         self.data_types = [self.data_type_x, self.data_type_y, self.data_type_opacity, self.data_type_radius]
 
         self.draw_view_line = draw_view_line
-        self.pos = (self.pos[0] + axis.AXIS_THICKNESS, self.pos[1])
+        self.pos = (self.pos[0] + axis.THICKNESS, self.pos[1])
 
 
         # div for visualization data

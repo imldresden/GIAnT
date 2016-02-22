@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import math
 import sys
 import colorsys
@@ -31,7 +33,12 @@ def cleanString(string):
     return result
 
 
-def convertTimestamp(timestamp):  # turns the Timestring into a Number of milliseconds
+def convertTimestamp(timestamp):
+    """
+    Turns the Timestring into a Number of milliseconds.
+    :param timestamp:
+    :return:
+    """
     global timestampOffset
     split = timestamp.split(":")
     split[2] = float(str(split[2])) * 1000  # converting into whole milliseconds
@@ -63,7 +70,7 @@ def line_intersection(line1, line2):
     threshold = 2
     # fixes the weird spike artifacts (not a pretty solution though)
     if a < -threshold or a > threshold:
-        return (x2, y2)
+        return x2, y2
     result1 = (round(x1 + a * dx1, 5), round(y1 + a * dy1, 5))
 
     return result1
@@ -96,7 +103,7 @@ def get_look_direction(pitch, yaw):
     x = new_x
     z = new_z
 
-    return (-x, y, z)
+    return -x, y, z
 
 
 def normalize_vector(vector):

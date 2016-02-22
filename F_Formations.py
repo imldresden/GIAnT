@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import Util
 import math
 import libavg
@@ -48,8 +49,6 @@ class F_Formations(libavg.DivNode):
         Loading of F-Formation with given specific parameters.
         Iterates over the whole time span for each possible unique user-to-user combination.
         """
-
-
         print "Searching for F-Formations..."
         start_time = time.time()
 
@@ -198,7 +197,6 @@ class F_Formations(libavg.DivNode):
 
                     positions_user_1.append((x, y_1))
                     positions_user_2.append((x, y_2))
-
 
                 # create polygon with points of user 1 and 2
                 positions_user_1.extend(list(reversed(positions_user_2)))

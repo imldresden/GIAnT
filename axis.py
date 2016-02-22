@@ -7,7 +7,7 @@ import custom_slider
 import global_values
 from libavg import avg
 
-AXIS_THICKNESS = 50
+THICKNESS = 50     # space needed for axis display (means height if axis is horizontal, width otherwise)
 
 
 class AxisNode(avg.DivNode):
@@ -26,9 +26,7 @@ class AxisNode(avg.DivNode):
         super(AxisNode, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
-        """
-        attributes
-        """
+        """attributes"""
         self.__parent = parent
         self.__top_axis = top_axis                           # determines if the x-axis should be displayed at the top
         if self.__top_axis:
@@ -53,21 +51,25 @@ class AxisNode(avg.DivNode):
 
         """
         TODO:
-        Workaround for not working self.parent.data_div.height for yet unknown reasons.
+        Workaround for not working self.__parent.data_div.height for yet unknown reasons.
         The workaround should set the height when initializing a time axis.
         """
         try:
-            self.__vis_height = self.parent.data_div.height
+            self.__vis_height = self.__parent.data_div.height
         except:
             self.__vis_height = 0
-            print "Info: Could not get height of data_div in {}!".format(self)
+            if isinstance(self, TimeAxisNode):
+                # workaround in TimeAxisNode!
+                pass
+            else:
+                print "Info: Could not get height of data_div in {}!".format(self)
 
         # axis is displayed vertical if width smaller than height
         if self.height > self.width:
             self.__vertical = True
-            self.width = AXIS_THICKNESS
+            self.width = THICKNESS
         else:
-            self.height = AXIS_THICKNESS
+            self.height = THICKNESS
 
         # create main axis line (horizontal or vertical)
         self.__axis_line = libavg.LineNode(strokewidth=1, parent=self)
@@ -85,6 +87,8 @@ class AxisNode(avg.DivNode):
         """
         updates position of ticks and labels, and value of labels
         needs to be called whenever corresponding data is changing (e.g. in onFrame())
+        :param start: start value in unit of measurement (not in pixel)
+        :param end: end value in unit of measurement (not in pixel)
         """
         self.__start = start
         self.__end = end
@@ -176,7 +180,11 @@ class AxisNode(avg.DivNode):
 
     def _value_to_pixel(self, value, start, end):
         """
-        calculate pixel position on axis line of label value
+        Calculate pixel position on axis line of label value.
+        :param value: Value in unit of measurement
+        :param start: start value in unit of measurement
+        :param end: end value in unit of measurement
+        :return: pixel position of value
         """
         if self.__vertical:
             length = self.height
@@ -193,9 +201,11 @@ class AxisNode(avg.DivNode):
 
     def _format_label_value(self, v, short=False):
         """
-        format label values depending on units of measurement
+        Format label values depending on units of measurement.
+        :param v: label value
+        :param short: short representation (no ms above 1 second) if True
+        :return: String with formatted label value
         """
-
         str_v = v
 
         # length units in centimeters
@@ -271,7 +281,9 @@ class AxisNode(avg.DivNode):
 
     def __format_ms(self, ms):
         """
-        add leading zero(s) to milliseconds if necessary
+        Add leading zero(s) to milliseconds if necessary
+        :param ms: milliseconds
+        :return: String with three digit ms
         """
         str_ms = ms
         if ms < 100:
@@ -280,9 +292,7 @@ class AxisNode(avg.DivNode):
                 str_ms = "0{}".format(str_ms)
         return str_ms
 
-    """
-    properties
-    """
+    """python properties"""
     def __getSize(self):
         return self.__div_size
 
@@ -354,9 +364,7 @@ class TimeAxisNode(AxisNode):
         super(TimeAxisNode, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
-        """
-        attributes
-        """
+        """attributes"""
         self.__i_start = self._value_to_pixel(self.start, self.start, self.end)  # interval start
         self.__i_end = self._value_to_pixel(self.end, self.start, self.end)      # interval end
         self.__i_label_offset = 5                                                # offset for interval duration label
@@ -366,9 +374,7 @@ class TimeAxisNode(AxisNode):
         self.vertical = False                                                    # TimeAxisNode can only be horizontal
         self.vis_height = self.parent.data_div.height                            # workaround (see comment in AxisNode)
 
-        """
-        setup Nodes
-        """
+        """setup Nodes"""
         # interval lines and rectangle
         self.__i_line = libavg.LineNode(strokewidth=1, color=global_values.COLOR_SECONDARY, parent=self,
                                         pos1=(0, 2.5 * self.tick_length),
@@ -390,9 +396,7 @@ class TimeAxisNode(AxisNode):
         self.__i_label = libavg.WordsNode(color=global_values.COLOR_BACKGROUND, text="", opacity=0, sensitive=False,
                                           parent=self)
 
-        """
-        subscriptions
-        """
+        """subscriptions"""
         # change of thumb pos of interval slider
         self.__i_scrollbar.subscribe(custom_slider.IntervalScrollBar.THUMB_POS_CHANGED,
                                      lambda pos: self.__change_interval(self.__i_scrollbar.getThumbPos(),
@@ -410,9 +414,7 @@ class TimeAxisNode(AxisNode):
         # subscribe to global time frame publisher
         Time_Frame.main_time_frame.subscribe(self)
 
-        """
-        initial update
-        """
+        """initial update"""
         self.update(self.start, self.end)
 
     def update_time_frame(self, interval, draw_lines):
@@ -578,16 +580,19 @@ class TimeAxisNode(AxisNode):
         time = ratio * time_i_range + self.start        # time
         return time
 
-"""
-utils
-"""
+
+"""utils"""
 
 
 def r_pretty(dmin, dmax, n, time=False):
     """
-    calculates "nice" ticks for axis
+    Calculates "nice" ticks for axis (R's pretty algorithm).
+    :param dmin: minimum data value
+    :param dmax: maximum data value
+    :param n: number of desired ticks
+    :param time: bool, True: handles tick calculation different for time values
+    :return: list with tick values
     """
-
     min_n = int(n / 3)                          # non-negative integer giving minimal number of intervals n
     shrink_small = 0.75                         # positive numeric by which a default scale is shrunk
     high_unit_bias = 1.5                        # non-negative numeric, typically > 1

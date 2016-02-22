@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# !/usr/bin/env python
 
 from libavg import player, avg
 import Draw
 import random
 import Util
-import global_values
 
 
 class Variable_Width_Line:
@@ -56,7 +56,8 @@ class Variable_Width_Line:
                     p1 = self.points[i - 1]
                     t1 = self.widths[i - 1]
                     if i >= len(self.points) - 1:
-                        p3 = (2 * self.points[i][0] - self.points[i - 1][0], 2 * self.points[i][1] - self.points[i - 1][1])
+                        p3 = (2 * self.points[i][0] - self.points[i - 1][0],
+                              2 * self.points[i][1] - self.points[i - 1][1])
                         t3 = self.widths[i]
                     else:
                         p3 = self.points[i + 1]
@@ -84,6 +85,7 @@ class Variable_Width_Line:
         self.canvas = player.createCanvas(id=canvas_id, size=(256, 1))
         for x in range(256):
             opacity = float(x) / 256.0
-            avg.LineNode(pos1=(x + 0.5, -1), pos2=(x + 0.5, 2), color=self.color, opacity=opacity, parent=self.canvas.getRootNode())
+            avg.LineNode(pos1=(x + 0.5, -1), pos2=(x + 0.5, 2), color=self.color, opacity=opacity,
+                         parent=self.canvas.getRootNode())
         self.canvas.render()
         self.gradientBmp = self.canvas.screenshot()

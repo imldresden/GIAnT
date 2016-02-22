@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
+
 import math
-import libavg
 from libavg import widget, avg, gesture
 
 
@@ -7,6 +8,7 @@ class IntervalSliderBase(avg.DivNode):
     """
     Curstom SliderBase to modify slider track (don't even create one).
     """
+
     THUMB_POS_CHANGED = avg.Publisher.genMessageID()
     PRESSED = avg.Publisher.genMessageID()
     RELEASED = avg.Publisher.genMessageID()

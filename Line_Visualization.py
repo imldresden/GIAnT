@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import User
 import global_values
 import axis
@@ -44,15 +46,15 @@ class Line_Visualization(libavg.DivNode):
 
 
         # rect for coloured border and background
-        self.background_rect = libavg.RectNode(pos=(axis.AXIS_THICKNESS, 0),
-                                               size=(self.width - axis.AXIS_THICKNESS, self.height - axis.AXIS_THICKNESS),
+        self.background_rect = libavg.RectNode(pos=(axis.THICKNESS, 0),
+                                               size=(self.width - axis.THICKNESS, self.height - axis.THICKNESS),
                                                parent=self, strokewidth=1, fillopacity=1,
                                                color=global_values.COLOR_FOREGROUND,
                                                fillcolor=global_values.COLOR_BLACK)
 
         # div for visualization data
-        self.data_div = libavg.DivNode(pos=(axis.AXIS_THICKNESS, 0),
-                                       size=(self.width - axis.AXIS_THICKNESS, self.height - axis.AXIS_THICKNESS),
+        self.data_div = libavg.DivNode(pos=(axis.THICKNESS, 0),
+                                       size=(self.width - axis.THICKNESS, self.height - axis.THICKNESS),
                                        parent=self, crop=True)
 
         # user divs to distinguish MeshNodes in data_div by user (user_divs are initialized as self.data_div's)
@@ -62,7 +64,7 @@ class Line_Visualization(libavg.DivNode):
 
         # y-axis
         if data_type_y == DATA_TIME:
-            self.y_axis = axis.TimeAxisNode(pos=(0, 0), parent=self, size=(axis.AXIS_THICKNESS, self.data_div.height),
+            self.y_axis = axis.TimeAxisNode(pos=(0, 0), parent=self, size=(axis.THICKNESS, self.data_div.height),
                                             data_range=Time_Frame.total_range, unit="ms", inverted=invert_y)
         else:
             data_range = [0, 10]
@@ -92,19 +94,19 @@ class Line_Visualization(libavg.DivNode):
                 unit = "cm"
 
             if custom_label_offset == -1:
-                self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.AXIS_THICKNESS, self.data_div.height), parent=self,
+                self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.THICKNESS, self.data_div.height), parent=self,
                                             sensitive=True, data_range=data_range, unit=unit, hide_rims=True,
                                             inverted=invert_y)
             else:
-                self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.AXIS_THICKNESS, self.data_div.height), parent=self,
+                self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.THICKNESS, self.data_div.height), parent=self,
                                             sensitive=True, data_range=data_range, unit=unit, hide_rims=True,
                                             inverted=invert_y, label_offset=custom_label_offset)
 
         # x-axis
-        x_axis_pos = (axis.AXIS_THICKNESS, self.data_div.height)
+        x_axis_pos = (axis.THICKNESS, self.data_div.height)
         if self.data_type_x == DATA_TIME:
             self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, parent=self, unit="ms", data_range=Time_Frame.total_range,
-                                            size=(self.data_div.width, axis.AXIS_THICKNESS), inverted=invert_x)
+                                            size=(self.data_div.width, axis.THICKNESS), inverted=invert_x)
         else:
             # set data_range according to data input
             if data_type_x == DATA_POSITION_X:
@@ -121,17 +123,17 @@ class Line_Visualization(libavg.DivNode):
                 data_range = global_values.x_range
             elif data_type_x == DATA_VIEWPOINT_Y:
                 data_range = global_values.y_wall_range
-            self.x_axis = axis.AxisNode(pos=x_axis_pos, size=(self.data_div.width, axis.AXIS_THICKNESS), hide_rims=True,
+            self.x_axis = axis.AxisNode(pos=x_axis_pos, size=(self.data_div.width, axis.THICKNESS), hide_rims=True,
                                         sensitive=True, parent=self, data_range=data_range, unit="cm",
                                         top_axis=top_axis, inverted=invert_x)
 
         if top_axis:
-            self.x_axis.pos = (axis.AXIS_THICKNESS, 0)
+            self.x_axis.pos = (axis.THICKNESS, 0)
 
         self.createLine()
 
         # name
-        libavg.WordsNode(pos=(axis.AXIS_THICKNESS + global_values.APP_PADDING, global_values.APP_PADDING), parent=self,
+        libavg.WordsNode(pos=(axis.THICKNESS + global_values.APP_PADDING, global_values.APP_PADDING), parent=self,
                          color=global_values.COLOR_FOREGROUND, text=name, sensitive=False, alignment="left")
 
     # make start and end values in 0..1

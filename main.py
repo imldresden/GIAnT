@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from libavg import app
 from Draw import main_drawer
 import Options
@@ -15,4 +17,4 @@ F_Formations.ANGLE = 90
 
 Video.path = "csv/M2U00003.MPG"
 
-app.App().run(main_drawer(), app_resolution='1920x1080')
+app.App().run(main_drawer(), app_resolution='1580x950')
