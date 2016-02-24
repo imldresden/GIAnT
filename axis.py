@@ -12,7 +12,7 @@ THICKNESS = 50     # space needed for axis display (means height if axis is hori
 
 class AxisNode(avg.DivNode):
     def __init__(self, data_range, unit="cm", hide_rims=False, top_axis=False, inverted=False, parent=None,
-                 label_offset=5, **kwargs):
+                 label_offset=0, **kwargs):
         """
         Custom AxisNode with axis lines, grid lines and labeling.
         :param data_range: The minimum and maximum data range to be displayed
@@ -142,6 +142,8 @@ class AxisNode(avg.DivNode):
                 self.__label_nodes[i].text = "{}".format(self.__labels[i])
 
             # set position of tick, label and grid on axis
+            center = 0
+            v_center = 0
             if not self.__top_axis:
                 center = self.__label_nodes[i].width / 2
                 v_center = self.__label_nodes[i].fontsize / 2
@@ -173,10 +175,12 @@ class AxisNode(avg.DivNode):
         # delete first and last tick except it is min or max of data range
         if self.__label_values[0] not in self.__data_range or self.__hide_rims:
             self.__ticks[0].unlink()
-            if not self.__top_axis: self.__label_nodes[0].unlink()
+            if not self.__top_axis:
+                self.__label_nodes[0].unlink()
         if self.__label_values[len(self.__label_values) - 1] not in self.__data_range or self.__hide_rims:
             self.__ticks[len(self.__label_values) - 1].unlink()
-            if not self.__top_axis: self.__label_nodes[len(self.__label_values) - 1].unlink()
+            if not self.__top_axis:
+                self.__label_nodes[len(self.__label_values) - 1].unlink()
 
     def _value_to_pixel(self, value, start, end):
         """
@@ -279,7 +283,8 @@ class AxisNode(avg.DivNode):
 
         return str_v
 
-    def __format_ms(self, ms):
+    @staticmethod
+    def __format_ms(ms):
         """
         Add leading zero(s) to milliseconds if necessary
         :param ms: milliseconds
@@ -421,6 +426,7 @@ class TimeAxisNode(AxisNode):
         """
         Called by the publisher time_frame to update the visualization to the new interval.
         :param interval: (start, end): new interval start and end as list
+        :param draw_lines: if lines should be redrawn
         """
         self.update(interval[0], interval[1])
 
@@ -464,13 +470,16 @@ class TimeAxisNode(AxisNode):
         self.__i_label.text = "{}".format(self._format_label_value(self.end - self.start, True))
         if self.__i_rect.size[0] > self.__i_label.width + self.__i_label_offset:
             self.__i_label.color = global_values.COLOR_BACKGROUND
-            self.__i_label.pos = (self.__i_rect.pos[0] + self.__i_rect.size[0] / 2 - self.__i_label.width / 2, self.__i_rect.pos[1])
+            self.__i_label.pos = (self.__i_rect.pos[0] + self.__i_rect.size[0] / 2 - self.__i_label.width / 2,
+                                  self.__i_rect.pos[1])
         else:
             self.__i_label.color = global_values.COLOR_FOREGROUND
             if self.__i_rect.pos[0] > self.__i_label.width + self.__i_label_offset:
-                self.__i_label.pos = (self.__i_rect.pos[0] - self.__i_label.width - self.__i_label_offset, self.__i_rect.pos[1])
+                self.__i_label.pos = (self.__i_rect.pos[0] - self.__i_label.width - self.__i_label_offset,
+                                      self.__i_rect.pos[1])
             else:
-                self.__i_label.pos = (self.__i_rect.pos[0] + self.__i_rect.size[0] + self.__i_label_offset, self.__i_rect.pos[1])
+                self.__i_label.pos = (self.__i_rect.pos[0] + self.__i_rect.size[0] + self.__i_label_offset,
+                                      self.__i_rect.pos[1])
 
         # update scrollbar
         self.__i_scrollbar.setThumbPos(self.start)
@@ -518,9 +527,9 @@ class TimeAxisNode(AxisNode):
         """
         Moves the highlight line along the vertical mouse position.
         """
-        relPos = self.getRelPos(event.pos)
-        self.__highlight_line.pos1 = (relPos[0], self.__highlight_line.pos1[1])
-        self.__highlight_line.pos2 = (relPos[0], self.__highlight_line.pos2[1])
+        rel_pos = self.getRelPos(event.pos)
+        self.__highlight_line.pos1 = (rel_pos[0], self.__highlight_line.pos1[1])
+        self.__highlight_line.pos2 = (rel_pos[0], self.__highlight_line.pos2[1])
         # let line appear in front of every other child in this div
         self.removeChild(self.__highlight_line)
         self.appendChild(self.__highlight_line)
@@ -550,9 +559,9 @@ class TimeAxisNode(AxisNode):
         # unpin line
         if self.__pinned:
             self.__highlight_line.color = global_values.COLOR_SECONDARY
-            relPos = self.getRelPos(event.pos)
-            self.__highlight_line.pos1 = (relPos[0], self.__highlight_line.pos1[1])
-            self.__highlight_line.pos2 = (relPos[0], self.__highlight_line.pos2[1])
+            rel_pos = self.getRelPos(event.pos)
+            self.__highlight_line.pos1 = (rel_pos[0], self.__highlight_line.pos1[1])
+            self.__highlight_line.pos2 = (rel_pos[0], self.__highlight_line.pos2[1])
             self.__highlight_line.opacity = 1
             self.__highlight_marker.opacity = 0
             self.__hover_id = self.parent.data_div.subscribe(avg.Node.CURSOR_MOTION, self.__on_visualization_hover_over)

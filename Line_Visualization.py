@@ -73,7 +73,7 @@ class Line_Visualization(libavg.DivNode):
             if data_type_y == DATA_POSITION_X:
                 data_range = global_values.x_range
                 unit = "cm"
-                custom_label_offset = 23
+                custom_label_offset = 23  # to make space for cosmetic schematic wall on y-axis in main visualization
             elif data_type_y == DATA_POSITION_Y:
                 data_range = global_values.y_range
                 unit = "cm"

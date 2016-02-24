@@ -2,10 +2,8 @@
 
 import math
 import time
-
 from libavg import app, avg
 import libavg
-
 from Time_Frame import main_time_frame
 import Highlight_Visualization
 import Line_Visualization
@@ -18,41 +16,46 @@ import Video
 import Util
 
 
-class main_drawer(app.MainDiv):
+class MainDrawer(app.MainDiv):
     """
     Main drawer that initializes the three visualizations, the options panel and the video.
     """
     last_time = 0
-    resolution = (1920, 1000)
     viewport_change_duration = 0.3
 
     def onInit(self):
         # main_drawer Div has margin to all sides of application window
         margin = global_values.APP_MARGIN
+        # and padding inbetween elements of visualization
+        padding = global_values.APP_PADDING
 
+        # position and scale main div
         self.pos = (margin, margin)
-        self.resolution = (libavg.app.instance._resolution[0] - 2 * margin,
-                           libavg.app.instance._resolution[1] - 2 * margin)
+        res_x = libavg.app.instance._resolution[0] - 2 * margin
+        res_y = libavg.app.instance._resolution[1] - 2 * margin
 
-        self.menu_width = 500
-        self.menu_height = 200
+        # set aspect ratio for main visualization and elements on the right side
+        main_vis_width = 2.0 / 3.0 * res_x
+        menu_height = 40
+        main_vis_height = res_y - menu_height
+        side_vis_height = 1.0 / 3.0 * res_y
 
         # rectangle to color background
         libavg.RectNode(parent=self, pos=(-1000, -1000), size=(10000, 10000),
                         strokewidth=0, fillcolor=global_values.COLOR_BACKGROUND, fillopacity=1)
 
         # cosmetics (abstract wall image on left side of main visualization and wall front visualization)
-        self.cosmetics_wall = libavg.PolygonNode(parent=self, opacity=0, fillopacity=1,
-                                                 fillcolor=global_values.COLOR_DARK_GREY)
-        self.cosmetics_main = libavg.PolygonNode(parent=self, opacity=0, fillopacity=1,
-                                                 fillcolor=global_values.COLOR_DARK_GREY)
-        self.cosmetics_main_screen = libavg.PolygonNode(parent=self, opacity=0, fillopacity=1,
-                                                        fillcolor=global_values.COLOR_BLACK)
+        self.__cosmetics_wall = libavg.PolygonNode(parent=self, opacity=0, fillopacity=1,
+                                                   fillcolor=global_values.COLOR_DARK_GREY)
+        self.__cosmetics_main = libavg.PolygonNode(parent=self, opacity=0, fillopacity=1,
+                                                   fillcolor=global_values.COLOR_DARK_GREY)
+        self.__cosmetics_main_screen = libavg.PolygonNode(parent=self, opacity=0, fillopacity=1,
+                                                          fillcolor=global_values.COLOR_BLACK)
 
         # main visualization
         self.main_visualization = Line_Visualization.Line_Visualization(
             parent=self, pos=(0, 0),
-            size=(self.resolution[0] - self.menu_width - global_values.APP_PADDING, self.resolution[1] - 40),
+            size=(main_vis_width, res_y - menu_height),
             data_type_x=Line_Visualization.DATA_TIME,
             data_type_y=Line_Visualization.DATA_POSITION_X,
             data_type_thickness=Line_Visualization.DATA_POSITION_Z,
@@ -63,8 +66,8 @@ class main_drawer(app.MainDiv):
 
         # wall visualization
         self.wall_visualization = Line_Visualization.Line_Visualization(
-            parent=self, pos=(self.resolution[0] - self.menu_width, 0),
-            size=(self.menu_width, (self.resolution[1] - self.menu_height) / 2),
+            parent=self, pos=(main_vis_width + padding, 0),
+            size=(res_x - main_vis_width - padding, side_vis_height),
             data_type_x=Line_Visualization.DATA_VIEWPOINT_X,
             data_type_y=Line_Visualization.DATA_VIEWPOINT_Y,
             data_type_thickness=Line_Visualization.DATA_POSITION_Z,
@@ -86,8 +89,8 @@ class main_drawer(app.MainDiv):
         # room visualization
         self.room_visualization = Line_Visualization.Line_Visualization(
             parent=self,
-            pos=(self.resolution[0] - self.menu_width, self.wall_visualization.pos[1] + self.wall_visualization.height),
-            size=(self.menu_width, (self.resolution[1] - self.menu_height) / 2),
+            pos=(main_vis_width + padding, side_vis_height - axis.THICKNESS/2),
+            size=(res_x - main_vis_width - padding, side_vis_height),
             data_type_x=Line_Visualization.DATA_POSITION_X,
             data_type_y=Line_Visualization.DATA_POSITION_Z,
             data_type_thickness=1.4,
@@ -107,9 +110,10 @@ class main_drawer(app.MainDiv):
         main_time_frame.subscribe(self.room_highlight)
 
         # video
-        self.video = Video.Video(pos=(self.resolution[0] - self.menu_width + axis.THICKNESS,
-                                      self.room_visualization.pos[1] + self.room_visualization.height),
-                                 size=(self.menu_width - 50, self.menu_height),
+        self.video = Video.Video(pos=(main_vis_width + padding + axis.THICKNESS,
+                                      2 * side_vis_height - 1.5 * axis.THICKNESS + padding),
+                                 size=(res_x - main_vis_width - padding - axis.THICKNESS,
+                                       side_vis_height + 1.5 * axis.THICKNESS - padding),
                                  parent=self)
         main_time_frame.subscribe(self.video)
 
@@ -120,16 +124,16 @@ class main_drawer(app.MainDiv):
         if Options.LOAD_F_FORMATIONS:
             self.f_formations = F_Formations.F_Formations(parent=self, sensitive=False,
                                                           pos=(self.main_visualization.pos[0] + axis.THICKNESS,
-                                                                self.main_visualization.pos[1]),
+                                                               self.main_visualization.pos[1]),
                                                           size=(self.main_visualization.width - axis.THICKNESS,
-                                                                 self.main_visualization.height - axis.THICKNESS))
+                                                                self.main_visualization.height - axis.THICKNESS))
             main_time_frame.subscribe(self.f_formations)
             nodes.append(self.f_formations)
 
         # menu
         self.options = Options.Options(nodes=nodes, parent=self,
                                        pos=(0, self.main_visualization.height - 5),
-                                       size=(self.main_visualization.width, 40))
+                                       size=(self.main_visualization.width, menu_height))
 
         # legend
         self.legend = Legend.Legend(parent=self.options, min_value=0, max_value=1, unit="cm", size=(210, 200))
@@ -195,27 +199,30 @@ class main_drawer(app.MainDiv):
         cos_offset = 9
         cos_vis_offset = 4
         cos_screen_offset = 2
-        cos_wall_height = 83
-        cos_wall_top = 55
         cos_wall_width = 16
-        self.cosmetics_main.pos = (
-            (main_pos[0] - cos_vis_offset, main_pos[1] + cos_wall_top),  # top right
-            (main_pos[0] - cos_vis_offset, main_size[1] - cos_wall_height),  # bottom right
-            (main_pos[0] - cos_vis_offset - cos_wall_width, main_size[1] - cos_wall_height),  # bottom mid
-            (main_pos[0] - cos_vis_offset - cos_wall_width - cos_offset, main_size[1] - cos_offset - cos_wall_height),  # bottom left
-            (main_pos[0] - cos_vis_offset - cos_wall_width - cos_offset, main_pos[1] - cos_offset + cos_wall_top),  # top left
-            (main_pos[0] - cos_vis_offset - cos_offset, main_pos[1] - cos_offset + cos_wall_top))  # top mid
-        self.cosmetics_main_screen.pos = (
-            (main_pos[0] - cos_vis_offset - cos_screen_offset, main_pos[1] + cos_wall_top + cos_screen_offset),
-            (main_pos[0] - cos_vis_offset - cos_screen_offset, main_size[1] - cos_wall_height - cos_screen_offset),
-            (main_pos[0] - cos_vis_offset - cos_offset, main_size[1] - cos_wall_height - cos_offset - cos_screen_offset),
-            (main_pos[0] - cos_vis_offset - cos_offset, main_pos[1] - cos_offset + cos_wall_top + cos_screen_offset))
+        # space from bottom of y-axis to left side of display-wall
+        cos_wall_start = value_to_pixel(global_values.x_wall_range[0], main_size[1], global_values.x_range)
+        # space from top of y-axis to right side of display-wall
+        cos_wall_end = value_to_pixel(global_values.wall_width, main_size[1], global_values.x_range)
+
+        self.__cosmetics_main.pos = (
+            (main_pos[0] - cos_vis_offset, main_size[1] - cos_wall_end),  # top right
+            (main_pos[0] - cos_vis_offset, main_size[1] - cos_wall_start),  # bottom right
+            (main_pos[0] - cos_vis_offset - cos_wall_width, main_size[1] - cos_wall_start),  # bottom mid
+            (main_pos[0] - cos_vis_offset - cos_wall_width - cos_offset, main_size[1] - cos_offset - cos_wall_start),  # bottom left
+            (main_pos[0] - cos_vis_offset - cos_wall_width - cos_offset, main_size[1] - cos_wall_end - cos_offset),  # top left
+            (main_pos[0] - cos_vis_offset - cos_offset, main_size[1] - cos_wall_end - cos_offset))  # top mid
+        self.__cosmetics_main_screen.pos = (
+            (main_pos[0] - cos_vis_offset - cos_screen_offset, main_size[1] - cos_wall_end + cos_screen_offset),
+            (main_pos[0] - cos_vis_offset - cos_screen_offset, main_size[1] - cos_wall_start - cos_screen_offset),
+            (main_pos[0] - cos_vis_offset - cos_offset, main_size[1] - cos_wall_start - cos_offset - cos_screen_offset),
+            (main_pos[0] - cos_vis_offset - cos_offset, main_size[1] - cos_wall_end - cos_offset + cos_screen_offset))
 
         # set position of cosmetic wall image behind wall visualization
         wall_pos = (self.wall_visualization.pos[0] + axis.THICKNESS, self.wall_visualization.pos[1])
         wall_size = (self.wall_visualization.width - axis.THICKNESS, self.wall_visualization.height - axis.THICKNESS)
         cos_offset = 6
-        self.cosmetics_wall.pos = (
+        self.__cosmetics_wall.pos = (
             wall_pos,
             (wall_pos[0] + wall_size[0], wall_pos[1]),
             (wall_pos[0] + wall_size[0], wall_pos[1] + wall_size[1]),
@@ -223,6 +230,17 @@ class main_drawer(app.MainDiv):
             (wall_pos[0] + wall_size[0] + cos_offset, wall_pos[1] - cos_offset),
             (wall_pos[0] + cos_offset, wall_pos[1] - cos_offset))
 
+
+def value_to_pixel(value, max_px, interval):
+    """
+    Calculate pixel position.
+    :param value: Value to be converted into pixel position
+    :param max_px: Maximum possible value
+    :param interval: Current interval
+    :return: pixel position
+    """
+    a = (interval[1] - interval[0]) / max_px
+    return value / a - interval[0] / a
 
 def calculate_line_intersection(p1, p2_selected, p3, thickness1, thickness2_selected, thickness3):
     thickness1 *= 0.5

@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import libavg
 from libavg import avg
 from database import load_file
 import Time_Frame
+import global_values
 
 
 class Video:
@@ -32,6 +34,10 @@ class Video:
                                        parent=parent, size=vid_size, loop=True,
                                        mipmap=True,
                                        enablesound=False)
+
+        # rectangle for border
+        libavg.RectNode(parent=parent, pos=pos, size=vid_size, strokewidth=1, color=global_values.COLOR_FOREGROUND)
+
         self.videoNode.volume = 0
         try:
             self.videoNode.play()

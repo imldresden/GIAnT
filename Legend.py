@@ -11,6 +11,8 @@ class Legend(libavg.DivNode):
         super(Legend, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
+        self.sensitive = False
+
         points = []
         widths = []
         opacities = []
