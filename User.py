@@ -25,7 +25,10 @@ class User:
     def addViewpoint(self, point):
         self.viewpoints.append(point)
 
-    def get_head_position_averaged(self, index, averaging_count=global_values.averaging_count):
+    def get_head_position_averaged(self, index, averaging_count=None):
+        if averaging_count==None:
+            averaging_count = global_values.averaging_count
+
         count = min(averaging_count, len(self.head_positions_integral) - index - 1)
         integral = self.head_positions_integral
         if count <= 0:
