@@ -5,10 +5,12 @@ from libavg import avg
 from database import load_file
 import Time_Frame
 import global_values
+import Util
 
 
 class Video:
-    offset = (60 * 6 + 8.8) * 1000
+    #offset = (60 * 6 + 8.8) * 1000
+    offset = 0
 
     def __init__(self, pos, size, parent):
         self.path = ""
@@ -37,6 +39,8 @@ class Video:
 
         # rectangle for border
         libavg.RectNode(parent=parent, pos=pos, size=vid_size, strokewidth=1, color=global_values.COLOR_FOREGROUND)
+        self.__cur_time_text = libavg.WordsNode(color=global_values.COLOR_FOREGROUND, parent=parent,
+                                              pos=(pos[0], pos[1] + vid_size[1]), text="Current time: ")
 
         self.videoNode.volume = 0
         try:
@@ -53,6 +57,8 @@ class Video:
             if self.frames % 3 == 0:
                 self.videoNode.seekToTime(int(Time_Frame.main_time_frame.highlight_time + self.offset))
             self.frames += 1
+        self.__cur_time_text.text = "Current time: {}".format(
+            Util.format_label_value(unit="ms", value=self.videoNode.getCurTime(), short=True))
 
     def play_pause(self, play=True):
         self.is_playing = play

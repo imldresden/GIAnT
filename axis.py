@@ -3,6 +3,7 @@
 import math
 import libavg
 import Time_Frame
+import Util
 import custom_slider
 import global_values
 from libavg import avg
@@ -98,7 +99,7 @@ class AxisNode(avg.DivNode):
             self.__label_values = r_pretty(dmin=self.__start, dmax=self.__end, n=5, time=True)
         else:
             self.__label_values = r_pretty(dmin=self.__start, dmax=self.__end, n=5)
-        self.__labels = [self._format_label_value(v) for v in self.__label_values]
+        self.__labels = [Util.format_label_value(self.__unit, v) for v in self.__label_values]
 
         # calculate positions of ticks within AxisNode
         if self.__inverted:
@@ -203,100 +204,6 @@ class AxisNode(avg.DivNode):
         else:
             return pixel_pos
 
-    def _format_label_value(self, v, short=False):
-        """
-        Format label values depending on units of measurement.
-        :param v: label value
-        :param short: short representation (no ms above 1 second) if True
-        :return: String with formatted label value
-        """
-        str_v = v
-
-        # length units in centimeters
-        if self.__unit is "cm":
-
-            meter = v / 100
-
-            # cut zeros if value is integer
-            if meter % 1 in (0, 0.0):
-                meter = int(meter)
-            else:
-                meter = round(meter, 4)
-
-            str_v = "{} m".format(meter)
-
-        # time units in milliseconds
-        elif self.__unit is "ms":
-            # calculate seconds and minutes from milliseconds
-            s, ms = divmod(v, 1000)
-            m, s = divmod(s, 60)
-
-            ms = int(ms)
-            s = int(s)
-            m = int(m)
-
-            str_ms = ""
-            str_s = ""
-            str_m = ""
-
-            if ms is 0 and s is 0 and m is 0:
-                str_m = "0 min"
-            if m > 0:
-                str_m = "{} min ".format(m)
-
-            if ms > 0:
-                if short and m <= 0 and s <= 0:
-                    str_ms = "{} ms".format(self.__format_ms(ms))
-                if not short:
-                    str_ms = "{} ms".format(self.__format_ms(ms))
-
-            if s > 0:
-                if ms > 0:
-                    if short:
-                        str_s = "{} s".format(s)
-                    else:
-                        str_s = "{},".format(s)
-                        str_ms = "{} s".format(self.__format_ms(ms))
-                else:
-                    str_s = "{} s ".format(s)
-            else:
-                if m > 0 and ms > 0:
-                    if short:
-                        str_s = "{} s".format(s)
-                    else:
-                        str_s = "{},".format(s)
-                        str_ms = "{} s".format(self.__format_ms(ms))
-
-            str_v = "{}{}{}".format(str_m, str_s, str_ms)
-
-        # no specific units defined
-        else:
-            # cut zeros if value is integer
-            if v % 1 in (0, 0.0):
-                v = int(v)
-            # add SI prefix for one million
-            if v >= 1000000:
-                str_v = "{} M".format(v / 1000000)
-            # add SI prefix for one thousand
-            elif v >= 1000:
-                str_v = "{} k".format(v / 1000)
-
-        return str_v
-
-    @staticmethod
-    def __format_ms(ms):
-        """
-        Add leading zero(s) to milliseconds if necessary
-        :param ms: milliseconds
-        :return: String with three digit ms
-        """
-        str_ms = ms
-        if ms < 100:
-            str_ms = "0{}".format(ms)
-            if ms < 10:
-                str_ms = "0{}".format(str_ms)
-        return str_ms
-
     """python properties"""
     def __getSize(self):
         return self.__div_size
@@ -340,6 +247,9 @@ class AxisNode(avg.DivNode):
     def __set_vis_height(self, height):
         self.__vis_height = height
 
+    def __get_unit(self):
+        return self.__unit
+
     size = property(__getSize, __setSize)
     vertical = property(__get_vertical, __set_vertical)
     label_values = property(__get_label_values)
@@ -350,6 +260,7 @@ class AxisNode(avg.DivNode):
     label_offset = property(__get_label_offset, __set_label_offset)
     data_range = property(__get_data_range)
     vis_height = property(__get_vis_height, __set_vis_height)
+    unit = property(__get_unit)
 
     __update = update               # private copy of original update() method
     __div_size = avg.DivNode.size   # private copy of DivNode size
@@ -467,7 +378,7 @@ class TimeAxisNode(AxisNode):
         super(TimeAxisNode, self).update(i_start, i_end)
 
         # update interval details on demand (hover over)
-        self.__i_label.text = "{}".format(self._format_label_value(self.end - self.start, True))
+        self.__i_label.text = "{}".format(Util.format_label_value(self.unit, self.end - self.start, True))
         if self.__i_rect.size[0] > self.__i_label.width + self.__i_label_offset:
             self.__i_label.color = global_values.COLOR_BACKGROUND
             self.__i_label.pos = (self.__i_rect.pos[0] + self.__i_rect.size[0] / 2 - self.__i_label.width / 2,
