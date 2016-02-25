@@ -9,8 +9,7 @@ import Util
 
 
 class Video:
-    #offset = (60 * 6 + 8.8) * 1000
-    offset = 0
+    offset = (60 * 6 + 8.8) * 1000
 
     def __init__(self, pos, size, parent):
         self.path = ""
@@ -40,7 +39,7 @@ class Video:
         # rectangle for border
         libavg.RectNode(parent=parent, pos=pos, size=vid_size, strokewidth=1, color=global_values.COLOR_FOREGROUND)
         self.__cur_time_text = libavg.WordsNode(color=global_values.COLOR_FOREGROUND, parent=parent,
-                                              pos=(pos[0], pos[1] + vid_size[1]), text="Current time: ")
+                                                pos=(pos[0], pos[1] + vid_size[1]), text="")
 
         self.videoNode.volume = 0
         try:
@@ -51,18 +50,17 @@ class Video:
         except:
             print "No video found"
 
-
     def update_time_frame(self, time_frame, draw_lines):
         if not self.is_playing:
             if self.frames % 3 == 0:
                 self.videoNode.seekToTime(int(Time_Frame.main_time_frame.highlight_time + self.offset))
             self.frames += 1
         self.__cur_time_text.text = "Current time: {}".format(
-            Util.format_label_value(unit="ms", value=self.videoNode.getCurTime(), short=True))
+            Util.format_label_value(unit="ms", value=self.videoNode.getCurTime() - self.offset, short=True))
 
     def play_pause(self, play=True):
         self.is_playing = play
-        time = int(Time_Frame.main_time_frame.get_interval_range()[1] + self.offset)
+        time = int(Time_Frame.main_time_frame.get_interval_range()[0] + self.offset)
         self.videoNode.seekToTime(time)
         if play:
             self.videoNode.play()
