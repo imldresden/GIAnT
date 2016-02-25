@@ -3,13 +3,13 @@
 import libavg
 from libavg import avg
 from database import load_file
-import Time_Frame
+from Time_Frame import main_time_frame
 import global_values
 import Util
 
 
 class Video:
-    offset = (60 * 6 + 8.8) * 1000
+    offset = (60 * 6 + 8.8) * 1000  # video is offset from data by this amount (ms)
 
     def __init__(self, pos, size, parent):
         self.path = ""
@@ -46,21 +46,22 @@ class Video:
             self.videoNode.play()
             self.videoNode.pause()
 
-            Time_Frame.main_time_frame.subscribe(self)
+            main_time_frame.subscribe(self)
         except:
             print "No video found"
 
     def update_time_frame(self, time_frame, draw_lines):
         if not self.is_playing:
             if self.frames % 3 == 0:
-                self.videoNode.seekToTime(int(Time_Frame.main_time_frame.highlight_time + self.offset))
+                self.videoNode.seekToTime(int(main_time_frame.highlight_time + self.offset))
             self.frames += 1
         self.__cur_time_text.text = "Current time: {}".format(
             Util.format_label_value(unit="ms", value=self.videoNode.getCurTime() - self.offset, short=True))
 
     def play_pause(self, play=True):
+        start_time = main_time_frame.get_interval_range()[0]
         self.is_playing = play
-        time = int(Time_Frame.main_time_frame.get_interval_range()[0] + self.offset)
+        time = int(start_time + self.offset)
         self.videoNode.seekToTime(time)
         if play:
             self.videoNode.play()
