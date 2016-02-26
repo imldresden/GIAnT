@@ -136,8 +136,6 @@ class F_Formations(libavg.DivNode):
         for i, node in enumerate(self.f_formation_line_nodes):
             node.unlink()
 
-        offset = 495
-
         # update f-formation positions (a formation has [time, duration, user1, user2])
         for i, formation in enumerate(self.f_formations):
 
@@ -159,10 +157,12 @@ class F_Formations(libavg.DivNode):
                 curr_time = start
                 while curr_time <= end:
                     x = value_to_pixel(curr_time, self.width, interval)
-                    y_1 = value_to_pixel(self.height-offset-User.users[user_1].get_head_position_averaged(
-                        int(curr_time/global_values.time_step_size))[0], self.height, global_values.x_range)
-                    y_2 = value_to_pixel(self.height-offset-User.users[user_2].get_head_position_averaged(
-                        int(curr_time/global_values.time_step_size))[0], self.height, global_values.x_range)
+                    y_1 = value_to_pixel(User.users[user_1].get_head_position_averaged(
+                        int(curr_time/global_values.time_step_size))[0], self.height,
+                                         (global_values.x_range[1], global_values.x_range[0]))
+                    y_2 = value_to_pixel(User.users[user_2].get_head_position_averaged(
+                        int(curr_time/global_values.time_step_size))[0], self.height,
+                                         (global_values.x_range[1], global_values.x_range[0]))
                     thickness_1 = self.__get_thickness(user_1, curr_time)
                     thickness_2 = self.__get_thickness(user_2, curr_time)
                     if y_1 <= y_2:
@@ -181,10 +181,12 @@ class F_Formations(libavg.DivNode):
                 # add last points to make clean cut at end of interval if step_size > global_values.time_step_size
                 else:
                     x = value_to_pixel(end, self.width, interval)
-                    y_1 = value_to_pixel(self.height-offset-User.users[user_1].get_head_position_averaged(
-                        int(end/global_values.time_step_size))[0], self.height, global_values.x_range)
-                    y_2 = value_to_pixel(self.height-offset-User.users[user_2].get_head_position_averaged(
-                        int(end/global_values.time_step_size))[0], self.height, global_values.x_range)
+                    y_1 = value_to_pixel(User.users[user_1].get_head_position_averaged(
+                        int(end/global_values.time_step_size))[0], self.height,
+                                         (global_values.x_range[1], global_values.x_range[0]))
+                    y_2 = value_to_pixel(User.users[user_2].get_head_position_averaged(
+                        int(end/global_values.time_step_size))[0], self.height,
+                                         (global_values.x_range[1], global_values.x_range[0]))
                     thickness_1 = self.__get_thickness(user_1, end)
                     thickness_2 = self.__get_thickness(user_2, end)
                     if y_1 <= y_2:

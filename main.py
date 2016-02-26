@@ -7,7 +7,7 @@ import F_Formations
 from global_values import resolution
 
 """start parameter"""
-Options.SHOW_F_FORMATIONS = False
+Options.SHOW_F_FORMATIONS = True
 Options.LOAD_F_FORMATIONS = True
 Options.COLOR_SCHEME = 0
 F_Formations.DURATION = 4000
