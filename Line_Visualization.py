@@ -206,16 +206,6 @@ class Line_Visualization(libavg.DivNode):
                             data = (view_point_averaged[1] - global_values.y_wall_range[0]) / float(global_values.y_wall_range[1] - global_values.y_wall_range[0])
                             data = 1 - data
 
-
-                        elif data_type == DATA_TOUCH_X:
-                            print "not working yet"
-                            # touch_x = (user.touches[posindex][0]-database.min_touch_x)/float(database.max_touch_x-database.min_touch_x)
-
-                        elif data_type == DATA_TOUCH_Y:
-                            print "not working yet"
-                            # touch_y = (user.touches[posindex][1]-database.min_touch_y)/float(database.max_touch_y-database.min_touch_y)
-                            # touch_time = (user.touches[posindex][2]-database.min_time)/float(database.max_time-database.min_time)
-
                         if i == VIS_X:
                             data *= self.data_div.width
 

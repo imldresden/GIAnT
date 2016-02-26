@@ -223,3 +223,22 @@ def format_label_value(unit, value, short=False):
             str_v = "{} k".format(value / 1000)
 
     return str_v
+
+
+def change_smoothness(value):
+    """
+    Changes global_values.averaging_count.
+    :param value: value to change smoothness to
+    """
+    import global_values
+    if value <= 0:
+        value = global_values.min_averaging_count
+    elif value > global_values.max_averaging_count:
+        value = global_values.max_averaging_count
+    global_values.averaging_count = int(value)
+    global_values.samples_per_pixel = max(0.1, min(0.3, 50 / value))
+
+    # publish changes
+    from Time_Frame import main_time_frame
+    main_time_frame.publish(draw_lines=True)
+

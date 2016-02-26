@@ -5,6 +5,9 @@ import database
 """visualization values"""
 samples_per_pixel = 0.1
 averaging_count = 500                               # smoothness of curves in visualization
+min_averaging_count = 1
+max_averaging_count = 2000
+link_smoothness = True                              # if the smoothness value should be linked to the current zoom level
 default_averaging_count = averaging_count           # default value of smoothness
 time_step_size = 50                                 # time in ms over witch data is averaged from database
 

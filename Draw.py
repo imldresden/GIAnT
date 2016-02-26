@@ -36,7 +36,7 @@ class MainDrawer(app.MainDiv):
 
         # set aspect ratio for main visualization and elements on the right side
         main_vis_width = 2.0 / 3.0 * res_x
-        menu_height = 40
+        menu_height = 50
         main_vis_height = res_y - menu_height
         side_vis_height = 1.0 / 3.0 * res_y
 
@@ -132,12 +132,12 @@ class MainDrawer(app.MainDiv):
 
         # menu
         self.options = Options.Options(nodes=nodes, parent=self,
-                                       pos=(0, self.main_visualization.height - 5),
+                                       pos=(0, self.main_visualization.height),
                                        size=(self.main_visualization.width, menu_height))
 
         # legend
         self.legend = Legend.Legend(parent=self.options, min_value=0, max_value=1, unit="cm", size=(210, 200))
-        self.legend.pos = (self.options.width - self.legend.width, 45 - self.legend.height)
+        self.legend.pos = (self.options.width - self.legend.width, menu_height - self.legend.height)
 
         self.draw_cosmetics()
 
@@ -241,6 +241,7 @@ def value_to_pixel(value, max_px, interval):
     """
     a = (interval[1] - interval[0]) / max_px
     return value / a - interval[0] / a
+
 
 def calculate_line_intersection(p1, p2_selected, p3, thickness1, thickness2_selected, thickness3):
     thickness1 *= 0.5

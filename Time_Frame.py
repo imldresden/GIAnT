@@ -2,11 +2,14 @@
 
 import time
 import database
+import global_values
+import Util
 
 total_range = [database.min_time, database.max_time]
+total_range_value = total_range[1] - total_range[0]
 
 
-class time_frame(object):
+class TimeFrame(object):
     __interval_range = list(total_range)
     __interval_range_last = list(__interval_range)
     __interval_range_target = list(__interval_range)
@@ -14,7 +17,6 @@ class time_frame(object):
     __animation_start_time = -1
     __animation_duration = 1
     __zoom_strength = 0.1
-
     __subscribers = []
 
     def __init__(self):
@@ -40,7 +42,14 @@ class time_frame(object):
 
         if new_range != self.__interval_range:
             self.__interval_range = new_range
-            self.publish()
+
+            # adapt averaging count to zoom level
+            if global_values.link_smoothness:
+                i_range = self.__interval_range[1] - self.__interval_range[0]
+                s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / total_range_value
+                Util.change_smoothness(s)
+            else:
+                self.publish()
         return True
 
     # gets the interval for the current animation step
@@ -152,4 +161,4 @@ class time_frame(object):
     last_frame_time = property(__get_last_frame_time, __set_last_frame_time)
 
 
-main_time_frame = time_frame()
+main_time_frame = TimeFrame()

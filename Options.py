@@ -8,6 +8,7 @@ import User
 import Util
 import Line_Visualization
 import F_Formations
+import Time_Frame
 
 SHOW_F_FORMATIONS = True    # if f-formations are visible when app is launched
 LOAD_F_FORMATIONS = True    # if f-formations are being loaded on startup (app needs to be restarted to load them)
@@ -25,8 +26,8 @@ class Options(libavg.DivNode):
         super(Options, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
-        self.nodes = nodes          # DivNodes containing user data
-        self.parent_div = parent    # parent node
+        self.nodes = nodes              # DivNodes containing user data
+        self.parent_div = parent        # parent node
 
         # rect for coloured border and background
         self.background_rect = libavg.RectNode(pos=(0, 0), size=self.size, parent=self, strokewidth=1, fillopacity=1,
@@ -37,7 +38,7 @@ class Options(libavg.DivNode):
         icon_size = (15, 15)
         button_size = (30, 30)
         # rect for play button border
-        self.play_rect = libavg.RectNode(pos=(0, self.height - button_size[1]), size=button_size, parent=self,
+        self.play_rect = libavg.RectNode(pos=(0, 0), size=button_size, parent=self,
                                          strokewidth=1, fillopacity=0, color=global_values.COLOR_FOREGROUND,
                                          sensitive=False)
         # play button
@@ -69,7 +70,7 @@ class Options(libavg.DivNode):
                                     avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=user_color, fillcolor=user_color),
                                     checkedDownNode=
                                     avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=user_color, fillcolor=user_color),
-                                    pos=(i * 80 + 50, self.height - size[1]), size=size, parent=self, enabled=True))
+                                    pos=(i * 80 + 50, 0), size=size, parent=self, enabled=True))
             self.user_buttons[i].checked = True
             self.user_texts.append(avg.WordsNode(color=global_values.COLOR_BACKGROUND,
                                                  parent=self, sensitive=False, text="User {}".format(i + 1),
@@ -85,30 +86,55 @@ class Options(libavg.DivNode):
 
         """smoothness slider"""
         # smoothness text
-        self.smoothness_text = avg.WordsNode(pos=(500, self.height - 32), color=global_values.COLOR_FOREGROUND,
+        self.smoothness_text = avg.WordsNode(pos=(500, 0), color=global_values.COLOR_FOREGROUND,
                                              parent=self, text="Smoothness: {}s".format(
                                                  global_values.averaging_count * global_values.time_step_size / 1000))
         # smoothness slider
-        self.smoothness_slider = widget.Slider(pos=(495, self.height - 12), width=180, parent=self, range=(2, 2000))
+        self.smoothness_slider = widget.Slider(pos=(495, 20), width=180, parent=self, range=(2, 2000))
         self.smoothness_slider.thumbPos = global_values.averaging_count
         # subscription to change curve smoothness
-        self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, lambda pos: self.__change_smoothness(pos))
+        self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, lambda pos: Util.change_smoothness(pos))
         # smoothness default button
         icon_size = (12, 12)
-        button_size = (20, 20)
-        icon_h_size = (icon_size[0]/2, icon_size[1]/2)
         self.default_button = widget.ToggleButton(uncheckedUpNode=
-                                                  avg.ImageNode(href="images/reload.png", pos=icon_h_size, size=icon_size),
+                                                  avg.ImageNode(href="images/reload.png", pos=(0, 0), size=icon_size),
                                                   uncheckedDownNode=
-                                                  avg.ImageNode(href="images/reload.png", pos=icon_h_size, size=icon_size),
+                                                  avg.ImageNode(href="images/reload.png", pos=(0, 0), size=icon_size),
+                                                  uncheckedDisabledNode=
+                                                  avg.ImageNode(href="images/reload.png", pos=(0, 0), size=icon_size, opacity=0.25),
                                                   checkedUpNode=
-                                                  avg.ImageNode(href="images/reload.png", pos=icon_h_size, size=icon_size),
+                                                  avg.ImageNode(href="images/reload.png", pos=(0, 0), size=icon_size),
                                                   checkedDownNode=
-                                                  avg.ImageNode(href="images/reload.png", pos=icon_h_size, size=icon_size),
-                                                  pos=(650, self.height - 32), size=button_size, parent=self)
+                                                  avg.ImageNode(href="images/reload.png", pos=(0, 0), size=icon_size),
+                                                  checkedDisabledNode=
+                                                  avg.ImageNode(href="images/reload.png", pos=(0, 0), size=icon_size, opacity=0.25),
+                                                  pos=(655, 3), size=icon_size, parent=self)
         # subscription to change smoothness to default on click
         self.default_button.subscribe(widget.CheckBox.TOGGLED,
                                       lambda pos: self.__default_smoothness(global_values.default_averaging_count))
+        # link smoothness to zoom level button
+        icon_size = (12, 12)
+        button_size = (100, 12)
+        self.link_s_button = widget.ToggleButton(uncheckedUpNode=
+                                                 avg.RectNode(size=icon_size, fillopacity=0, strokewidth=1, color=global_values.COLOR_FOREGROUND),
+                                                 uncheckedDownNode=
+                                                 avg.RectNode(size=icon_size, fillopacity=0, strokewidth=1, color=global_values.COLOR_FOREGROUND),
+                                                 uncheckedDisabledNode=
+                                                 avg.RectNode(size=icon_size, fillopacity=0, strokewidth=1, color=global_values.COLOR_SECONDARY),
+                                                 checkedUpNode=
+                                                 avg.RectNode(size=icon_size, fillopacity=1, strokewidth=1, color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_FOREGROUND),
+                                                 checkedDownNode=
+                                                 avg.RectNode(size=icon_size, fillopacity=1, strokewidth=1, color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_FOREGROUND),
+                                                 checkedDisabledNode=
+                                                 avg.RectNode(size=icon_size, fillopacity=0, strokewidth=1, color=global_values.COLOR_SECONDARY),
+                                                 pos=(500, 38), size=button_size, parent=self)
+        self.__toggle_smoothness_link(global_values.link_smoothness)
+        self.link_s_button.checked = global_values.link_smoothness
+        self.link_s_text = avg.WordsNode(pos=(500 + button_size[1] + 5, 36), color=global_values.COLOR_FOREGROUND,
+                                         parent=self, text="Link to Zoom", sensitive=False)
+        # subscription to link smoothness to zoom level
+        self.link_s_button.subscribe(widget.CheckBox.TOGGLED,
+                                     lambda checked: self.__toggle_smoothness_link(checked))
 
         """f-formations toggle button"""
         # f-formations button
@@ -125,8 +151,7 @@ class Options(libavg.DivNode):
                                             avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_FOREGROUND),
                                             checkedDisabledNode=
                                             avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=global_values.COLOR_SECONDARY),
-                                            pos=(self.user_buttons[3].pos[0] + self.user_buttons[3].width + 20,
-                                                 self.height - size[1]),
+                                            pos=(self.user_buttons[3].pos[0] + self.user_buttons[3].width + 20, 0),
                                             size=size, parent=self)
         self.f_button.checked = SHOW_F_FORMATIONS and LOAD_F_FORMATIONS
         # subscription to toggle f-formation visibility
@@ -183,26 +208,32 @@ class Options(libavg.DivNode):
                     node.unlink()
                     self.f_button_text.color = global_values.COLOR_FOREGROUND
 
-    def __change_smoothness(self, value):
-        """
-        Changes global_values.averaging_count.
-        :param value: value to change smoothness to
-        """
-        global_values.averaging_count = int(value)
-        global_values.samples_per_pixel = max(0.1, min(0.3, 50 / value))
-        self.smoothness_text.text = "Smoothness: {}s".format(
-            global_values.averaging_count * global_values.time_step_size / 1000.0)
-
-        # publish changes
-        main_time_frame.publish(draw_lines=True)
-
     def __default_smoothness(self, value):
         """
         Resets smoothness back to value.
         :param value: Smoothness value
         """
-        self.__change_smoothness(value)
+        Util.change_smoothness(value)
         self.smoothness_slider.thumbPos = global_values.averaging_count
+
+    def __toggle_smoothness_link(self, checked):
+        """
+        Links/Unlinks zooming and the curve smoothness. Disables smoothness slider and smoothness default button.
+        :param checked: bool, True if link is active
+        """
+        global_values.link_smoothness = checked
+        self.smoothness_slider.enabled = not checked
+        self.default_button.enabled = not checked
+
+        if checked:
+            self.smoothness_slider.opacity = 0.2
+            i_range = main_time_frame.get_interval_range()[1] - main_time_frame.get_interval_range()[0]
+            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / Time_Frame.total_range_value
+            Util.change_smoothness(s)
+        else:
+            self.smoothness_slider.opacity = 1
+            # publish changes
+            main_time_frame.publish()
 
     def __play_pause(self, checked):
         """
@@ -217,3 +248,7 @@ class Options(libavg.DivNode):
         """
         if self.play_button.checked is not main_time_frame.play:
             self.play_button.checked = main_time_frame.play
+
+        self.smoothness_text.text = "Smoothness: {}s".format(
+            global_values.averaging_count * global_values.time_step_size / 1000.0)
+        self.smoothness_slider.thumbPos = global_values.averaging_count
