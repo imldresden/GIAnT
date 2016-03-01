@@ -4,6 +4,7 @@ import math
 import time
 from libavg import app, avg
 import libavg
+import F_Formations2
 from Time_Frame import main_time_frame
 import Highlight_Visualization
 import Line_Visualization
@@ -122,7 +123,7 @@ class MainDrawer(app.MainDiv):
 
         # f-formations
         if Options.LOAD_F_FORMATIONS:
-            self.f_formations = F_Formations.F_Formations(parent=self, sensitive=False,
+            self.f_formations = F_Formations2.F_Formations(parent=self, sensitive=False,
                                                           pos=(self.main_visualization.pos[0] + axis.THICKNESS,
                                                                self.main_visualization.pos[1]),
                                                           size=(self.main_visualization.width - axis.THICKNESS,

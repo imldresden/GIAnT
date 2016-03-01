@@ -57,6 +57,12 @@ class TimeFrame(object):
         self.update_interval_range()
         return self.__interval_range
 
+    def get_time_for_part_in_interval(self, part):
+        return self.__interval_range[0]+part*(self.__interval_range[1]-self.__interval_range[0])
+
+    def get_part_in_interval_for_time(self, time):
+        return (time - self.__interval_range[0]) / (self.__interval_range[1] - self.__interval_range[0])
+
     # zooms in around the mouse (sets the target interval, which is later animated using update_interval_range())
     def zoom_in_at(self, fraction_in_timeframe):
         self.__interval_range_last = list(self.__interval_range)

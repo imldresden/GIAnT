@@ -35,7 +35,9 @@ class Variable_Width_Line:
         vertexes = []
         texcoords = [(0.1, 0), (0.1, 1)]
         triangles = []
-
+        if self.widths == None or len(self.widths)!=len(self.points):
+                    self.widths = []
+                    self.widths = self.widths + [3]*(len(self.points)-len(self.widths))
         if self.set_points_directly:
             for i in range(len(self.points)):
                 point = self.points[i]
@@ -43,6 +45,9 @@ class Variable_Width_Line:
 
                 vertexes.append(point)
                 texcoords.append((opacity, 0.5))
+                triangles.append((i , i + 1, i + 2))
+            triangles.pop()
+            triangles.pop()
         else:
             for i in range(len(self.points)):
                 p2 = self.points[i]

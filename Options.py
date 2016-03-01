@@ -193,6 +193,7 @@ class Options(libavg.DivNode):
         main_time_frame.publish()
 
     def __toggle_f_formations(self, checked):
+        global SHOW_F_FORMATIONS
         """
         Toggles visibility of f-formations. Checks self.nodes for F_Formations node(s) and unlinks/appends them.
         :param checked: bool, True if f-formations are being toggled on
@@ -207,6 +208,7 @@ class Options(libavg.DivNode):
                 if isinstance(node, F_Formations.F_Formations):
                     node.unlink()
                     self.f_button_text.color = global_values.COLOR_FOREGROUND
+        SHOW_F_FORMATIONS = checked
 
     def __default_smoothness(self, value):
         """
