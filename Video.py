@@ -3,7 +3,7 @@
 import libavg
 from libavg import avg
 from database import load_file
-from time_frame import main_time_frame
+from time_interval import main_time_frame
 import global_values
 import util
 

@@ -2,7 +2,7 @@
 
 import math
 import libavg
-import time_frame
+import time_interval
 import util
 import custom_slider
 import global_values
@@ -328,7 +328,7 @@ class TimeAxisNode(AxisNode):
         self.parent.data_div.subscribe(avg.Node.CURSOR_OVER, self.__show_highlight_line)
         self.parent.data_div.subscribe(avg.Node.CURSOR_OUT, self.__hide_highlight_line)
         # subscribe to global time frame publisher
-        time_frame.main_time_frame.subscribe(self)
+        time_interval.main_time_frame.subscribe(self)
 
         """initial update"""
         self.update(self.start, self.end)
@@ -353,7 +353,7 @@ class TimeAxisNode(AxisNode):
         self.update(start, end)
 
         # update time frame
-        time_frame.main_time_frame.set_time_frame((start, end))
+        time_interval.main_time_frame.set_time_frame((start, end))
 
         # update ScrollBar size
         new_thumb_pos = start
@@ -367,8 +367,8 @@ class TimeAxisNode(AxisNode):
         :param i_end: new interval end
         """
         # set new interval start and end
-        self.__i_start = self._value_to_pixel(i_start, time_frame.total_range[0], time_frame.total_range[1])
-        self.__i_end = self._value_to_pixel(i_end, time_frame.total_range[0], time_frame.total_range[1])
+        self.__i_start = self._value_to_pixel(i_start, time_interval.total_range[0], time_interval.total_range[1])
+        self.__i_end = self._value_to_pixel(i_end, time_interval.total_range[0], time_interval.total_range[1])
 
         # update positions of interval lines
         self.__i_rect.pos = (self.__i_start, self.__i_rect.pos[1])
@@ -398,7 +398,7 @@ class TimeAxisNode(AxisNode):
 
         # update position of pinned highlight line and highlight line marker
         if self.__pinned:
-            self.__highlight_pixel = self._value_to_pixel(time_frame.main_time_frame.highlight_time,
+            self.__highlight_pixel = self._value_to_pixel(time_interval.main_time_frame.highlight_time,
                                                           self.start, self.end)
             if self.__highlight_pixel > self.width or self.__highlight_pixel < 0:
                 self.__highlight_line.opacity = 0
@@ -410,7 +410,7 @@ class TimeAxisNode(AxisNode):
                 self.__highlight_line.pos2 = (self.__highlight_pixel, self.__highlight_line.pos2[1])
 
         else:
-            time_frame.main_time_frame.highlight_time = self.__calculate_time_from_pixel(self.__highlight_line.pos1[0])
+            time_interval.main_time_frame.highlight_time = self.__calculate_time_from_pixel(self.__highlight_line.pos1[0])
 
     def __show_interval_slider(self, event=None):
         """
@@ -444,7 +444,7 @@ class TimeAxisNode(AxisNode):
         # let line appear in front of every other child in this div
         self.removeChild(self.__highlight_line)
         self.appendChild(self.__highlight_line)
-        time_frame.main_time_frame.publish()
+        time_interval.main_time_frame.publish()
 
     def __show_highlight_line(self, event=None):
         """
@@ -479,8 +479,8 @@ class TimeAxisNode(AxisNode):
             self.__pinned = False
         # pin line
         else:
-            time_frame.main_time_frame.highlight_time = self.__calculate_time_from_pixel(self.__highlight_line.pos1[0])
-            marker_pos = self._value_to_pixel(time_frame.main_time_frame.highlight_time,
+            time_interval.main_time_frame.highlight_time = self.__calculate_time_from_pixel(self.__highlight_line.pos1[0])
+            marker_pos = self._value_to_pixel(time_interval.main_time_frame.highlight_time,
                                               self.data_range[0], self.data_range[1])
             self.__highlight_marker.pos1 = (marker_pos, self.__highlight_marker.pos1[1])
             self.__highlight_marker.pos2 = (marker_pos, self.__highlight_marker.pos2[1])
@@ -488,7 +488,7 @@ class TimeAxisNode(AxisNode):
             self.__highlight_line.color = global_values.COLOR_WHITE
             self.parent.data_div.unsubscribe(avg.Node.CURSOR_MOTION, self.__hover_id)
             self.__pinned = True
-        time_frame.main_time_frame.publish()
+        time_interval.main_time_frame.publish()
 
     def __calculate_time_from_pixel(self, pixel):
         """

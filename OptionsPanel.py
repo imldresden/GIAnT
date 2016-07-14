@@ -2,13 +2,13 @@
 
 import libavg
 from libavg import widget, avg
-from time_frame import main_time_frame
+from time_interval import main_time_frame
 import global_values
 import user
 import util
 import line_visualization
 import F_Formations
-import time_frame
+import time_interval
 
 SHOW_F_FORMATIONS = True    # if f-formations are visible when app is launched
 LOAD_F_FORMATIONS = True    # if f-formations are being loaded on startup (app needs to be restarted to load them)
@@ -230,7 +230,7 @@ class OptionsPanel(libavg.DivNode):
         if checked:
             self.smoothness_slider.opacity = 0.2
             i_range = main_time_frame.get_interval_range()[1] - main_time_frame.get_interval_range()[0]
-            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / time_frame.total_range_value
+            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / time_interval.total_range_value
             util.change_smoothness(s)
         else:
             self.smoothness_slider.opacity = 1

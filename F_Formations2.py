@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from random import Random
 import OptionsPanel
-import global_values, math, libavg, time_frame, variable_width_line
+import global_values, math, libavg, time_interval, variable_width_line
 
 DISTANCE = 100  # maximum distance in cm between users
 ANGLE = 90  # maximum viewing angle between users
@@ -58,7 +58,7 @@ class F_Formations(libavg.DivNode):
         # takes the sampling directly from the main_visualization object of the parent(not very nice, I know)
         for point_reference in points_references[0]:
             part = point_reference[0] / self.parent.main_visualization.width
-            times.append(round(time_frame.main_time_frame.get_time_for_part_in_interval(part) / global_values.time_step_size) * global_values.time_step_size)
+            times.append(round(time_interval.main_time_frame.get_time_for_part_in_interval(part) / global_values.time_step_size) * global_values.time_step_size)
 
         # takes the point positions directly from the main_visualization object
         for number in self.all_f_formations_map:
@@ -77,7 +77,7 @@ class F_Formations(libavg.DivNode):
                 current_length = len(current_dict[time])
                 if current_length == 0:
                     break
-                point_index = int(time_frame.main_time_frame.get_part_in_interval_for_time(time) * len(points_references[0]))
+                point_index = int(time_interval.main_time_frame.get_part_in_interval_for_time(time) * len(points_references[0]))
                 user_1 = current_dict[time][USER_1]
                 user_2 = current_dict[time][USER_2]
                 if point_index >= len(points_references[user_1]) or point_index >= len(points_references[user_2]):

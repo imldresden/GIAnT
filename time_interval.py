@@ -9,7 +9,7 @@ total_range = [database.min_time, database.max_time]
 total_range_value = total_range[1] - total_range[0]
 
 
-class TimeFrame(object):
+class TimeInterval(object):
     __interval_range = list(total_range)
     __interval_range_last = list(__interval_range)
     __interval_range_target = list(__interval_range)
@@ -167,4 +167,4 @@ class TimeFrame(object):
     last_frame_time = property(__get_last_frame_time, __set_last_frame_time)
 
 
-main_time_frame = TimeFrame()
+main_time_frame = TimeInterval()

@@ -5,7 +5,7 @@ import math
 import libavg
 import user
 import global_values
-import time_frame
+import time_interval
 import time
 
 DURATION = 4000     # minimal duration in ms for formation to be counted as f-formation
@@ -42,7 +42,7 @@ class F_Formations(libavg.DivNode):
         self.load_f_formations()
 
         # initial update
-        self.update_time_frame(time_frame.total_range, True)
+        self.update_time_frame(time_interval.total_range, True)
 
     def load_f_formations(self):
         """
@@ -53,7 +53,7 @@ class F_Formations(libavg.DivNode):
         start_time = time.time()
 
         # pre-definitions for following loops
-        t = time_frame.total_range[0]
+        t = time_interval.total_range[0]
         f_timer = [0 for i in range(len(self.user_list))]
         long_enough = [False for i in range(len(self.user_list))]
         init_pos_1 = [(-1000, -1000) for i in range(len(self.user_list))]
@@ -62,7 +62,7 @@ class F_Formations(libavg.DivNode):
         drift_2 = [False for i in range(len(self.user_list))]
 
         # for every time step
-        while t < time_frame.total_range[1]:
+        while t < time_interval.total_range[1]:
 
             # pre-definitions for following for loop
             curr_time_index = int(t/global_values.time_step_size)

@@ -1,7 +1,7 @@
 import user
 import global_values
 import axis
-import time_frame
+import time_interval
 import libavg
 import util
 import variable_width_line
@@ -67,7 +67,7 @@ class HighlightVisualization(libavg.DivNode):
 
     # make time and end values in 0..1
     def update_time_frame(self, interval, draw_lines):
-        self.time = time_frame.main_time_frame.highlight_time / (time_frame.total_range[1] - time_frame.total_range[0])
+        self.time = time_interval.main_time_frame.highlight_time / (time_interval.total_range[1] - time_interval.total_range[0])
         self.set_positions()
 
     def set_positions(self):

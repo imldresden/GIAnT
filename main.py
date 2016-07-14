@@ -9,7 +9,7 @@ import time
 from libavg import app, avg
 import libavg
 import F_Formations2
-from time_frame import main_time_frame
+from time_interval import main_time_frame
 import highlight_visualization
 import line_visualization
 import F_Formations

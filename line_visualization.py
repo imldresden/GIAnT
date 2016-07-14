@@ -3,7 +3,7 @@
 import user
 import global_values
 import axis
-import time_frame
+import time_interval
 import libavg
 import variable_width_line
 
@@ -65,7 +65,7 @@ class LineVisualization(libavg.DivNode):
         # y-axis
         if data_type_y == DATA_TIME:
             self.y_axis = axis.TimeAxisNode(pos=(0, 0), parent=self, size=(axis.THICKNESS, self.data_div.height),
-                                            data_range=time_frame.total_range, unit="ms", inverted=invert_y)
+                                            data_range=time_interval.total_range, unit="ms", inverted=invert_y)
         else:
             data_range = [0, 10]
             unit = ""
@@ -105,7 +105,7 @@ class LineVisualization(libavg.DivNode):
         # x-axis
         x_axis_pos = (axis.THICKNESS, self.data_div.height)
         if self.data_type_x == DATA_TIME:
-            self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, parent=self, unit="ms", data_range=time_frame.total_range,
+            self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, parent=self, unit="ms", data_range=time_interval.total_range,
                                             size=(self.data_div.width, axis.THICKNESS), inverted=invert_x)
         else:
             # set data_range according to data input
@@ -140,8 +140,8 @@ class LineVisualization(libavg.DivNode):
     def update_time_frame(self, interval, draw_lines):
         start_orig = self.start
         end_orig = self.end
-        self.start = interval[0] / (time_frame.total_range[1] - time_frame.total_range[0])
-        self.end = interval[1] / (time_frame.total_range[1] - time_frame.total_range[0])
+        self.start = interval[0] / (time_interval.total_range[1] - time_interval.total_range[0])
+        self.end = interval[1] / (time_interval.total_range[1] - time_interval.total_range[0])
         if draw_lines:
             self.createLine()
         elif self.start != start_orig or self.end != end_orig:
