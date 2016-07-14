@@ -239,6 +239,6 @@ def change_smoothness(value):
     global_values.samples_per_pixel = max(0.1, min(0.3, 50 / value))
 
     # publish changes
-    from Time_Frame import main_time_frame
+    from TimeFrame import main_time_frame
     main_time_frame.publish(draw_lines=True)
 

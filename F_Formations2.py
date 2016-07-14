@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from random import Random
 import OptionsPanel
-import global_values, math, libavg, Time_Frame, Variable_Width_Line
+import global_values, math, libavg, TimeFrame, VariableWidthLine
 
 DISTANCE = 100  # maximum distance in cm between users
 ANGLE = 90  # maximum viewing angle between users
@@ -58,7 +58,7 @@ class F_Formations(libavg.DivNode):
         # takes the sampling directly from the main_visualization object of the parent(not very nice, I know)
         for point_reference in points_references[0]:
             part = point_reference[0] / self.parent.main_visualization.width
-            times.append(round(Time_Frame.main_time_frame.get_time_for_part_in_interval(part) / global_values.time_step_size) * global_values.time_step_size)
+            times.append(round(TimeFrame.main_time_frame.get_time_for_part_in_interval(part) / global_values.time_step_size) * global_values.time_step_size)
 
         # takes the point positions directly from the main_visualization object
         for number in self.all_f_formations_map:
@@ -77,7 +77,7 @@ class F_Formations(libavg.DivNode):
                 current_length = len(current_dict[time])
                 if current_length == 0:
                     break
-                point_index = int(Time_Frame.main_time_frame.get_part_in_interval_for_time(time) * len(points_references[0]))
+                point_index = int(TimeFrame.main_time_frame.get_part_in_interval_for_time(time) * len(points_references[0]))
                 user_1 = current_dict[time][USER_1]
                 user_2 = current_dict[time][USER_2]
                 if point_index >= len(points_references[user_1]) or point_index >= len(points_references[user_2]):
@@ -108,8 +108,8 @@ class F_Formations(libavg.DivNode):
                     opacities[current_index].append(opacities[current_index][i])
 
             self.variable_width_lines.insert(0,
-                                             Variable_Width_Line.Variable_Width_Line(points=points[current_index], widths=None, opacities=opacities[current_index], userid=-1, parent=self,
-                                                                                     set_points_directly=True))
+                                             VariableWidthLine.VariableWidthLine(points=points[current_index], widths=None, opacities=opacities[current_index], userid=-1, parent=self,
+                                                                                 set_points_directly=True))
             current_index += 1
 
         while current_index < len(self.variable_width_lines):

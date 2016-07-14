@@ -7,7 +7,7 @@ import random
 import Util
 
 
-class Variable_Width_Line:
+class VariableWidthLine:
     points = []
     widths = []
     opacities = []

@@ -2,13 +2,13 @@
 
 import libavg
 from libavg import widget, avg
-from Time_Frame import main_time_frame
+from TimeFrame import main_time_frame
 import global_values
 import User
 import Util
-import Line_Visualization
+import LineVisualization
 import F_Formations
-import Time_Frame
+import TimeFrame
 
 SHOW_F_FORMATIONS = True    # if f-formations are visible when app is launched
 LOAD_F_FORMATIONS = True    # if f-formations are being loaded on startup (app needs to be restarted to load them)
@@ -179,13 +179,13 @@ class OptionsPanel(libavg.DivNode):
         if checked:
             User.users[user_id].selected = True
             for i, node in enumerate(self.nodes):
-                if isinstance(node, Line_Visualization.Line_Visualization):
+                if isinstance(node, LineVisualization.LineVisualization):
                     node.data_div.appendChild(node.user_divs[user_id])
                     self.user_texts[user_id].color = global_values.COLOR_BACKGROUND
         else:
             User.users[user_id].selected = False
             for i, node in enumerate(self.nodes):
-                if isinstance(node, Line_Visualization.Line_Visualization):
+                if isinstance(node, LineVisualization.LineVisualization):
                     node.user_divs[user_id].unlink()
                     self.user_texts[user_id].color = global_values.COLOR_FOREGROUND
 
@@ -230,7 +230,7 @@ class OptionsPanel(libavg.DivNode):
         if checked:
             self.smoothness_slider.opacity = 0.2
             i_range = main_time_frame.get_interval_range()[1] - main_time_frame.get_interval_range()[0]
-            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / Time_Frame.total_range_value
+            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / TimeFrame.total_range_value
             Util.change_smoothness(s)
         else:
             self.smoothness_slider.opacity = 1

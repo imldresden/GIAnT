@@ -5,9 +5,9 @@ import time
 from libavg import app, avg
 import libavg
 import F_Formations2
-from Time_Frame import main_time_frame
-import Highlight_Visualization
-import Line_Visualization
+from TimeFrame import main_time_frame
+import HighlightVisualization
+import LineVisualization
 import F_Formations
 import axis
 import OptionsPanel
@@ -54,33 +54,33 @@ class MainDiv(app.MainDiv):
                                                           fillcolor=global_values.COLOR_BLACK)
 
         # main visualization
-        self.main_visualization = Line_Visualization.Line_Visualization(
+        self.main_visualization = LineVisualization.LineVisualization(
             parent=self, pos=(0, 0),
             size=(main_vis_width, res_y - menu_height),
-            data_type_x=Line_Visualization.DATA_TIME,
-            data_type_y=Line_Visualization.DATA_POSITION_X,
-            data_type_thickness=Line_Visualization.DATA_POSITION_Z,
-            data_type_opacity=Line_Visualization.DATA_POSITION_Z,
+            data_type_x=LineVisualization.DATA_TIME,
+            data_type_y=LineVisualization.DATA_POSITION_X,
+            data_type_thickness=LineVisualization.DATA_POSITION_Z,
+            data_type_opacity=LineVisualization.DATA_POSITION_Z,
             invert_y=True,
             name="Movement over Time")
         main_time_frame.subscribe(self.main_visualization)
 
         # wall visualization
-        self.wall_visualization = Line_Visualization.Line_Visualization(
+        self.wall_visualization = LineVisualization.LineVisualization(
             parent=self, pos=(main_vis_width + padding, 0),
             size=(res_x - main_vis_width - padding, side_vis_height),
-            data_type_x=Line_Visualization.DATA_VIEWPOINT_X,
-            data_type_y=Line_Visualization.DATA_VIEWPOINT_Y,
-            data_type_thickness=Line_Visualization.DATA_POSITION_Z,
-            data_type_opacity=Line_Visualization.DATA_POSITION_Z,
+            data_type_x=LineVisualization.DATA_VIEWPOINT_X,
+            data_type_y=LineVisualization.DATA_VIEWPOINT_Y,
+            data_type_thickness=LineVisualization.DATA_POSITION_Z,
+            data_type_opacity=LineVisualization.DATA_POSITION_Z,
             invert_y=True,
             name="Wall Front")
 
-        self.wall_highlight = Highlight_Visualization.Highlight_Visualization(
+        self.wall_highlight = HighlightVisualization.HighlightVisualization(
             parent=self, pos=self.wall_visualization.pos,
             size=self.wall_visualization.background_rect.size,
-            data_type_x=Line_Visualization.DATA_VIEWPOINT_X,
-            data_type_y=Line_Visualization.DATA_VIEWPOINT_Y,
+            data_type_x=LineVisualization.DATA_VIEWPOINT_X,
+            data_type_y=LineVisualization.DATA_VIEWPOINT_Y,
             data_type_radius=15,
             draw_view_line=False,
             data_type_opacity=0.01)
@@ -88,22 +88,22 @@ class MainDiv(app.MainDiv):
         main_time_frame.subscribe(self.wall_highlight)
 
         # room visualization
-        self.room_visualization = Line_Visualization.Line_Visualization(
+        self.room_visualization = LineVisualization.LineVisualization(
             parent=self,
             pos=(main_vis_width + padding, side_vis_height - axis.THICKNESS/2),
             size=(res_x - main_vis_width - padding, side_vis_height),
-            data_type_x=Line_Visualization.DATA_POSITION_X,
-            data_type_y=Line_Visualization.DATA_POSITION_Z,
+            data_type_x=LineVisualization.DATA_POSITION_X,
+            data_type_y=LineVisualization.DATA_POSITION_Z,
             data_type_thickness=1.4,
             data_type_opacity=0.01,
             top_axis=True,
             name="Room Top")
 
-        self.room_highlight = Highlight_Visualization.Highlight_Visualization(
+        self.room_highlight = HighlightVisualization.HighlightVisualization(
             parent=self, size=self.room_visualization.background_rect.size,
             pos=self.room_visualization.pos,
-            data_type_x=Line_Visualization.DATA_POSITION_X,
-            data_type_y=Line_Visualization.DATA_POSITION_Z,
+            data_type_x=LineVisualization.DATA_POSITION_X,
+            data_type_y=LineVisualization.DATA_POSITION_Z,
             data_type_radius=15,
             draw_view_line=True,
             data_type_opacity=0.01)

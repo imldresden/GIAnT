@@ -1,10 +1,10 @@
 import User
 import global_values
 import axis
-import Time_Frame
+import TimeFrame
 import libavg
 import Util
-import Variable_Width_Line
+import VariableWidthLine
 
 DATA_POSITION_X = 0
 DATA_POSITION_Y = -1
@@ -24,13 +24,13 @@ VIS_THICKNESS = 2
 VIS_OPACITY = 3
 
 
-class Highlight_Visualization(libavg.DivNode):
+class HighlightVisualization(libavg.DivNode):
     time = 0
     end = 1
     view_line_length = 30
 
     def __init__(self, parent, data_type_x, data_type_y, data_type_radius, data_type_opacity, draw_view_line, **kwargs):
-        super(Highlight_Visualization, self).__init__(**kwargs)
+        super(HighlightVisualization, self).__init__(**kwargs)
         self.registerInstance(self, parent)
         self.crop = False
 
@@ -67,7 +67,7 @@ class Highlight_Visualization(libavg.DivNode):
 
     # make time and end values in 0..1
     def update_time_frame(self, interval, draw_lines):
-        self.time = Time_Frame.main_time_frame.highlight_time / (Time_Frame.total_range[1] - Time_Frame.total_range[0])
+        self.time = TimeFrame.main_time_frame.highlight_time / (TimeFrame.total_range[1] - TimeFrame.total_range[0])
         self.set_positions()
 
     def set_positions(self):
