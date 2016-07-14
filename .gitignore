@@ -1,0 +1,10 @@
+# Python byte-compiled files
+*.pyc
+
+# PyCharm user specific
+.idea/workspace.xml
+.idea/tasks.xml
+
+# Project-specific
+csv/
+db
