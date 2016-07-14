@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from random import Random
 import OptionsPanel
-import global_values, math, libavg, TimeFrame, VariableWidthLine
+import global_values, math, libavg, time_frame, variable_width_line
 
 DISTANCE = 100  # maximum distance in cm between users
 ANGLE = 90  # maximum viewing angle between users
@@ -58,7 +58,7 @@ class F_Formations(libavg.DivNode):
         # takes the sampling directly from the main_visualization object of the parent(not very nice, I know)
         for point_reference in points_references[0]:
             part = point_reference[0] / self.parent.main_visualization.width
-            times.append(round(TimeFrame.main_time_frame.get_time_for_part_in_interval(part) / global_values.time_step_size) * global_values.time_step_size)
+            times.append(round(time_frame.main_time_frame.get_time_for_part_in_interval(part) / global_values.time_step_size) * global_values.time_step_size)
 
         # takes the point positions directly from the main_visualization object
         for number in self.all_f_formations_map:
@@ -77,7 +77,7 @@ class F_Formations(libavg.DivNode):
                 current_length = len(current_dict[time])
                 if current_length == 0:
                     break
-                point_index = int(TimeFrame.main_time_frame.get_part_in_interval_for_time(time) * len(points_references[0]))
+                point_index = int(time_frame.main_time_frame.get_part_in_interval_for_time(time) * len(points_references[0]))
                 user_1 = current_dict[time][USER_1]
                 user_2 = current_dict[time][USER_2]
                 if point_index >= len(points_references[user_1]) or point_index >= len(points_references[user_2]):
@@ -108,8 +108,8 @@ class F_Formations(libavg.DivNode):
                     opacities[current_index].append(opacities[current_index][i])
 
             self.variable_width_lines.insert(0,
-                                             VariableWidthLine.VariableWidthLine(points=points[current_index], widths=None, opacities=opacities[current_index], userid=-1, parent=self,
-                                                                                 set_points_directly=True))
+                                             variable_width_line.VariableWidthLine(points=points[current_index], widths=None, opacities=opacities[current_index], userid=-1, parent=self,
+                                                                                   set_points_directly=True))
             current_index += 1
 
         while current_index < len(self.variable_width_lines):
@@ -164,7 +164,7 @@ class F_Formations(libavg.DivNode):
 
 
 def check_for_f_formation(pos1, pos2, look_vector1, look_vector2):
-    import Util
+    import util
     """
     Check if two positions, each with a looking direction, are in a F-Formation.
     :param pos1: Position in cm.
@@ -174,9 +174,9 @@ def check_for_f_formation(pos1, pos2, look_vector1, look_vector2):
     :return: Strength of F-Formation.
     """
 
-    v1 = Util.normalize_vector(look_vector1)
-    v2 = Util.normalize_vector(look_vector2)
-    distance = Util.get_length((pos1[0] - pos2[0], pos1[1] - pos2[1]))
+    v1 = util.normalize_vector(look_vector1)
+    v2 = util.normalize_vector(look_vector2)
+    distance = util.get_length((pos1[0] - pos2[0], pos1[1] - pos2[1]))
     if distance < DISTANCE:
         diff_vector = (pos2[0] - pos1[0], pos2[1] - pos1[1])
         angle1 = angle(v1, diff_vector)
@@ -187,7 +187,7 @@ def check_for_f_formation(pos1, pos2, look_vector1, look_vector2):
         angle_similarity = 1 / (0.2 + abs(angle1 - angle2))
         print "similarity : " + str(angle_similarity)
 
-        return 20 / Util.get_length((pos1[0] + 100 * v1[0] - pos2[0] + 100 * v2[0], pos1[1] + 100 * v1[1] - pos2[1] + 100 * v2[1])) * angle_similarity
+        return 20 / util.get_length((pos1[0] + 100 * v1[0] - pos2[0] + 100 * v2[0], pos1[1] + 100 * v1[1] - pos2[1] + 100 * v2[1])) * angle_similarity
 
     else:
         return 0

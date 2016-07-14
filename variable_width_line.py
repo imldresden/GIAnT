@@ -4,7 +4,7 @@
 from libavg import player, avg
 import MainDiv
 import random
-import Util
+import util
 
 
 class VariableWidthLine:
@@ -18,7 +18,7 @@ class VariableWidthLine:
         self.widths = widths
         self.opacities = opacities
         self.set_points_directly = set_points_directly
-        self.color = Util.get_user_color_as_hex(userid, 1)
+        self.color = util.get_user_color_as_hex(userid, 1)
         self.__genGradient()
 
         self.node = avg.MeshNode(parent=parent, blendmode="add")

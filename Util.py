@@ -77,8 +77,8 @@ def line_intersection(line1, line2):
 
 
 def get_index_from_time_percentage(percentage):
-    import User
-    return int(percentage * float(len(User.users[0].head_positions_integral)))
+    import user
+    return int(percentage * float(len(user.users[0].head_positions_integral)))
 
 
 def get_look_direction(pitch, yaw):
@@ -239,6 +239,6 @@ def change_smoothness(value):
     global_values.samples_per_pixel = max(0.1, min(0.3, 50 / value))
 
     # publish changes
-    from TimeFrame import main_time_frame
+    from time_frame import main_time_frame
     main_time_frame.publish(draw_lines=True)
 

@@ -5,16 +5,16 @@ import time
 from libavg import app, avg
 import libavg
 import F_Formations2
-from TimeFrame import main_time_frame
-import HighlightVisualization
-import LineVisualization
+from time_frame import main_time_frame
+import highlight_visualization
+import line_visualization
 import F_Formations
 import axis
 import OptionsPanel
 import global_values
 import Legend
-import Video
-import Util
+import video
+import util
 
 
 class MainDiv(app.MainDiv):
@@ -54,33 +54,33 @@ class MainDiv(app.MainDiv):
                                                           fillcolor=global_values.COLOR_BLACK)
 
         # main visualization
-        self.main_visualization = LineVisualization.LineVisualization(
+        self.main_visualization = line_visualization.LineVisualization(
             parent=self, pos=(0, 0),
             size=(main_vis_width, res_y - menu_height),
-            data_type_x=LineVisualization.DATA_TIME,
-            data_type_y=LineVisualization.DATA_POSITION_X,
-            data_type_thickness=LineVisualization.DATA_POSITION_Z,
-            data_type_opacity=LineVisualization.DATA_POSITION_Z,
+            data_type_x=line_visualization.DATA_TIME,
+            data_type_y=line_visualization.DATA_POSITION_X,
+            data_type_thickness=line_visualization.DATA_POSITION_Z,
+            data_type_opacity=line_visualization.DATA_POSITION_Z,
             invert_y=True,
             name="Movement over Time")
         main_time_frame.subscribe(self.main_visualization)
 
         # wall visualization
-        self.wall_visualization = LineVisualization.LineVisualization(
+        self.wall_visualization = line_visualization.LineVisualization(
             parent=self, pos=(main_vis_width + padding, 0),
             size=(res_x - main_vis_width - padding, side_vis_height),
-            data_type_x=LineVisualization.DATA_VIEWPOINT_X,
-            data_type_y=LineVisualization.DATA_VIEWPOINT_Y,
-            data_type_thickness=LineVisualization.DATA_POSITION_Z,
-            data_type_opacity=LineVisualization.DATA_POSITION_Z,
+            data_type_x=line_visualization.DATA_VIEWPOINT_X,
+            data_type_y=line_visualization.DATA_VIEWPOINT_Y,
+            data_type_thickness=line_visualization.DATA_POSITION_Z,
+            data_type_opacity=line_visualization.DATA_POSITION_Z,
             invert_y=True,
             name="Wall Front")
 
-        self.wall_highlight = HighlightVisualization.HighlightVisualization(
+        self.wall_highlight = highlight_visualization.HighlightVisualization(
             parent=self, pos=self.wall_visualization.pos,
             size=self.wall_visualization.background_rect.size,
-            data_type_x=LineVisualization.DATA_VIEWPOINT_X,
-            data_type_y=LineVisualization.DATA_VIEWPOINT_Y,
+            data_type_x=line_visualization.DATA_VIEWPOINT_X,
+            data_type_y=line_visualization.DATA_VIEWPOINT_Y,
             data_type_radius=15,
             draw_view_line=False,
             data_type_opacity=0.01)
@@ -88,22 +88,22 @@ class MainDiv(app.MainDiv):
         main_time_frame.subscribe(self.wall_highlight)
 
         # room visualization
-        self.room_visualization = LineVisualization.LineVisualization(
+        self.room_visualization = line_visualization.LineVisualization(
             parent=self,
             pos=(main_vis_width + padding, side_vis_height - axis.THICKNESS/2),
             size=(res_x - main_vis_width - padding, side_vis_height),
-            data_type_x=LineVisualization.DATA_POSITION_X,
-            data_type_y=LineVisualization.DATA_POSITION_Z,
+            data_type_x=line_visualization.DATA_POSITION_X,
+            data_type_y=line_visualization.DATA_POSITION_Z,
             data_type_thickness=1.4,
             data_type_opacity=0.01,
             top_axis=True,
             name="Room Top")
 
-        self.room_highlight = HighlightVisualization.HighlightVisualization(
+        self.room_highlight = highlight_visualization.HighlightVisualization(
             parent=self, size=self.room_visualization.background_rect.size,
             pos=self.room_visualization.pos,
-            data_type_x=LineVisualization.DATA_POSITION_X,
-            data_type_y=LineVisualization.DATA_POSITION_Z,
+            data_type_x=line_visualization.DATA_POSITION_X,
+            data_type_y=line_visualization.DATA_POSITION_Z,
             data_type_radius=15,
             draw_view_line=True,
             data_type_opacity=0.01)
@@ -111,7 +111,7 @@ class MainDiv(app.MainDiv):
         main_time_frame.subscribe(self.room_highlight)
 
         # video
-        self.video = Video.Video(pos=(main_vis_width + padding + axis.THICKNESS,
+        self.video = video.Video(pos=(main_vis_width + padding + axis.THICKNESS,
                                       2 * side_vis_height - 1.5 * axis.THICKNESS + padding),
                                  size=(res_x - main_vis_width - padding - axis.THICKNESS,
                                        side_vis_height + 1.5 * axis.THICKNESS - padding),
@@ -274,8 +274,8 @@ def calculate_line_intersection(p1, p2_selected, p3, thickness1, thickness2_sele
                 p2_selected[1] - normalized_vector_2[0] * thickness2_selected)
     right_3 = (p3[0] + normalized_vector_2[1] * thickness3, p3[1] - normalized_vector_2[0] * thickness3)
 
-    intersection_point_1 = Util.line_intersection((left_1, left2_1), (left2_2, left_3))
-    intersection_point_2 = Util.line_intersection((right_1, right2_1), (right2_2, right_3))
+    intersection_point_1 = util.line_intersection((left_1, left2_1), (left2_2, left_3))
+    intersection_point_2 = util.line_intersection((right_1, right2_1), (right2_2, right_3))
 
     return [intersection_point_1, intersection_point_2]
 

@@ -3,7 +3,7 @@
 import sqlite3
 import csv
 import time
-import Util
+import util
 
 # Positions in the database
 HEAD = 0
@@ -110,7 +110,7 @@ def load_csv(rows):
     :param rows:
     :return: list hierarchy of file
     """
-    import Util
+    import util
     global min_time
     file = []
     lastline = 0
@@ -121,12 +121,12 @@ def load_csv(rows):
         else:
             lastline = line
         if len(file) == 0 or not file[len(file) - 1] == split:
-            head = Util.cleanString(split[HEAD])
+            head = util.cleanString(split[HEAD])
 
             for i in range(len(split)):
-                split[i] = Util.cleanString(split[i])
+                split[i] = util.cleanString(split[i])
             lineTuple = (split[USER], head == 'head', split[X_VALUE], split[Y_VALUE], split[Z_VALUE], split[PITCH],
-                         split[YAW], split[ROLL], Util.convertTimestamp(split[13]))
+                         split[YAW], split[ROLL], util.convertTimestamp(split[13]))
             file.append(lineTuple)
 
     insert_many(file, "raw", ["user", "head", "x", "y", "z", "pitch", "yaw", "roll", "time"])
@@ -308,7 +308,7 @@ def create_viewpoint_table():
             y = data[1]
             z = data[2]
             time = data[5]
-            view_vector = Util.get_look_direction(pitch, yaw)
+            view_vector = util.get_look_direction(pitch, yaw)
             multiplier = z / view_vector[2]
             view_point = (x - view_vector[0] * multiplier, y - view_vector[1] * multiplier)
             user_view_point_data.append([userid, view_point[0], view_point[1], time])
@@ -336,7 +336,7 @@ def create_viewpoint_table_integral():
 
 def create_f_formation_table():
     import F_Formations2
-    import User
+    import user
     import global_values
     create_table("f_formations", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
                                  "user1 TINYINT NOT NULL,"
@@ -351,16 +351,16 @@ def create_f_formation_table():
 
     f_formations = []
     number = 0
-    for user in User.users:
-        for user2 in User.users:
+    for user in user.users:
+        for user2 in user.users:
             if user.index < user2.index:
                 current_length = 0
                 current_dataset = []
                 for i in range(len(user.head_positions_integral) - 1):
                     pos1 = user.get_head_position_averaged(i, 1)
                     pos2 = user2.get_head_position_averaged(i, 1)
-                    dir1 = Util.get_look_direction(user.get_head_orientation(i)[0], user.get_head_orientation(i)[1])
-                    dir2 = Util.get_look_direction(user2.get_head_orientation(i)[0], user2.get_head_orientation(i)[1])
+                    dir1 = util.get_look_direction(user.get_head_orientation(i)[0], user.get_head_orientation(i)[1])
+                    dir2 = util.get_look_direction(user2.get_head_orientation(i)[0], user2.get_head_orientation(i)[1])
                     f_intensity = F_Formations2.check_for_f_formation(pos1, pos2, dir2, dir1)
 
                     if f_intensity > 0:

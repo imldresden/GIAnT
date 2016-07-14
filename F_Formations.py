@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import Util
+import util
 import math
 import libavg
-import User
+import user
 import global_values
-import TimeFrame
+import time_frame
 import time
 
 DURATION = 4000     # minimal duration in ms for formation to be counted as f-formation
@@ -29,12 +29,12 @@ class F_Formations(libavg.DivNode):
         self.f_formation_nodes = []                                 # contains libavg f-formation nodes
         self.f_formation_line_nodes = []                            # contains f-formation indication lines
         self.__step_size = 0                                        # step size for drawing f-formations
-        self.__user_colors = [Util.get_user_color_as_hex(i, 1) for i in range(len(User.users))]  # colors from scheme
+        self.__user_colors = [util.get_user_color_as_hex(i, 1) for i in range(len(user.users))]  # colors from scheme
 
         # create tuple of users to check against existing f-formation
         self.user_list = []
-        for i in range(len(User.users)):
-            for j in range(len(User.users)):
+        for i in range(len(user.users)):
+            for j in range(len(user.users)):
                 if j > i:
                     self.user_list.append((i, j))
 
@@ -42,7 +42,7 @@ class F_Formations(libavg.DivNode):
         self.load_f_formations()
 
         # initial update
-        self.update_time_frame(TimeFrame.total_range, True)
+        self.update_time_frame(time_frame.total_range, True)
 
     def load_f_formations(self):
         """
@@ -53,7 +53,7 @@ class F_Formations(libavg.DivNode):
         start_time = time.time()
 
         # pre-definitions for following loops
-        t = TimeFrame.total_range[0]
+        t = time_frame.total_range[0]
         f_timer = [0 for i in range(len(self.user_list))]
         long_enough = [False for i in range(len(self.user_list))]
         init_pos_1 = [(-1000, -1000) for i in range(len(self.user_list))]
@@ -62,15 +62,15 @@ class F_Formations(libavg.DivNode):
         drift_2 = [False for i in range(len(self.user_list))]
 
         # for every time step
-        while t < TimeFrame.total_range[1]:
+        while t < time_frame.total_range[1]:
 
             # pre-definitions for following for loop
             curr_time_index = int(t/global_values.time_step_size)
 
             # for each user combination
             for i, users in enumerate(self.user_list):
-                pos_values_1 = User.users[users[0]].get_head_position_averaged(curr_time_index)
-                pos_values_2 = User.users[users[1]].get_head_position_averaged(curr_time_index)
+                pos_values_1 = user.users[users[0]].get_head_position_averaged(curr_time_index)
+                pos_values_2 = user.users[users[1]].get_head_position_averaged(curr_time_index)
                 pos_1 = (pos_values_1[0], pos_values_1[1])
                 pos_2 = (pos_values_2[0], pos_values_2[1])
                 distance = point_distance(pos_1, pos_2)
@@ -157,10 +157,10 @@ class F_Formations(libavg.DivNode):
                 curr_time = start
                 while curr_time <= end:
                     x = value_to_pixel(curr_time, self.width, interval)
-                    y_1 = value_to_pixel(User.users[user_1].get_head_position_averaged(
+                    y_1 = value_to_pixel(user.users[user_1].get_head_position_averaged(
                         int(curr_time/global_values.time_step_size))[0], self.height,
                                          (global_values.x_range[1], global_values.x_range[0]))
-                    y_2 = value_to_pixel(User.users[user_2].get_head_position_averaged(
+                    y_2 = value_to_pixel(user.users[user_2].get_head_position_averaged(
                         int(curr_time/global_values.time_step_size))[0], self.height,
                                          (global_values.x_range[1], global_values.x_range[0]))
                     thickness_1 = self.__get_thickness(user_1, curr_time)
@@ -181,10 +181,10 @@ class F_Formations(libavg.DivNode):
                 # add last points to make clean cut at end of interval if step_size > global_values.time_step_size
                 else:
                     x = value_to_pixel(end, self.width, interval)
-                    y_1 = value_to_pixel(User.users[user_1].get_head_position_averaged(
+                    y_1 = value_to_pixel(user.users[user_1].get_head_position_averaged(
                         int(end/global_values.time_step_size))[0], self.height,
                                          (global_values.x_range[1], global_values.x_range[0]))
-                    y_2 = value_to_pixel(User.users[user_2].get_head_position_averaged(
+                    y_2 = value_to_pixel(user.users[user_2].get_head_position_averaged(
                         int(end/global_values.time_step_size))[0], self.height,
                                          (global_values.x_range[1], global_values.x_range[0]))
                     thickness_1 = self.__get_thickness(user_1, end)
@@ -222,7 +222,7 @@ class F_Formations(libavg.DivNode):
         :return: Thickness in pixel.
         """
         # get z position from user (distance from wall in cm)
-        distance = User.users[user_id].get_head_position_averaged(int(t/global_values.time_step_size))[2]
+        distance = user.users[user_id].get_head_position_averaged(int(t / global_values.time_step_size))[2]
         distance = (distance - global_values.z_range[0]) / float(global_values.z_range[1] - global_values.z_range[0])
         thickness = 2 + pow(distance, 3) * self.height/12
         return thickness/2

@@ -3,9 +3,9 @@
 import libavg
 from libavg import avg
 from database import load_file
-from TimeFrame import main_time_frame
+from time_frame import main_time_frame
 import global_values
-import Util
+import util
 
 
 class Video:
@@ -56,7 +56,7 @@ class Video:
                 self.videoNode.seekToTime(int(main_time_frame.highlight_time + self.offset))
             self.frames += 1
         self.__cur_time_text.text = "Current time: {}".format(
-            Util.format_label_value(unit="ms", value=self.videoNode.getCurTime() - self.offset, short=True))
+            util.format_label_value(unit="ms", value=self.videoNode.getCurTime() - self.offset, short=True))
 
     def play_pause(self, play=True):
         start_time = main_time_frame.get_interval_range()[0]

@@ -1,10 +1,10 @@
-import User
+import user
 import global_values
 import axis
-import TimeFrame
+import time_frame
 import libavg
-import Util
-import VariableWidthLine
+import util
+import variable_width_line
 
 DATA_POSITION_X = 0
 DATA_POSITION_Y = -1
@@ -53,12 +53,12 @@ class HighlightVisualization(libavg.DivNode):
 
         # user divs to distinguish MeshNodes in data_div by user (user_divs are initialized as self.data_div's)
         self.user_divs = []
-        for i in range((len(User.users))):
+        for i in range((len(user.users))):
             user_div = libavg.DivNode(pos=(0, 0), parent=self.data_div, crop=True, size=self.size)
             self.user_divs.append(user_div)
-            pos = User.users[i].get_head_position_averaged(0)
-            look_dir = User.users[i].get_head_orientation(0)
-            user_color = Util.get_user_color_as_hex(i, 1)
+            pos = user.users[i].get_head_position_averaged(0)
+            look_dir = user.users[i].get_head_orientation(0)
+            user_color = util.get_user_color_as_hex(i, 1)
             libavg.CircleNode(pos=(pos[0], pos[1]), r=(self.size[0] + self.size[1]) / 100, parent=user_div, color=global_values.COLOR_BLACK, fillcolor=user_color, strokewidth=1, fillopacity=1)
             if self.draw_view_line:
                 libavg.LineNode(parent=user_div, pos1=(pos[0], pos[1]), pos2=(pos[0], pos[1] + self.view_line_length), color=user_color, strokewidth=3)
@@ -67,17 +67,17 @@ class HighlightVisualization(libavg.DivNode):
 
     # make time and end values in 0..1
     def update_time_frame(self, interval, draw_lines):
-        self.time = TimeFrame.main_time_frame.highlight_time / (TimeFrame.total_range[1] - TimeFrame.total_range[0])
+        self.time = time_frame.main_time_frame.highlight_time / (time_frame.total_range[1] - time_frame.total_range[0])
         self.set_positions()
 
     def set_positions(self):
 
         for i in range(len(self.user_divs)):
             user_div = self.user_divs[i]
-            highlight_time = Util.get_index_from_time_percentage(self.time)
+            highlight_time = util.get_index_from_time_percentage(self.time)
             if self.data_type_x == DATA_POSITION_X:
                 if self.data_type_y == DATA_POSITION_Z:
-                    new_pos = User.users[i].get_head_position_averaged(highlight_time)
+                    new_pos = user.users[i].get_head_position_averaged(highlight_time)
                     new_pos[0] = (new_pos[0] - global_values.x_range[0]) / (global_values.x_range[1] - global_values.x_range[0])
                     new_pos[1] = (new_pos[1] - global_values.y_range[0]) / (global_values.y_range[1] - global_values.y_range[0])
                     new_pos[2] = (new_pos[2] - global_values.z_range[0]) / (global_values.z_range[1] - global_values.z_range[0])
@@ -86,14 +86,14 @@ class HighlightVisualization(libavg.DivNode):
 
 
                 if self.draw_view_line:
-                    look_dir = User.users[i].get_head_orientation(highlight_time)
-                    look_dir = Util.get_look_direction(look_dir[0], look_dir[1])
+                    look_dir = user.users[i].get_head_orientation(highlight_time)
+                    look_dir = util.get_look_direction(look_dir[0], look_dir[1])
                     user_div.getChild(1).pos1 = tuple(pos)
                     user_div.getChild(1).pos2 = (pos[0] - self.view_line_length * look_dir[0], pos[1] - self.view_line_length * look_dir[2])
 
             else:
                 if self.data_type_x == DATA_VIEWPOINT_X and self.data_type_y == DATA_VIEWPOINT_Y:
-                    new_pos = User.users[i].get_view_point_averaged(highlight_time)
+                    new_pos = user.users[i].get_view_point_averaged(highlight_time)
                     new_pos[0] = (new_pos[0] - global_values.x_wall_range[0]) / (global_values.x_wall_range[1] - global_values.x_wall_range[0])
                     new_pos[1] = 1 - (new_pos[1] - global_values.y_wall_range[0]) / (global_values.y_wall_range[1] - global_values.y_wall_range[0])
                     pos = (new_pos[0] * self.width, new_pos[1] * self.height)

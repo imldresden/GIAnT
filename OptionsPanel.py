@@ -2,13 +2,13 @@
 
 import libavg
 from libavg import widget, avg
-from TimeFrame import main_time_frame
+from time_frame import main_time_frame
 import global_values
-import User
-import Util
-import LineVisualization
+import user
+import util
+import line_visualization
 import F_Formations
-import TimeFrame
+import time_frame
 
 SHOW_F_FORMATIONS = True    # if f-formations are visible when app is launched
 LOAD_F_FORMATIONS = True    # if f-formations are being loaded on startup (app needs to be restarted to load them)
@@ -58,8 +58,8 @@ class OptionsPanel(libavg.DivNode):
         # user buttons
         self.user_buttons = []
         self.user_texts = []
-        for i in range(len(User.users)):
-            user_color = Util.get_user_color_as_hex(i, 1)
+        for i in range(len(user.users)):
+            user_color = util.get_user_color_as_hex(i, 1)
             size = (70, 30)
             self.user_buttons.append(
                 widget.ToggleButton(uncheckedUpNode=
@@ -93,7 +93,7 @@ class OptionsPanel(libavg.DivNode):
         self.smoothness_slider = widget.Slider(pos=(495, 20), width=180, parent=self, range=(2, 2000))
         self.smoothness_slider.thumbPos = global_values.averaging_count
         # subscription to change curve smoothness
-        self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, lambda pos: Util.change_smoothness(pos))
+        self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, lambda pos: util.change_smoothness(pos))
         # smoothness default button
         icon_size = (12, 12)
         self.default_button = widget.ToggleButton(uncheckedUpNode=
@@ -177,15 +177,15 @@ class OptionsPanel(libavg.DivNode):
         :param user_id: user_id to toggle
         """
         if checked:
-            User.users[user_id].selected = True
+            user.users[user_id].selected = True
             for i, node in enumerate(self.nodes):
-                if isinstance(node, LineVisualization.LineVisualization):
+                if isinstance(node, line_visualization.LineVisualization):
                     node.data_div.appendChild(node.user_divs[user_id])
                     self.user_texts[user_id].color = global_values.COLOR_BACKGROUND
         else:
-            User.users[user_id].selected = False
+            user.users[user_id].selected = False
             for i, node in enumerate(self.nodes):
-                if isinstance(node, LineVisualization.LineVisualization):
+                if isinstance(node, line_visualization.LineVisualization):
                     node.user_divs[user_id].unlink()
                     self.user_texts[user_id].color = global_values.COLOR_FOREGROUND
 
@@ -215,7 +215,7 @@ class OptionsPanel(libavg.DivNode):
         Resets smoothness back to value.
         :param value: Smoothness value
         """
-        Util.change_smoothness(value)
+        util.change_smoothness(value)
         self.smoothness_slider.thumbPos = global_values.averaging_count
 
     def __toggle_smoothness_link(self, checked):
@@ -230,8 +230,8 @@ class OptionsPanel(libavg.DivNode):
         if checked:
             self.smoothness_slider.opacity = 0.2
             i_range = main_time_frame.get_interval_range()[1] - main_time_frame.get_interval_range()[0]
-            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / TimeFrame.total_range_value
-            Util.change_smoothness(s)
+            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / time_frame.total_range_value
+            util.change_smoothness(s)
         else:
             self.smoothness_slider.opacity = 1
             # publish changes

@@ -3,7 +3,7 @@
 import time
 import database
 import global_values
-import Util
+import util
 
 total_range = [database.min_time, database.max_time]
 total_range_value = total_range[1] - total_range[0]
@@ -47,7 +47,7 @@ class TimeFrame(object):
             if global_values.link_smoothness:
                 i_range = self.__interval_range[1] - self.__interval_range[0]
                 s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / total_range_value
-                Util.change_smoothness(s)
+                util.change_smoothness(s)
             else:
                 self.publish()
         return True

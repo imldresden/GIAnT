@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import User
+import user
 import global_values
 import axis
-import TimeFrame
+import time_frame
 import libavg
-import VariableWidthLine
+import variable_width_line
 
 DATA_POSITION_X = 0
 DATA_POSITION_Y = -1
@@ -59,13 +59,13 @@ class LineVisualization(libavg.DivNode):
 
         # user divs to distinguish MeshNodes in data_div by user (user_divs are initialized as self.data_div's)
         self.user_divs = []
-        for i in range((len(User.users))):
+        for i in range((len(user.users))):
             self.user_divs.append(libavg.DivNode(pos=(0, 0), parent=self.data_div, crop=True, size=self.size))
 
         # y-axis
         if data_type_y == DATA_TIME:
             self.y_axis = axis.TimeAxisNode(pos=(0, 0), parent=self, size=(axis.THICKNESS, self.data_div.height),
-                                            data_range=TimeFrame.total_range, unit="ms", inverted=invert_y)
+                                            data_range=time_frame.total_range, unit="ms", inverted=invert_y)
         else:
             data_range = [0, 10]
             unit = ""
@@ -105,7 +105,7 @@ class LineVisualization(libavg.DivNode):
         # x-axis
         x_axis_pos = (axis.THICKNESS, self.data_div.height)
         if self.data_type_x == DATA_TIME:
-            self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, parent=self, unit="ms", data_range=TimeFrame.total_range,
+            self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, parent=self, unit="ms", data_range=time_frame.total_range,
                                             size=(self.data_div.width, axis.THICKNESS), inverted=invert_x)
         else:
             # set data_range according to data input
@@ -140,8 +140,8 @@ class LineVisualization(libavg.DivNode):
     def update_time_frame(self, interval, draw_lines):
         start_orig = self.start
         end_orig = self.end
-        self.start = interval[0] / (TimeFrame.total_range[1] - TimeFrame.total_range[0])
-        self.end = interval[1] / (TimeFrame.total_range[1] - TimeFrame.total_range[0])
+        self.start = interval[0] / (time_frame.total_range[1] - time_frame.total_range[0])
+        self.end = interval[1] / (time_frame.total_range[1] - time_frame.total_range[0])
         if draw_lines:
             self.createLine()
         elif self.start != start_orig or self.end != end_orig:
@@ -149,9 +149,9 @@ class LineVisualization(libavg.DivNode):
 
     def createLine(self):
         userid = -1
-        for user in User.users:
+        for usr in user.users:
             userid += 1
-            if user.selected:
+            if usr.selected:
                 points = []
                 widths = []
                 opacities = []
@@ -161,17 +161,17 @@ class LineVisualization(libavg.DivNode):
                 if self.data_type_y == DATA_TIME:
                     samplecount = int(self.data_div.height * global_values.samples_per_pixel) + 1
                 for sample in range(samplecount):
-                    if len(user.head_positions_integral) == 0:
+                    if len(usr.head_positions_integral) == 0:
                         continue
                     posindex = int(
-                        len(user.head_positions_integral) * sample * (self.end - self.start) / float(
-                            samplecount) + self.start * len(user.head_positions_integral))
+                        len(usr.head_positions_integral) * sample * (self.end - self.start) / float(
+                            samplecount) + self.start * len(usr.head_positions_integral))
                     current_position = []
 
                     if any(data_type in self.data_types for data_type in DATA_POSITION):
-                        head_position_averaged = user.get_head_position_averaged(posindex)
+                        head_position_averaged = usr.get_head_position_averaged(posindex)
                     if any(data_type in self.data_types for data_type in DATA_VIEWPOINT):
-                        view_point_averaged = user.get_view_point_averaged(posindex)
+                        view_point_averaged = usr.get_view_point_averaged(posindex)
 
                     for i in range(4):
                         data = 0
@@ -229,8 +229,8 @@ class LineVisualization(libavg.DivNode):
                     userline.set_values(points, widths, opacities)
                 else:
                     self.canvas_objects.append(
-                        VariableWidthLine.VariableWidthLine(points=points, widths=widths, opacities=opacities,
-                                                            userid=userid, parent=self.user_divs[userid]))
+                        variable_width_line.VariableWidthLine(points=points, widths=widths, opacities=opacities,
+                                                              userid=userid, parent=self.user_divs[userid]))
 
 
 def calculate_thickness(data, div):
