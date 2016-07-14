@@ -2,9 +2,45 @@
 # !/usr/bin/env python
 
 from libavg import player, avg
-import MainDiv
 import random
+import math
 import util
+
+
+def calculate_line_intersection(p1, p2_selected, p3, thickness1, thickness2_selected, thickness3):
+    thickness1 *= 0.5
+    thickness2_selected *= 0.5
+    thickness3 *= 0.5
+    vector_1 = (p2_selected[0] - p1[0], p2_selected[1] - p1[1])
+    vector_2 = (p3[0] - p2_selected[0], p3[1] - p2_selected[1])
+
+    vector_length_1 = math.sqrt(vector_1[0] * vector_1[0] + vector_1[1] * vector_1[1])
+    vector_length_2 = math.sqrt(vector_2[0] * vector_2[0] + vector_2[1] * vector_2[1])
+    try:
+        normalized_vector_1 = (vector_1[0] / vector_length_1, vector_1[1] / vector_length_1)
+        normalized_vector_2 = (vector_2[0] / vector_length_2, vector_2[1] / vector_length_2)
+    except:
+        normalized_vector_1 = (0, 1)
+        normalized_vector_2 = (0, 1)
+
+    left_1 = (p1[0] - normalized_vector_1[1] * thickness1, p1[1] + normalized_vector_1[0] * thickness1)
+    left2_1 = (p2_selected[0] - normalized_vector_1[1] * thickness2_selected,
+               p2_selected[1] + normalized_vector_1[0] * thickness2_selected)
+    left2_2 = (p2_selected[0] - normalized_vector_2[1] * thickness2_selected,
+               p2_selected[1] + normalized_vector_2[0] * thickness2_selected)
+    left_3 = (p3[0] - normalized_vector_2[1] * thickness3, p3[1] + normalized_vector_2[0] * thickness3)
+
+    right_1 = (p1[0] + normalized_vector_1[1] * thickness1, p1[1] - normalized_vector_1[0] * thickness1)
+    right2_1 = (p2_selected[0] + normalized_vector_1[1] * thickness2_selected,
+                p2_selected[1] - normalized_vector_1[0] * thickness2_selected)
+    right2_2 = (p2_selected[0] + normalized_vector_2[1] * thickness2_selected,
+                p2_selected[1] - normalized_vector_2[0] * thickness2_selected)
+    right_3 = (p3[0] + normalized_vector_2[1] * thickness3, p3[1] - normalized_vector_2[0] * thickness3)
+
+    intersection_point_1 = util.line_intersection((left_1, left2_1), (left2_2, left_3))
+    intersection_point_2 = util.line_intersection((right_1, right2_1), (right2_2, right_3))
+
+    return [intersection_point_1, intersection_point_2]
 
 
 class VariableWidthLine:
@@ -67,7 +103,7 @@ class VariableWidthLine:
                     else:
                         p3 = self.points[i + 1]
                         t3 = self.widths[i + 1]
-                linepos = MainDiv.calculate_line_intersection(p1, p2, p3, t1, t2, t3)
+                linepos = calculate_line_intersection(p1, p2, p3, t1, t2, t3)
 
                 vertexes.append(linepos[0])
                 vertexes.append(linepos[1])
