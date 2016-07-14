@@ -248,15 +248,6 @@ def value_to_pixel(value, max_px, interval):
     return value / a - interval[0] / a
 
 
-def make_variable_line_thickness_polygon(p1, p2, thickness_1, thickness_2):
-    polygon = []
-    polygon.append((p1[0], p1[1] + thickness_1 / float(2)))
-    polygon.append((p2[0], p2[1] + thickness_2 / float(2)))
-    polygon.append((p2[0], p2[1] - thickness_2 / float(2)))
-    polygon.append((p1[0], p1[1] - thickness_1 / float(2)))
-    return polygon
-
-
 """start parameter"""
 OptionsPanel.SHOW_F_FORMATIONS = True
 OptionsPanel.LOAD_F_FORMATIONS = True

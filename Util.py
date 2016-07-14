@@ -7,16 +7,6 @@ import colorsys
 timestampOffset = sys.maxint
 
 
-def addVectors(vec1, vec2):
-    if len(vec1) != len(vec2):
-        print("Util.addVectors: the two vectors " + vec1 + " and " + vec2 + " aren't the same size, vec1 is returned.")
-        return vec1
-    newTuple = ()
-    for index in range(0, len(vec1)):
-        newTuple += (vec1[index] + vec2[index]),
-    return newTuple
-
-
 def get_length(vector):
     value = 0
     for component in vector:
