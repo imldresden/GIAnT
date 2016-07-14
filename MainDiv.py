@@ -10,7 +10,7 @@ import Highlight_Visualization
 import Line_Visualization
 import F_Formations
 import axis
-import Options
+import OptionsPanel
 import global_values
 import Legend
 import Video
@@ -122,7 +122,7 @@ class MainDiv(app.MainDiv):
         nodes = [self.wall_visualization, self.room_visualization, self.main_visualization]
 
         # f-formations
-        if Options.LOAD_F_FORMATIONS:
+        if OptionsPanel.LOAD_F_FORMATIONS:
             self.f_formations = F_Formations2.F_Formations(parent=self, sensitive=False,
                                                           pos=(self.main_visualization.pos[0] + axis.THICKNESS,
                                                                self.main_visualization.pos[1]),
@@ -132,9 +132,9 @@ class MainDiv(app.MainDiv):
             nodes.append(self.f_formations)
 
         # menu
-        self.options = Options.Options(nodes=nodes, parent=self,
-                                       pos=(0, self.main_visualization.height),
-                                       size=(self.main_visualization.width, menu_height))
+        self.options = OptionsPanel.OptionsPanel(nodes=nodes, parent=self,
+                                                 pos=(0, self.main_visualization.height),
+                                                 size=(self.main_visualization.width, menu_height))
 
         # legend
         self.legend = Legend.Legend(parent=self.options, min_value=0, max_value=1, unit="cm", size=(210, 200))

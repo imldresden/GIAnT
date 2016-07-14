@@ -3,14 +3,14 @@
 
 from libavg import app
 from MainDiv import MainDiv
-import Options
+import OptionsPanel
 import F_Formations
 from global_values import resolution
 
 """start parameter"""
-Options.SHOW_F_FORMATIONS = True
-Options.LOAD_F_FORMATIONS = True
-Options.COLOR_SCHEME = 0
+OptionsPanel.SHOW_F_FORMATIONS = True
+OptionsPanel.LOAD_F_FORMATIONS = True
+OptionsPanel.COLOR_SCHEME = 0
 F_Formations.DURATION = 4000
 F_Formations.DISTANCE = 80
 F_Formations.MAX_DRIFT = 55

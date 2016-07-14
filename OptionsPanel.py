@@ -15,7 +15,7 @@ LOAD_F_FORMATIONS = True    # if f-formations are being loaded on startup (app n
 COLOR_SCHEME = 1            # user color scheme (see global_values.py for color schemes)
 
 
-class Options(libavg.DivNode):
+class OptionsPanel(libavg.DivNode):
     def __init__(self, nodes, parent, **kwargs):
         """
         DivNode containing options.
@@ -23,7 +23,7 @@ class Options(libavg.DivNode):
         :param parent: parent div node
         :param kwargs: passed through args for libavg.DivNode
         """
-        super(Options, self).__init__(**kwargs)
+        super(OptionsPanel, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
         self.nodes = nodes              # DivNodes containing user data

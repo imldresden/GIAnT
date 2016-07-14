@@ -1,6 +1,6 @@
 from collections import OrderedDict
 from random import Random
-import Options
+import OptionsPanel
 import global_values, math, libavg, Time_Frame, Variable_Width_Line
 
 DISTANCE = 100  # maximum distance in cm between users
@@ -155,7 +155,7 @@ class F_Formations(libavg.DivNode):
             #             previous_selected = selected
 
     def update_time_frame(self, interval, draw_lines):
-        if Options.SHOW_F_FORMATIONS:
+        if OptionsPanel.SHOW_F_FORMATIONS:
             self.calculate_dataset()
         else:
             for vvl in self.variable_width_lines:
