@@ -2,7 +2,7 @@
 # !/usr/bin/env python
 
 from libavg import player, avg
-import Draw
+import MainDiv
 import random
 import Util
 
@@ -67,7 +67,7 @@ class Variable_Width_Line:
                     else:
                         p3 = self.points[i + 1]
                         t3 = self.widths[i + 1]
-                linepos = Draw.calculate_line_intersection(p1, p2, p3, t1, t2, t3)
+                linepos = MainDiv.calculate_line_intersection(p1, p2, p3, t1, t2, t3)
 
                 vertexes.append(linepos[0])
                 vertexes.append(linepos[1])

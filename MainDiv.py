@@ -17,7 +17,7 @@ import Video
 import Util
 
 
-class MainDrawer(app.MainDiv):
+class MainDiv(app.MainDiv):
     """
     Main drawer that initializes the three visualizations, the options panel and the video.
     """

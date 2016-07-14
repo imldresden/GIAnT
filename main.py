@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from libavg import app
-from Draw import MainDrawer
+from MainDiv import MainDiv
 import Options
 import F_Formations
 from global_values import resolution
@@ -17,4 +17,4 @@ F_Formations.MAX_DRIFT = 55
 F_Formations.ANGLE = 90
 
 # minimum recommended resolution: 1040x331 px!
-app.App().run(MainDrawer(), app_resolution=resolution["1500x800"])
+app.App().run(MainDiv(), app_resolution=resolution["1500x800"])
