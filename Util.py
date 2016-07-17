@@ -230,5 +230,5 @@ def change_smoothness(value):
 
     # publish changes
     from time_interval import main_time_frame
-    main_time_frame.publish(draw_lines=True)
+    main_time_frame.notify(draw_lines=True)
 

@@ -137,7 +137,7 @@ class LineVisualization(libavg.DivNode):
                          color=global_values.COLOR_FOREGROUND, text=name, sensitive=False, alignment="left")
 
     # make start and end values in 0..1
-    def update_time_frame(self, interval, draw_lines):
+    def update_time(self, interval, draw_lines):
         start_orig = self.start
         end_orig = self.end
         self.start = interval[0] / (time_interval.total_range[1] - time_interval.total_range[0])

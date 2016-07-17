@@ -328,12 +328,12 @@ class TimeAxisNode(AxisNode):
         self.parent.data_div.subscribe(avg.Node.CURSOR_OVER, self.__show_highlight_line)
         self.parent.data_div.subscribe(avg.Node.CURSOR_OUT, self.__hide_highlight_line)
         # subscribe to global time frame publisher
-        time_interval.main_time_frame.subscribe(self)
+        time_interval.main_time_frame.subscribe(time_interval.TimeInterval.CHANGED, self.update_time)
 
         """initial update"""
         self.update(self.start, self.end)
 
-    def update_time_frame(self, interval, draw_lines):
+    def update_time(self, interval, draw_lines):
         """
         Called by the publisher time_frame to update the visualization to the new interval.
         :param interval: (start, end): new interval start and end as list
@@ -444,7 +444,7 @@ class TimeAxisNode(AxisNode):
         # let line appear in front of every other child in this div
         self.removeChild(self.__highlight_line)
         self.appendChild(self.__highlight_line)
-        time_interval.main_time_frame.publish()
+        time_interval.main_time_frame.notify()
 
     def __show_highlight_line(self, event=None):
         """
@@ -488,7 +488,7 @@ class TimeAxisNode(AxisNode):
             self.__highlight_line.color = global_values.COLOR_WHITE
             self.parent.data_div.unsubscribe(avg.Node.CURSOR_MOTION, self.__hover_id)
             self.__pinned = True
-        time_interval.main_time_frame.publish()
+        time_interval.main_time_frame.notify()
 
     def __calculate_time_from_pixel(self, pixel):
         """

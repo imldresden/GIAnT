@@ -154,7 +154,7 @@ class F_Formations(libavg.DivNode):
             #             self.opacities.append(min(1, max(0, selected[INTENSITY])))
             #             previous_selected = selected
 
-    def update_time_frame(self, interval, draw_lines):
+    def update_time(self, interval, draw_lines):
         if OptionsPanel.SHOW_F_FORMATIONS:
             self.calculate_dataset()
         else:

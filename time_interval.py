@@ -4,12 +4,15 @@ import time
 import database
 import global_values
 import util
+from libavg import avg
 
 total_range = [database.min_time, database.max_time]
 total_range_value = total_range[1] - total_range[0]
 
 
-class TimeInterval(object):
+class TimeInterval(avg.Publisher):
+    CHANGED = avg.Publisher.genMessageID()
+
     __interval_range = list(total_range)
     __interval_range_last = list(__interval_range)
     __interval_range_target = list(__interval_range)
@@ -17,11 +20,12 @@ class TimeInterval(object):
     __animation_start_time = -1
     __animation_duration = 1
     __zoom_strength = 0.1
-    __subscribers = []
 
     def __init__(self):
+        super(TimeInterval, self).__init__()
         self.__play = False
         self.__last_frame_time = time.time()
+        self.publish(TimeInterval.CHANGED)
 
     # updates the current interval to the interpolated value for the animation
     def update_interval_range(self):
@@ -33,7 +37,7 @@ class TimeInterval(object):
             self.reset_animation(self.__interval_range_target)
 
             self.__animation_start_time = -1
-            self.publish()
+            self.notify()
             return True
 
         new_range = [0, 0]
@@ -49,7 +53,7 @@ class TimeInterval(object):
                 s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / total_range_value
                 util.change_smoothness(s)
             else:
-                self.publish()
+                self.notify()
         return True
 
     # gets the interval for the current animation step
@@ -113,7 +117,7 @@ class TimeInterval(object):
             self.__interval_range_target[0] += shift_amount
             self.__interval_range_target[1] += shift_amount
             self.reset_animation(self.__interval_range_target)
-            self.publish()
+            self.notify()
             return
 
         self.__animation_start_time = time.time()
@@ -128,19 +132,15 @@ class TimeInterval(object):
 
     def set_time_frame(self, interval):
         self.reset_animation(interval)
-        self.publish()
+        self.notify()
 
-    def subscribe(self, target):
-        self.__subscribers.append(target)
-
-    def publish(self, draw_lines=True):
-        for subscriber in self.__subscribers:
-            subscriber.update_time_frame(self.__interval_range, draw_lines)
+    def notify(self, draw_lines=True):
+        self.notifySubscribers(TimeInterval.CHANGED, [self.__interval_range, draw_lines])
 
     def play_animation(self):
         self.__play = not self.__play
         self.__last_frame_time = time.time()
-        self.publish()
+        self.notify()
 
     def reset_animation(self, interval):
         self.__interval_range = list(interval)

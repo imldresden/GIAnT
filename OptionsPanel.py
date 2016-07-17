@@ -167,7 +167,7 @@ class OptionsPanel(libavg.DivNode):
             self.f_button_text.color = global_values.COLOR_FOREGROUND
 
         """subscribe to global time_frame"""
-        main_time_frame.subscribe(self)
+        main_time_frame.subscribe(main_time_frame.CHANGED, self.update_time)
 
     def __toggle_user(self, checked, user_id):
         """
@@ -243,7 +243,7 @@ class OptionsPanel(libavg.DivNode):
         """
         self.parent_div.play_pause()
 
-    def update_time_frame(self, interval, draw_lines):
+    def update_time(self, interval, draw_lines):
         """
         Called by the publisher time_frame to update the visualization if changes are made.
         :param interval: (start, end): new interval start and end as list

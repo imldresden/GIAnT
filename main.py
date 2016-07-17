@@ -9,7 +9,7 @@ import time
 from libavg import app, avg
 import libavg
 import F_Formations2
-from time_interval import main_time_frame
+from time_interval import main_time_frame, TimeInterval
 import highlight_visualization
 import line_visualization
 import F_Formations
@@ -67,7 +67,7 @@ class MainDiv(app.MainDiv):
             data_type_opacity=line_visualization.DATA_POSITION_Z,
             invert_y=True,
             name="Movement over Time")
-        main_time_frame.subscribe(self.main_visualization)
+        main_time_frame.subscribe(TimeInterval.CHANGED, self.main_visualization.update_time)
 
         # wall visualization
         self.wall_visualization = line_visualization.LineVisualization(
@@ -79,6 +79,7 @@ class MainDiv(app.MainDiv):
             data_type_opacity=line_visualization.DATA_POSITION_Z,
             invert_y=True,
             name="Wall Front")
+        main_time_frame.subscribe(TimeInterval.CHANGED, self.wall_visualization.update_time)
 
         self.wall_highlight = highlight_visualization.HighlightVisualization(
             parent=self, pos=self.wall_visualization.pos,
@@ -88,8 +89,7 @@ class MainDiv(app.MainDiv):
             data_type_radius=15,
             draw_view_line=False,
             data_type_opacity=0.01)
-        main_time_frame.subscribe(self.wall_visualization)
-        main_time_frame.subscribe(self.wall_highlight)
+        main_time_frame.subscribe(TimeInterval.CHANGED, self.wall_highlight.update_time)
 
         # room visualization
         self.room_visualization = line_visualization.LineVisualization(
@@ -102,6 +102,7 @@ class MainDiv(app.MainDiv):
             data_type_opacity=0.01,
             top_axis=True,
             name="Room Top")
+        main_time_frame.subscribe(TimeInterval.CHANGED, self.room_visualization.update_time)
 
         self.room_highlight = highlight_visualization.HighlightVisualization(
             parent=self, size=self.room_visualization.background_rect.size,
@@ -111,8 +112,7 @@ class MainDiv(app.MainDiv):
             data_type_radius=15,
             draw_view_line=True,
             data_type_opacity=0.01)
-        main_time_frame.subscribe(self.room_visualization)
-        main_time_frame.subscribe(self.room_highlight)
+        main_time_frame.subscribe(TimeInterval.CHANGED, self.room_highlight.update_time)
 
         # video
         self.video = video.Video(pos=(main_vis_width + padding + axis.THICKNESS,
@@ -120,7 +120,7 @@ class MainDiv(app.MainDiv):
                                  size=(res_x - main_vis_width - padding - axis.THICKNESS,
                                        side_vis_height + 1.5 * axis.THICKNESS - padding),
                                  parent=self)
-        main_time_frame.subscribe(self.video)
+        main_time_frame.subscribe(TimeInterval.CHANGED, self.video.update_time)
 
         # nodes needed in self.menu
         nodes = [self.wall_visualization, self.room_visualization, self.main_visualization]
@@ -132,7 +132,7 @@ class MainDiv(app.MainDiv):
                                                                self.main_visualization.pos[1]),
                                                           size=(self.main_visualization.width - axis.THICKNESS,
                                                                 self.main_visualization.height - axis.THICKNESS))
-            main_time_frame.subscribe(self.f_formations)
+            main_time_frame.subscribe(TimeInterval.CHANGED, self.f_formations.update_time)
             nodes.append(self.f_formations)
 
         # menu

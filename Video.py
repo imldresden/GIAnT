@@ -50,7 +50,7 @@ class Video:
         except:
             print "No video found"
 
-    def update_time_frame(self, time_frame, draw_lines):
+    def update_time(self, time_frame, draw_lines):
         if not self.is_playing:
             if self.frames % 3 == 0:
                 self.videoNode.seekToTime(int(main_time_frame.highlight_time + self.offset))
