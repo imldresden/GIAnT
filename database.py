@@ -351,26 +351,26 @@ def create_f_formation_table():
 
     f_formations = []
     number = 0
-    for user in user.users:
+    for usr in user.users:
         for user2 in user.users:
-            if user.index < user2.index:
+            if usr.index < user2.index:
                 current_length = 0
                 current_dataset = []
-                for i in range(len(user.head_positions_integral) - 1):
-                    pos1 = user.get_head_position_averaged(i, 1)
+                for i in range(len(usr.head_positions_integral) - 1):
+                    pos1 = usr.get_head_position_averaged(i, 1)
                     pos2 = user2.get_head_position_averaged(i, 1)
-                    dir1 = util.get_look_direction(user.get_head_orientation(i)[0], user.get_head_orientation(i)[1])
+                    dir1 = util.get_look_direction(usr.get_head_orientation(i)[0], usr.get_head_orientation(i)[1])
                     dir2 = util.get_look_direction(user2.get_head_orientation(i)[0], user2.get_head_orientation(i)[1])
                     f_intensity = F_Formations2.check_for_f_formation(pos1, pos2, dir2, dir1)
 
                     if f_intensity > 0:
                         current_length += 1
-                        current_dataset.append([pos1[0], pos1[1], pos2[0], pos2[1], user.index, user2.index,
+                        current_dataset.append([pos1[0], pos1[1], pos2[0], pos2[1], usr.index, user2.index,
                                                 f_intensity, number, i * global_values.time_step_size])
                     else:
                         if current_length > F_Formations2.MIN_DURATION:
                             f_formations.append(list(current_dataset))
-                            number += 1;
+                            number += 1
                         current_length = 0
                         current_dataset = []
 
