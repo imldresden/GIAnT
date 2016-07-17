@@ -143,7 +143,6 @@ class MainDiv(app.MainDiv):
             current_time = time.time()
             main_time_frame.shift_time(True, (current_time - main_time_frame.last_frame_time) * 1000)
             main_time_frame.last_frame_time = current_time
-        main_time_frame.update_interval_range()
 
     def draw_line(self, p1, p2, color, thickness, last_thickness, opacity):
         return libavg.LineNode(pos1=p1, pos2=p2, color=color, strokewidth=thickness, parent=self)

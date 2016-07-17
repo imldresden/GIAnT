@@ -227,8 +227,3 @@ def change_smoothness(value):
         value = global_values.max_averaging_count
     global_values.averaging_count = int(value)
     global_values.samples_per_pixel = max(0.1, min(0.3, 50 / value))
-
-    # publish changes
-    from time_interval import main_time_frame
-    main_time_frame.notify(draw_lines=True)
-

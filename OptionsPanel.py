@@ -93,7 +93,7 @@ class OptionsPanel(libavg.DivNode):
         self.smoothness_slider = widget.Slider(pos=(495, 20), width=180, parent=self, range=(2, 2000))
         self.smoothness_slider.thumbPos = global_values.averaging_count
         # subscription to change curve smoothness
-        self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, lambda pos: util.change_smoothness(pos))
+        self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, self.__on_smoothness_change)
         # smoothness default button
         icon_size = (12, 12)
         self.default_button = widget.ToggleButton(uncheckedUpNode=
@@ -169,6 +169,10 @@ class OptionsPanel(libavg.DivNode):
         """subscribe to global time_frame"""
         main_time_frame.subscribe(main_time_frame.CHANGED, self.update_time)
 
+    def __on_smoothness_change(self, pos):
+        util.change_smoothness(pos)
+        main_time_frame.notify()
+
     def __toggle_user(self, checked, user_id):
         """
         Toggles visibility of user with user_id. Checks self.nodes for Line_Visualization nodes and unlinks/appends
@@ -234,8 +238,7 @@ class OptionsPanel(libavg.DivNode):
             util.change_smoothness(s)
         else:
             self.smoothness_slider.opacity = 1
-            # publish changes
-            main_time_frame.publish()
+            main_time_frame.notify()
 
     def __play_pause(self, checked):
         """

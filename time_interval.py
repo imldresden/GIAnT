@@ -14,8 +14,7 @@ class TimeInterval(avg.Publisher):
     CHANGED = avg.Publisher.genMessageID()
 
     __interval_range = list(total_range)
-    __interval_range_last = list(__interval_range)
-    __interval_range_target = list(__interval_range)
+
     __highlight_time = 0
     __animation_start_time = -1
     __animation_duration = 1
@@ -27,143 +26,89 @@ class TimeInterval(avg.Publisher):
         self.__last_frame_time = time.time()
         self.publish(TimeInterval.CHANGED)
 
-    # updates the current interval to the interpolated value for the animation
-    def update_interval_range(self):
-        if self.__animation_start_time == -1:
-            return False
-
-        progress = (time.time() - self.__animation_start_time) / self.__animation_duration
-        if progress >= 1:
-            self.reset_animation(self.__interval_range_target)
-
-            self.__animation_start_time = -1
-            self.notify()
-            return True
-
-        new_range = [0, 0]
-        new_range[0] = progress * self.__interval_range_target[0] + (1 - progress) * self.__interval_range_last[0]
-        new_range[1] = progress * self.__interval_range_target[1] + (1 - progress) * self.__interval_range_last[1]
-
-        if new_range != self.__interval_range:
-            self.__interval_range = new_range
-
-            # adapt averaging count to zoom level
-            if global_values.link_smoothness:
-                i_range = self.__interval_range[1] - self.__interval_range[0]
-                s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / total_range_value
-                util.change_smoothness(s)
-            else:
-                self.notify()
-        return True
-
-    # gets the interval for the current animation step
     def get_interval_range(self):
-        self.update_interval_range()
         return self.__interval_range
 
-    def get_time_for_part_in_interval(self, part):
-        return self.__interval_range[0]+part*(self.__interval_range[1]-self.__interval_range[0])
-
-    def get_part_in_interval_for_time(self, time):
-        return (time - self.__interval_range[0]) / (self.__interval_range[1] - self.__interval_range[0])
-
-    # zooms in around the mouse (sets the target interval, which is later animated using update_interval_range())
     def zoom_in_at(self, fraction_in_timeframe):
-        self.__interval_range_last = list(self.__interval_range)
-        self.__animation_start_time = time.time()
-        self.update_interval_range()
+        point = self.__interval_range[0] + fraction_in_timeframe * (self.__interval_range[1] - self.__interval_range[0])
+        self.__interval_range[0] = point - (point - self.__interval_range[0]) * (1 - self.__zoom_strength)
+        self.__interval_range[1] = point + (self.__interval_range[1] - point) * (1 - self.__zoom_strength)
+        self.notify()
 
-        point = self.__interval_range_target[0] + fraction_in_timeframe * (self.__interval_range_target[1] - self.__interval_range_target[0])
-        self.__interval_range_target[0] = point - (point - self.__interval_range_target[0]) * (1 - self.__zoom_strength)
-        self.__interval_range_target[1] = point + (self.__interval_range_target[1] - point) * (1 - self.__zoom_strength)
-
-    # zooms out around the mouse (sets the target interval, which is later animated using update_interval_range())
     def zoom_out_at(self, fraction_in_timeframe):
-        if self.__interval_range_target == total_range:
+        if self.__interval_range == total_range:
             return
-        self.__interval_range_last = list(self.__interval_range)
-        self.__animation_start_time = time.time()
-        self.update_interval_range()
-        point = self.__interval_range_target[0] + fraction_in_timeframe * (self.__interval_range_target[1] - self.__interval_range_target[0])
-        self.__interval_range_target[0] -= (point - self.__interval_range_target[0]) * 1 / ((1 / self.__zoom_strength) - 1)
-        self.__interval_range_target[1] += (self.__interval_range_target[1] - point) * 1 / ((1 / self.__zoom_strength) - 1)
+        point = self.__interval_range[0] + fraction_in_timeframe * (self.__interval_range[1] - self.__interval_range[0])
+        self.__interval_range[0] -= (point - self.__interval_range[0]) * 1 / ((1 / self.__zoom_strength) - 1)
+        self.__interval_range[1] += (self.__interval_range[1] - point) * 1 / ((1 / self.__zoom_strength) - 1)
 
-        if self.__interval_range_target[0] < total_range[0]:
-            self.__interval_range_target[0] = total_range[0]
+        if self.__interval_range[0] < total_range[0]:
+            self.__interval_range[0] = total_range[0]
 
-        if self.__interval_range_target[1] > total_range[1]:
-            self.__interval_range_target[1] = total_range[1]
+        if self.__interval_range[1] > total_range[1]:
+            self.__interval_range[1] = total_range[1]
+        self.notify()
 
-    # shifts the interval (sets the target interval, which is later animated using update_interval_range())
     def shift_time(self, forwards, amount=-1):
-
-        self.update_interval_range()
-        self.__interval_range_last = list(self.__interval_range)
         if amount == -1:
             if forwards:
-                shift_amount = (self.__interval_range_target[1] - self.__interval_range_target[0]) * self.__zoom_strength
+                shift_amount = (self.__interval_range[1] - self.__interval_range[0]) * self.__zoom_strength
             else:
-                shift_amount = -(self.__interval_range_target[1] - self.__interval_range_target[0]) * self.__zoom_strength
+                shift_amount = -(self.__interval_range[1] - self.__interval_range[0]) * self.__zoom_strength
         else:
             if forwards:
                 shift_amount = amount
-                if self.__interval_range_target[1] + shift_amount > total_range[1]:
-                    shift_amount = total_range[1] - self.__interval_range_target[1]
+                if self.__interval_range[1] + shift_amount > total_range[1]:
+                    shift_amount = total_range[1] - self.__interval_range[1]
             else:
                 shift_amount = -amount
-                if self.__interval_range_target[0] + shift_amount < total_range[0]:
-                    shift_amount = total_range[0] - self.__interval_range_target[0]
+                if self.__interval_range[0] + shift_amount < total_range[0]:
+                    shift_amount = total_range[0] - self.__interval_range[0]
 
-            self.__interval_range_target[0] += shift_amount
-            self.__interval_range_target[1] += shift_amount
-            self.reset_animation(self.__interval_range_target)
+            self.__interval_range[0] += shift_amount
+            self.__interval_range[1] += shift_amount
             self.notify()
             return
 
-        self.__animation_start_time = time.time()
+        if self.__interval_range[0] + shift_amount < total_range[0]:
+            shift_amount = total_range[0] - self.__interval_range[0]
+        if self.__interval_range[1] + shift_amount > total_range[1]:
+            shift_amount = total_range[1] - self.__interval_range[1]
 
-        if self.__interval_range_target[0] + shift_amount < total_range[0]:
-            shift_amount = total_range[0] - self.__interval_range_target[0]
-        if self.__interval_range_target[1] + shift_amount > total_range[1]:
-            shift_amount = total_range[1] - self.__interval_range_target[1]
-
-        self.__interval_range_target[0] += shift_amount
-        self.__interval_range_target[1] += shift_amount
+        self.__interval_range[0] += shift_amount
+        self.__interval_range[1] += shift_amount
 
     def set_time_frame(self, interval):
-        self.reset_animation(interval)
+        self.__interval_range = list(interval)
         self.notify()
 
     def notify(self, draw_lines=True):
+        if global_values.link_smoothness:
+            i_range = self.__interval_range[1] - self.__interval_range[0]
+            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / total_range_value
+            util.change_smoothness(s)
         self.notifySubscribers(TimeInterval.CHANGED, [self.__interval_range, draw_lines])
 
     def play_animation(self):
         self.__play = not self.__play
         self.__last_frame_time = time.time()
-        self.notify()
-
-    def reset_animation(self, interval):
-        self.__interval_range = list(interval)
-        self.__interval_range_last = list(interval)
-        self.__interval_range_target = list(interval)
 
     def __set_highlight_time(self, time):
         self.__highlight_time = time
 
     def __get_highlight_time(self):
         return self.__highlight_time
+    highlight_time = property(__get_highlight_time, __set_highlight_time)
 
     def __get_play(self):
         return self.__play
+    play = property(__get_play)
 
     def __set_last_frame_time(self, t):
         self.__last_frame_time = t
 
     def __get_last_frame_time(self):
         return self.__last_frame_time
-
-    highlight_time = property(__get_highlight_time, __set_highlight_time)
-    play = property(__get_play)
     last_frame_time = property(__get_last_frame_time, __set_last_frame_time)
 
 
