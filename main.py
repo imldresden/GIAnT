@@ -2,23 +2,18 @@
 # -*- coding: utf-8 -*-
 
 from global_values import resolution
-# -*- coding: utf-8 -*-
 
-import math
 import time
 from libavg import app, avg
 import libavg
-import F_Formations2
 from time_interval import main_time_frame, TimeInterval
 import highlight_visualization
 import line_visualization
-import F_Formations
 import axis
 import OptionsPanel
 import global_values
 import Legend
 import video
-import util
 
 
 class MainDiv(app.MainDiv):
@@ -124,16 +119,6 @@ class MainDiv(app.MainDiv):
 
         # nodes needed in self.menu
         nodes = [self.wall_visualization, self.room_visualization, self.main_visualization]
-
-        # f-formations
-        if OptionsPanel.LOAD_F_FORMATIONS:
-            self.f_formations = F_Formations2.F_Formations(parent=self, sensitive=False,
-                                                          pos=(self.main_visualization.pos[0] + axis.THICKNESS,
-                                                               self.main_visualization.pos[1]),
-                                                          size=(self.main_visualization.width - axis.THICKNESS,
-                                                                self.main_visualization.height - axis.THICKNESS))
-            main_time_frame.subscribe(TimeInterval.CHANGED, self.f_formations.update_time)
-            nodes.append(self.f_formations)
 
         # menu
         self.options = OptionsPanel.OptionsPanel(nodes=nodes, parent=self,
@@ -252,10 +237,6 @@ def value_to_pixel(value, max_px, interval):
 OptionsPanel.SHOW_F_FORMATIONS = True
 OptionsPanel.LOAD_F_FORMATIONS = True
 OptionsPanel.COLOR_SCHEME = 0
-F_Formations.DURATION = 4000
-F_Formations.DISTANCE = 80
-F_Formations.MAX_DRIFT = 55
-F_Formations.ANGLE = 90
 
 # minimum recommended resolution: 1040x331 px!
 app.App().run(MainDiv(), app_resolution=resolution["1500x800"])
