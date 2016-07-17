@@ -7,26 +7,22 @@ users = []
 
 
 class User:
-    head_positions = []
-    head_positions_integral = []
-    head_orientations = []
-    viewpoints = []
-    touches = []
-    head_times = []
-    index = -1
-    selected = True
 
-    def addHeadPosition(self, position):
-        self.head_positions.append(position)
+    def __init__(self, index):
+        self.index = index - 1
 
-    def clearHeadPositions(self):
-        self.head_positions = []
+        self.head_positions_integral = database.get_head_positions_integral(index)
+        self.head_orientations = database.get_head_orientations(index)
 
-    def addViewpoint(self, point):
-        self.viewpoints.append(point)
+        self.viewpoints_integral = database.get_view_points_integral(index)
+
+        self.touches = database.get_touch_positions(index)
+        self.selected = True
+
+        users.append(self)
 
     def get_head_position_averaged(self, index, averaging_count=None):
-        if averaging_count==None:
+        if averaging_count is None:
             averaging_count = global_values.averaging_count
 
         count = min(averaging_count, len(self.head_positions_integral) - index - 1)
@@ -42,7 +38,6 @@ class User:
         return head_position
 
     def get_head_orientation(self, index):
-
         head_orientation = self.head_orientations[index]
         return head_orientation
 
@@ -58,20 +53,6 @@ class User:
                       integral[index + count][2]]
         return view_point
 
-    def clearViewpoints(self):
-        self.viewpoints = []
-
-    def __init__(self, index):
-        self.index = index - 1
-
-        self.head_positions_integral = database.get_head_positions_integral(index)
-        self.head_orientations = database.get_head_orientations(index)
-
-        self.viewpoints_integral = database.get_view_points_integral(index)
-
-        self.touches = database.get_touch_positions(index)
-
-        users.append(self)
 
 for userid in range(1, 5):
             User(userid)
