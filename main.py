@@ -7,7 +7,7 @@ import time
 from libavg import app, avg
 import libavg
 from time_interval import main_time_frame, TimeInterval
-import line_visualization
+import movement_panel
 import axis
 import OptionsPanel
 import global_values
@@ -52,7 +52,7 @@ class MainDiv(app.MainDiv):
                                                           fillcolor=global_values.COLOR_BLACK)
 
         # main visualization
-        self.main_visualization = line_visualization.LineVisualization(
+        self.main_visualization = movement_panel.MovementPanel(
                 parent=self, time_interval=main_time_frame, pos=(0, 0), size=(main_vis_width, res_y - menu_height))
 
         # video

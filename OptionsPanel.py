@@ -6,7 +6,7 @@ from time_interval import main_time_frame
 import global_values
 import user
 import util
-import line_visualization
+import movement_panel
 import time_interval
 
 SHOW_F_FORMATIONS = True    # if f-formations are visible when app is launched
@@ -152,13 +152,13 @@ class OptionsPanel(libavg.DivNode):
         if checked:
             user.users[user_id].selected = True
             for i, node in enumerate(self.nodes):
-                if isinstance(node, line_visualization.LineVisualization):
+                if isinstance(node, movement_panel.MovementPanel):
                     node.data_div.appendChild(node.user_divs[user_id])
                     self.user_texts[user_id].color = global_values.COLOR_BACKGROUND
         else:
             user.users[user_id].selected = False
             for i, node in enumerate(self.nodes):
-                if isinstance(node, line_visualization.LineVisualization):
+                if isinstance(node, movement_panel.MovementPanel):
                     node.user_divs[user_id].unlink()
                     self.user_texts[user_id].color = global_values.COLOR_FOREGROUND
 

@@ -7,12 +7,12 @@ import libavg
 import variable_width_line
 
 
-class LineVisualization(libavg.DivNode):
+class MovementPanel(libavg.DivNode):
     start = 0
     end = 1
 
     def __init__(self, parent, time_interval, **kwargs):
-        super(LineVisualization, self).__init__(**kwargs)
+        super(MovementPanel, self).__init__(**kwargs)
         self.registerInstance(self, parent)
         self.crop = False
 
