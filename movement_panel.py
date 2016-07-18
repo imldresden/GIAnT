@@ -11,7 +11,7 @@ class MovementPanel(libavg.DivNode):
     start = 0
     end = 1
 
-    def __init__(self, parent, time_interval, **kwargs):
+    def __init__(self, parent, vis_params, **kwargs):
         super(MovementPanel, self).__init__(**kwargs)
         self.registerInstance(self, parent)
         self.crop = False
@@ -41,15 +41,15 @@ class MovementPanel(libavg.DivNode):
                 inverted=True, label_offset=custom_label_offset)
 
         x_axis_pos = (axis.THICKNESS, self.data_div.height)
-        self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, interval_obj=time_interval, parent=self, unit="ms",
-                data_range=time_interval.get_total_range(), size=(self.data_div.width, axis.THICKNESS), inverted=False)
+        self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, interval_obj=vis_params, parent=self, unit="ms",
+                data_range=vis_params.get_total_range(), size=(self.data_div.width, axis.THICKNESS), inverted=False)
 
         self.create_line()
 
         # name
         libavg.WordsNode(pos=(axis.THICKNESS + global_values.APP_PADDING, global_values.APP_PADDING), parent=self,
                          color=global_values.COLOR_FOREGROUND, text="Movement over Time", sensitive=False, alignment="left")
-        time_interval.subscribe(time_interval.CHANGED, self.update_time)
+        vis_params.subscribe(vis_params.CHANGED, self.update_time)
 
     # make start and end values in 0..1
     def update_time(self, interval_obj, draw_lines):

@@ -3,7 +3,7 @@
 import libavg
 from libavg import avg
 from database import load_file
-from time_interval import main_time_frame
+from vis_params import main_vis_params
 import global_values
 import util
 
@@ -46,20 +46,20 @@ class Video:
             self.videoNode.play()
             self.videoNode.pause()
 
-            main_time_frame.subscribe(self)
+            main_vis_params.subscribe(self)
         except:
             print "No video found"
 
     def update_time(self, interval_obj, draw_lines):
         if not self.is_playing:
             if self.frames % 3 == 0:
-                self.videoNode.seekToTime(int(main_time_frame.highlight_time + self.offset))
+                self.videoNode.seekToTime(int(main_vis_params.highlight_time + self.offset))
             self.frames += 1
         self.__cur_time_text.text = "Current time: {}".format(
             util.format_label_value(unit="ms", value=self.videoNode.getCurTime() - self.offset, short=True))
 
     def play_pause(self, play=True):
-        start_time = main_time_frame.get_interval_range()[0]
+        start_time = main_vis_params.get_interval_range()[0]
         self.is_playing = play
         time = int(start_time + self.offset)
         self.videoNode.seekToTime(time)

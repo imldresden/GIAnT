@@ -10,29 +10,28 @@ total_range = [database.min_time, database.max_time]
 total_range_value = total_range[1] - total_range[0]
 
 
-class TimeInterval(avg.Publisher):
+class VisParams(avg.Publisher):
     CHANGED = avg.Publisher.genMessageID()
 
     __interval_range = list(total_range)
-
     __highlight_time = 0
-    __animation_start_time = -1
-    __animation_duration = 1
     __zoom_strength = 0.1
 
     def __init__(self):
-        super(TimeInterval, self).__init__()
+        super(VisParams, self).__init__()
         self.__play = False
         self.__last_frame_time = time.time()
-        self.publish(TimeInterval.CHANGED)
+        self.publish(VisParams.CHANGED)
 
     def get_interval_range(self):
         return self.__interval_range
 
     def get_total_range(self):
+        # TODO: Move to data class.
         return total_range
 
     def get_total_extent(self):
+        # TODO: Move to data class.
         return total_range[1] - total_range[0]
 
     def zoom_in_at(self, fraction_in_timeframe):
@@ -81,7 +80,7 @@ class TimeInterval(avg.Publisher):
             i_range = self.__interval_range[1] - self.__interval_range[0]
             s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / total_range_value
             util.change_smoothness(s)
-        self.notifySubscribers(TimeInterval.CHANGED, [self, draw_lines])
+        self.notifySubscribers(VisParams.CHANGED, [self, draw_lines])
 
     def play_animation(self):
         self.__play = not self.__play
@@ -106,4 +105,4 @@ class TimeInterval(avg.Publisher):
     last_frame_time = property(__get_last_frame_time, __set_last_frame_time)
 
 
-main_time_frame = TimeInterval()
+main_vis_params = VisParams()

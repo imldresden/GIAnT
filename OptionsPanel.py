@@ -2,12 +2,12 @@
 
 import libavg
 from libavg import widget, avg
-from time_interval import main_time_frame
+from vis_params import main_vis_params
 import global_values
 import user
 import util
 import movement_panel
-import time_interval
+import vis_params
 
 SHOW_F_FORMATIONS = True    # if f-formations are visible when app is launched
 LOAD_F_FORMATIONS = True    # if f-formations are being loaded on startup (app needs to be restarted to load them)
@@ -136,11 +136,11 @@ class OptionsPanel(libavg.DivNode):
                                      lambda checked: self.__toggle_smoothness_link(checked))
 
         """subscribe to global time_frame"""
-        main_time_frame.subscribe(main_time_frame.CHANGED, self.update_time)
+        main_vis_params.subscribe(main_vis_params.CHANGED, self.update_time)
 
     def __on_smoothness_change(self, pos):
         util.change_smoothness(pos)
-        main_time_frame.notify()
+        main_vis_params.notify()
 
     def __toggle_user(self, checked, user_id):
         """
@@ -163,7 +163,7 @@ class OptionsPanel(libavg.DivNode):
                     self.user_texts[user_id].color = global_values.COLOR_FOREGROUND
 
         # publish changes
-        main_time_frame.notify()
+        main_vis_params.notify()
 
     def __default_smoothness(self, value):
         """
@@ -184,12 +184,12 @@ class OptionsPanel(libavg.DivNode):
 
         if checked:
             self.smoothness_slider.opacity = 0.2
-            i_range = main_time_frame.get_interval_range()[1] - main_time_frame.get_interval_range()[0]
-            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / time_interval.total_range_value
+            i_range = main_vis_params.get_interval_range()[1] - main_vis_params.get_interval_range()[0]
+            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / vis_params.total_range_value
             util.change_smoothness(s)
         else:
             self.smoothness_slider.opacity = 1
-            main_time_frame.notify()
+            main_vis_params.notify()
 
     def __play_pause(self, checked):
         """
@@ -202,8 +202,8 @@ class OptionsPanel(libavg.DivNode):
         Called by the publisher time_frame to update the visualization if changes are made.
         :param interval: (start, end): new interval start and end as list
         """
-        if self.play_button.checked is not main_time_frame.play:
-            self.play_button.checked = main_time_frame.play
+        if self.play_button.checked is not main_vis_params.play:
+            self.play_button.checked = main_vis_params.play
 
         self.smoothness_text.text = "Smoothness: {}s".format(
             global_values.averaging_count * global_values.time_step_size / 1000.0)
