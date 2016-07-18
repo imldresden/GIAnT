@@ -51,15 +51,11 @@ class TimeInterval(avg.Publisher):
 
     def shift_time(self, forwards, amount=-1):
         if amount == -1:
-            if forwards:
-                shift_amount = (self.__interval_range[1] - self.__interval_range[0]) * self.__zoom_strength
-            else:
-                shift_amount = -(self.__interval_range[1] - self.__interval_range[0]) * self.__zoom_strength
+            amount = (self.__interval_range[1] - self.__interval_range[0]) * self.__zoom_strength
+        if forwards:
+            shift_amount = amount
         else:
-            if forwards:
-                shift_amount = amount
-            else:
-                shift_amount = -amount
+            shift_amount = -amount
 
         if self.__interval_range[0] + shift_amount < total_range[0]:
             shift_amount = total_range[0] - self.__interval_range[0]
