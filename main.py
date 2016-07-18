@@ -7,7 +7,6 @@ import time
 from libavg import app, avg
 import libavg
 from time_interval import main_time_frame, TimeInterval
-import highlight_visualization
 import line_visualization
 import axis
 import OptionsPanel
@@ -76,16 +75,6 @@ class MainDiv(app.MainDiv):
             name="Wall Front")
         main_time_frame.subscribe(TimeInterval.CHANGED, self.wall_visualization.update_time)
 
-        self.wall_highlight = highlight_visualization.HighlightVisualization(
-            parent=self, pos=self.wall_visualization.pos,
-            size=self.wall_visualization.background_rect.size,
-            data_type_x=line_visualization.DATA_VIEWPOINT_X,
-            data_type_y=line_visualization.DATA_VIEWPOINT_Y,
-            data_type_radius=15,
-            draw_view_line=False,
-            data_type_opacity=0.01)
-        main_time_frame.subscribe(TimeInterval.CHANGED, self.wall_highlight.update_time)
-
         # room visualization
         self.room_visualization = line_visualization.LineVisualization(
             parent=self,
@@ -98,16 +87,6 @@ class MainDiv(app.MainDiv):
             top_axis=True,
             name="Room Top")
         main_time_frame.subscribe(TimeInterval.CHANGED, self.room_visualization.update_time)
-
-        self.room_highlight = highlight_visualization.HighlightVisualization(
-            parent=self, size=self.room_visualization.background_rect.size,
-            pos=self.room_visualization.pos,
-            data_type_x=line_visualization.DATA_POSITION_X,
-            data_type_y=line_visualization.DATA_POSITION_Z,
-            data_type_radius=15,
-            draw_view_line=True,
-            data_type_opacity=0.01)
-        main_time_frame.subscribe(TimeInterval.CHANGED, self.room_highlight.update_time)
 
         # video
         self.video = video.Video(pos=(main_vis_width + padding + axis.THICKNESS,
