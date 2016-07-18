@@ -66,12 +66,11 @@ class HighlightVisualization(libavg.DivNode):
         self.set_positions()
 
     # make time and end values in 0..1
-    def update_time(self, interval, draw_lines):
-        self.time = time_interval.main_time_frame.highlight_time / (time_interval.total_range[1] - time_interval.total_range[0])
+    def update_time(self, interval_obj, draw_lines):
+        self.time = interval_obj.highlight_time / interval_obj.get_total_extent()
         self.set_positions()
 
     def set_positions(self):
-
         for i in range(len(self.user_divs)):
             user_div = self.user_divs[i]
             highlight_time = util.get_index_from_time_percentage(self.time)

@@ -333,12 +333,13 @@ class TimeAxisNode(AxisNode):
         """initial update"""
         self.update(self.start, self.end)
 
-    def update_time(self, interval, draw_lines):
+    def update_time(self, interval_obj, draw_lines):
         """
         Called by the publisher time_frame to update the visualization to the new interval.
         :param interval: (start, end): new interval start and end as list
         :param draw_lines: if lines should be redrawn
         """
+        interval = interval_obj.get_interval_range()
         self.update(interval[0], interval[1])
 
     def __change_interval(self, start, end):
@@ -435,6 +436,7 @@ class TimeAxisNode(AxisNode):
         self.__i_scrollbar.opacity = 0
 
     def __on_visualization_hover_over(self, event=None):
+        # TODO: Move to view
         """
         Moves the highlight line along the vertical mouse position.
         """

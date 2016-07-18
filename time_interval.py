@@ -29,6 +29,12 @@ class TimeInterval(avg.Publisher):
     def get_interval_range(self):
         return self.__interval_range
 
+    def get_total_range(self):
+        return total_range
+
+    def get_total_extent(self):
+        return total_range[1] - total_range[0]
+
     def zoom_in_at(self, fraction_in_timeframe):
         point = self.__interval_range[0] + fraction_in_timeframe * (self.__interval_range[1] - self.__interval_range[0])
         self.__interval_range[0] = point - (point - self.__interval_range[0]) * (1 - self.__zoom_strength)
@@ -75,7 +81,7 @@ class TimeInterval(avg.Publisher):
             i_range = self.__interval_range[1] - self.__interval_range[0]
             s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / total_range_value
             util.change_smoothness(s)
-        self.notifySubscribers(TimeInterval.CHANGED, [self.__interval_range, draw_lines])
+        self.notifySubscribers(TimeInterval.CHANGED, [self, draw_lines])
 
     def play_animation(self):
         self.__play = not self.__play
