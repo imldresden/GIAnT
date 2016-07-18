@@ -53,9 +53,7 @@ class MainDiv(app.MainDiv):
 
         # main visualization
         self.main_visualization = line_visualization.LineVisualization(
-            parent=self, pos=(0, 0),
-            size=(main_vis_width, res_y - menu_height))
-        main_time_frame.subscribe(TimeInterval.CHANGED, self.main_visualization.update_time)
+                parent=self, time_interval=main_time_frame, pos=(0, 0), size=(main_vis_width, res_y - menu_height))
 
         # video
         self.video = video.Video(pos=(main_vis_width + padding + axis.THICKNESS,

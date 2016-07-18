@@ -3,7 +3,6 @@
 import user
 import global_values
 import axis
-import time_interval
 import libavg
 import variable_width_line
 
@@ -12,7 +11,7 @@ class LineVisualization(libavg.DivNode):
     start = 0
     end = 1
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, time_interval, **kwargs):
         super(LineVisualization, self).__init__(**kwargs)
         self.registerInstance(self, parent)
         self.crop = False
@@ -41,17 +40,16 @@ class LineVisualization(libavg.DivNode):
                 sensitive=True, data_range=global_values.x_range, unit="cm", hide_rims=True,
                 inverted=True, label_offset=custom_label_offset)
 
-        # x axis
         x_axis_pos = (axis.THICKNESS, self.data_div.height)
+        self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, parent=self, unit="ms",
+                data_range=time_interval.get_total_range(), size=(self.data_div.width, axis.THICKNESS), inverted=False)
 
-        self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, parent=self, unit="ms", data_range=time_interval.total_range,
-                size=(self.data_div.width, axis.THICKNESS), inverted=False)
-
-        self.createLine()
+        self.create_line()
 
         # name
         libavg.WordsNode(pos=(axis.THICKNESS + global_values.APP_PADDING, global_values.APP_PADDING), parent=self,
                          color=global_values.COLOR_FOREGROUND, text="Movement over Time", sensitive=False, alignment="left")
+        time_interval.subscribe(time_interval.CHANGED, self.update_time)
 
     # make start and end values in 0..1
     def update_time(self, interval_obj, draw_lines):
@@ -62,11 +60,11 @@ class LineVisualization(libavg.DivNode):
         self.start = interval[0] / total_extent
         self.end = interval[1] / total_extent
         if draw_lines:
-            self.createLine()
+            self.create_line()
         elif self.start != start_orig or self.end != end_orig:
-            self.createLine()
+            self.create_line()
 
-    def createLine(self):
+    def create_line(self):
         userid = -1
         for usr in user.users:
             userid += 1
