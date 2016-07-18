@@ -334,51 +334,6 @@ def create_viewpoint_table_integral():
         insert_many(user_viewpoints, "viewpointintegral", ["user", "x", "y", "time"])
 
 
-def create_f_formation_table():
-    import F_Formations2
-    import user
-    import global_values
-    create_table("f_formations", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                 "user1 TINYINT NOT NULL,"
-                                 "user2 TINYINT NOT NULL,"
-                                 "x1 FLOAT,"
-                                 "x2 FLOAT,"
-                                 "y1 FLOAT,"
-                                 "y2 FLOAT,"
-                                 "intensity FLOAT,"
-                                 "number int,"
-                                 "time FLOAT NOT NULL")
-
-    f_formations = []
-    number = 0
-    for usr in user.users:
-        for user2 in user.users:
-            if usr.index < user2.index:
-                current_length = 0
-                current_dataset = []
-                for i in range(len(usr.head_positions_integral) - 1):
-                    pos1 = usr.get_head_position_averaged(i, 1)
-                    pos2 = user2.get_head_position_averaged(i, 1)
-                    dir1 = util.get_look_direction(usr.get_head_orientation(i)[0], usr.get_head_orientation(i)[1])
-                    dir2 = util.get_look_direction(user2.get_head_orientation(i)[0], user2.get_head_orientation(i)[1])
-                    f_intensity = F_Formations2.check_for_f_formation(pos1, pos2, dir2, dir1)
-
-                    if f_intensity > 0:
-                        current_length += 1
-                        current_dataset.append([pos1[0], pos1[1], pos2[0], pos2[1], usr.index, user2.index,
-                                                f_intensity, number, i * global_values.time_step_size])
-                    else:
-                        if current_length > F_Formations2.MIN_DURATION:
-                            f_formations.append(list(current_dataset))
-                            number += 1
-                        current_length = 0
-                        current_dataset = []
-
-    print str(len(f_formations)) + " F-Formations found"
-    for f_list in f_formations:
-        insert_many(f_list, "f_formations", ["x1", "x2", "y1", "y2", "user1", "user2", "intensity", "number", "time"])
-
-
 def create_touch_table(wall_screen_resolution):
     create_table("touchtable", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
                                "user TINYINT NOT NULL,"
@@ -533,28 +488,22 @@ def get_view_points_integral(userid):
     return executeQry("SELECT x, y, time FROM viewpointintegral WHERE user = " + str(userid) + " ORDER BY time;", True)
 
 
-def get_f_formations():
-    return executeQry("SELECT x1, x2, y1, y2, user1, user2, intensity, number, time FROM f_formations ORDER BY number, time;", True)
-
-
 def setup_database(wall_screen_resolution):
     print "loading csv files into database:"
     setup_raw_table()
-    print "tables created 1/8"
+    print "tables created 1/7"
     init_raw_values()
-    print "tables created 2/8"
+    print "tables created 2/7"
     create_head_table()
-    print "tables created 3/8"
+    print "tables created 3/7"
     create_head_table_integral()
     print "tables created 4/8"
     create_viewpoint_table()
-    print "tables created 5/8"
+    print "tables created 5/7"
     create_viewpoint_table_integral()
-    print "tables created 6/8"
+    print "tables created 6/7"
     create_touch_table(wall_screen_resolution)
-    print "tables created 7/8"
-    create_f_formation_table()
-    print "tables created 8/8"
+    print "tables created 7/7"
 
 
 init_values()

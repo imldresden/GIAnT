@@ -7,7 +7,6 @@ import global_values
 import user
 import util
 import line_visualization
-import F_Formations
 import time_interval
 
 SHOW_F_FORMATIONS = True    # if f-formations are visible when app is launched
@@ -136,36 +135,6 @@ class OptionsPanel(libavg.DivNode):
         self.link_s_button.subscribe(widget.CheckBox.TOGGLED,
                                      lambda checked: self.__toggle_smoothness_link(checked))
 
-        """f-formations toggle button"""
-        # f-formations button
-        size = (100, 30)
-        self.f_button = widget.ToggleButton(uncheckedUpNode=
-                                            avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=global_values.COLOR_FOREGROUND),
-                                            uncheckedDownNode=
-                                            avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=global_values.COLOR_FOREGROUND),
-                                            uncheckedDisabledNode=
-                                            avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=global_values.COLOR_SECONDARY),
-                                            checkedUpNode=
-                                            avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_FOREGROUND),
-                                            checkedDownNode=
-                                            avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_FOREGROUND),
-                                            checkedDisabledNode=
-                                            avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=global_values.COLOR_SECONDARY),
-                                            pos=(self.user_buttons[3].pos[0] + self.user_buttons[3].width + 20, 0),
-                                            size=size, parent=self)
-        self.f_button.checked = SHOW_F_FORMATIONS and LOAD_F_FORMATIONS
-        # subscription to toggle f-formation visibility
-        self.f_button.subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_f_formations(checked))
-        # button text
-        self.f_button_text = avg.WordsNode(pos=(self.f_button.pos[0] + 50, self.f_button.pos[1] + 6),
-                                           color=global_values.COLOR_BACKGROUND, parent=self,
-                                           text="F-Formations", sensitive=False, alignment="center")
-
-        if not SHOW_F_FORMATIONS: self.__toggle_f_formations(SHOW_F_FORMATIONS and LOAD_F_FORMATIONS)
-        if not LOAD_F_FORMATIONS:
-            self.f_button.enabled = False
-            self.f_button_text.color = global_values.COLOR_FOREGROUND
-
         """subscribe to global time_frame"""
         main_time_frame.subscribe(main_time_frame.CHANGED, self.update_time)
 
@@ -195,24 +164,6 @@ class OptionsPanel(libavg.DivNode):
 
         # publish changes
         main_time_frame.publish()
-
-    def __toggle_f_formations(self, checked):
-        global SHOW_F_FORMATIONS
-        """
-        Toggles visibility of f-formations. Checks self.nodes for F_Formations node(s) and unlinks/appends them.
-        :param checked: bool, True if f-formations are being toggled on
-        """
-        if checked:
-            for i, node in enumerate(self.nodes):
-                if isinstance(node, F_Formations.F_Formations):
-                    self.parent_div.appendChild(node)
-                    self.f_button_text.color = global_values.COLOR_BACKGROUND
-        else:
-            for i, node in enumerate(self.nodes):
-                if isinstance(node, F_Formations.F_Formations):
-                    node.unlink()
-                    self.f_button_text.color = global_values.COLOR_FOREGROUND
-        SHOW_F_FORMATIONS = checked
 
     def __default_smoothness(self, value):
         """
