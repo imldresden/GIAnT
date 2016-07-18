@@ -67,7 +67,7 @@ class MainDiv(app.MainDiv):
         nodes = [self.main_visualization]
 
         # menu
-        self.options = OptionsPanel.OptionsPanel(nodes=nodes, parent=self,
+        self.options = OptionsPanel.OptionsPanel(nodes=nodes, vis_params=main_vis_params, parent=self,
                                                  pos=(0, self.main_visualization.height),
                                                  size=(self.main_visualization.width, menu_height))
 

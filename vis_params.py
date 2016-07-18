@@ -23,7 +23,7 @@ class VisParams(avg.Publisher):
         self.__last_frame_time = time.time()
         self.publish(VisParams.CHANGED)
 
-        self.__smoothness = global_values.default_averaging_count
+        self.__smoothness = global_values.default_smoothness
         self.__samples_per_pixel = 0.1
 
     def get_time_interval(self):
