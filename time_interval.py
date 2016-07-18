@@ -58,17 +58,8 @@ class TimeInterval(avg.Publisher):
         else:
             if forwards:
                 shift_amount = amount
-                if self.__interval_range[1] + shift_amount > total_range[1]:
-                    shift_amount = total_range[1] - self.__interval_range[1]
             else:
                 shift_amount = -amount
-                if self.__interval_range[0] + shift_amount < total_range[0]:
-                    shift_amount = total_range[0] - self.__interval_range[0]
-
-            self.__interval_range[0] += shift_amount
-            self.__interval_range[1] += shift_amount
-            self.notify()
-            return
 
         if self.__interval_range[0] + shift_amount < total_range[0]:
             shift_amount = total_range[0] - self.__interval_range[0]
@@ -77,6 +68,7 @@ class TimeInterval(avg.Publisher):
 
         self.__interval_range[0] += shift_amount
         self.__interval_range[1] += shift_amount
+        self.notify()
 
     def set_time_frame(self, interval):
         self.__interval_range = list(interval)
