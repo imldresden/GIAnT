@@ -63,31 +63,6 @@ class MainDiv(app.MainDiv):
             name="Movement over Time")
         main_time_frame.subscribe(TimeInterval.CHANGED, self.main_visualization.update_time)
 
-        # wall visualization
-        self.wall_visualization = line_visualization.LineVisualization(
-            parent=self, pos=(main_vis_width + padding, 0),
-            size=(res_x - main_vis_width - padding, side_vis_height),
-            data_type_x=line_visualization.DATA_VIEWPOINT_X,
-            data_type_y=line_visualization.DATA_VIEWPOINT_Y,
-            data_type_thickness=line_visualization.DATA_POSITION_Z,
-            data_type_opacity=line_visualization.DATA_POSITION_Z,
-            invert_y=True,
-            name="Wall Front")
-        main_time_frame.subscribe(TimeInterval.CHANGED, self.wall_visualization.update_time)
-
-        # room visualization
-        self.room_visualization = line_visualization.LineVisualization(
-            parent=self,
-            pos=(main_vis_width + padding, side_vis_height - axis.THICKNESS/2),
-            size=(res_x - main_vis_width - padding, side_vis_height),
-            data_type_x=line_visualization.DATA_POSITION_X,
-            data_type_y=line_visualization.DATA_POSITION_Z,
-            data_type_thickness=1.4,
-            data_type_opacity=0.01,
-            top_axis=True,
-            name="Room Top")
-        main_time_frame.subscribe(TimeInterval.CHANGED, self.room_visualization.update_time)
-
         # video
         self.video = video.Video(pos=(main_vis_width + padding + axis.THICKNESS,
                                       2 * side_vis_height - 1.5 * axis.THICKNESS + padding),
@@ -97,7 +72,7 @@ class MainDiv(app.MainDiv):
         main_time_frame.subscribe(TimeInterval.CHANGED, self.video.update_time)
 
         # nodes needed in self.menu
-        nodes = [self.wall_visualization, self.room_visualization, self.main_visualization]
+        nodes = [self.main_visualization]
 
         # menu
         self.options = OptionsPanel.OptionsPanel(nodes=nodes, parent=self,
@@ -185,18 +160,6 @@ class MainDiv(app.MainDiv):
             (main_pos[0] - cos_vis_offset - cos_screen_offset, main_size[1] - cos_wall_start - cos_screen_offset),
             (main_pos[0] - cos_vis_offset - cos_offset, main_size[1] - cos_wall_start - cos_offset - cos_screen_offset),
             (main_pos[0] - cos_vis_offset - cos_offset, main_size[1] - cos_wall_end - cos_offset + cos_screen_offset))
-
-        # set position of cosmetic wall image behind wall visualization
-        wall_pos = (self.wall_visualization.pos[0] + axis.THICKNESS, self.wall_visualization.pos[1])
-        wall_size = (self.wall_visualization.width - axis.THICKNESS, self.wall_visualization.height - axis.THICKNESS)
-        cos_offset = 6
-        self.__cosmetics_wall.pos = (
-            wall_pos,
-            (wall_pos[0] + wall_size[0], wall_pos[1]),
-            (wall_pos[0] + wall_size[0], wall_pos[1] + wall_size[1]),
-            (wall_pos[0] + wall_size[0] + cos_offset, wall_pos[1] + wall_size[1] - cos_offset),
-            (wall_pos[0] + wall_size[0] + cos_offset, wall_pos[1] - cos_offset),
-            (wall_pos[0] + cos_offset, wall_pos[1] - cos_offset))
 
 
 def value_to_pixel(value, max_px, interval):
