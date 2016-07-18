@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import database
-import global_values
+from vis_params import main_vis_params
 
 users = []
 
@@ -23,7 +23,7 @@ class User:
 
     def get_head_position_averaged(self, index, averaging_count=None):
         if averaging_count is None:
-            averaging_count = global_values.averaging_count
+            averaging_count = main_vis_params.get_smoothness()
 
         count = min(averaging_count, len(self.head_positions_integral) - index - 1)
         integral = self.head_positions_integral
@@ -42,7 +42,7 @@ class User:
         return head_orientation
 
     def get_view_point_averaged(self, index):
-        count = min(global_values.averaging_count, len(self.viewpoints_integral) - index - 1)
+        count = min(main_vis_params.get_smoothness(), len(self.viewpoints_integral) - index - 1)
         integral = self.viewpoints_integral
         if count <= 0:
             count = 1

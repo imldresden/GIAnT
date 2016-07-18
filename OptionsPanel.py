@@ -87,10 +87,10 @@ class OptionsPanel(libavg.DivNode):
         # smoothness text
         self.smoothness_text = avg.WordsNode(pos=(500, 0), color=global_values.COLOR_FOREGROUND,
                                              parent=self, text="Smoothness: {}s".format(
-                                                 global_values.averaging_count * global_values.time_step_size / 1000))
+                                                 main_vis_params.get_smoothness() * global_values.time_step_size / 1000))
         # smoothness slider
         self.smoothness_slider = widget.Slider(pos=(495, 20), width=180, parent=self, range=(2, 2000))
-        self.smoothness_slider.thumbPos = global_values.averaging_count
+        self.smoothness_slider.thumbPos = main_vis_params.get_smoothness()
         # subscription to change curve smoothness
         self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, self.__on_smoothness_change)
         # smoothness default button
@@ -139,7 +139,7 @@ class OptionsPanel(libavg.DivNode):
         main_vis_params.subscribe(main_vis_params.CHANGED, self.update_time)
 
     def __on_smoothness_change(self, pos):
-        util.change_smoothness(pos)
+        main_vis_params.set_smoothness(pos)
         main_vis_params.notify()
 
     def __toggle_user(self, checked, user_id):
@@ -170,8 +170,8 @@ class OptionsPanel(libavg.DivNode):
         Resets smoothness back to value.
         :param value: Smoothness value
         """
-        util.change_smoothness(value)
-        self.smoothness_slider.thumbPos = global_values.averaging_count
+        main_vis_params.set_smoothness(value)
+        self.smoothness_slider.thumbPos = main_vis_params.get_smoothness()
 
     def __toggle_smoothness_link(self, checked):
         """
@@ -186,7 +186,7 @@ class OptionsPanel(libavg.DivNode):
             self.smoothness_slider.opacity = 0.2
             i_range = main_vis_params.get_time_interval()[1] - main_vis_params.get_time_interval()[0]
             s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / vis_params.total_range_value
-            util.change_smoothness(s)
+            main_vis_params.set_smoothness(s)
         else:
             self.smoothness_slider.opacity = 1
             main_vis_params.notify()
@@ -206,5 +206,5 @@ class OptionsPanel(libavg.DivNode):
             self.play_button.checked = main_vis_params.play
 
         self.smoothness_text.text = "Smoothness: {}s".format(
-            global_values.averaging_count * global_values.time_step_size / 1000.0)
-        self.smoothness_slider.thumbPos = global_values.averaging_count
+            main_vis_params.get_smoothness() * global_values.time_step_size / 1000.0)
+        self.smoothness_slider.thumbPos = main_vis_params.get_smoothness()

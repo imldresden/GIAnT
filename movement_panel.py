@@ -44,7 +44,7 @@ class MovementPanel(libavg.DivNode):
         self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, interval_obj=vis_params, parent=self, unit="ms",
                 data_range=vis_params.get_total_range(), size=(self.data_div.width, axis.THICKNESS), inverted=False)
 
-        self.create_line()
+        self.create_line(vis_params.get_samples_per_pixel())
 
         # name
         libavg.WordsNode(pos=(axis.THICKNESS + global_values.APP_PADDING, global_values.APP_PADDING), parent=self,
@@ -52,19 +52,19 @@ class MovementPanel(libavg.DivNode):
         vis_params.subscribe(vis_params.CHANGED, self.update_time)
 
     # make start and end values in 0..1
-    def update_time(self, interval_obj, draw_lines):
+    def update_time(self, vis_params, draw_lines):
         start_orig = self.start
         end_orig = self.end
-        interval = interval_obj.get_time_interval()
-        total_extent = interval_obj.get_total_extent()
+        interval = vis_params.get_time_interval()
+        total_extent = vis_params.get_total_extent()
         self.start = interval[0] / total_extent
         self.end = interval[1] / total_extent
         if draw_lines:
-            self.create_line()
+            self.create_line(vis_params.get_samples_per_pixel())
         elif self.start != start_orig or self.end != end_orig:
-            self.create_line()
+            self.create_line(vis_params.get_samples_per_pixel())
 
-    def create_line(self):
+    def create_line(self, samples_per_pixel):
         userid = -1
         for usr in user.users:
             userid += 1
@@ -72,7 +72,7 @@ class MovementPanel(libavg.DivNode):
                 points = []
                 widths = []
                 opacities = []
-                samplecount = int(self.data_div.width * global_values.samples_per_pixel) + 1
+                samplecount = int(self.data_div.width * samples_per_pixel) + 1
                 for sample in range(samplecount):
                     if len(usr.head_positions_integral) == 0:
                         continue

@@ -23,6 +23,9 @@ class VisParams(avg.Publisher):
         self.__last_frame_time = time.time()
         self.publish(VisParams.CHANGED)
 
+        self.__smoothness = global_values.default_averaging_count
+        self.__samples_per_pixel = 0.1
+
     def get_time_interval(self):
         return self.__time_interval
 
@@ -79,7 +82,7 @@ class VisParams(avg.Publisher):
         if global_values.link_smoothness:
             i_range = self.__time_interval[1] - self.__time_interval[0]
             s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / total_range_value
-            util.change_smoothness(s)
+            self.set_smoothness(s)
         self.notifySubscribers(VisParams.CHANGED, [self, draw_lines])
 
     def play_animation(self):
@@ -103,6 +106,20 @@ class VisParams(avg.Publisher):
     def __get_last_frame_time(self):
         return self.__last_frame_time
     last_frame_time = property(__get_last_frame_time, __set_last_frame_time)
+
+    def set_smoothness(self, value):
+        if value <= 0:
+            value = global_values.min_averaging_count
+        elif value > global_values.max_averaging_count:
+            value = global_values.max_averaging_count
+        self.__smoothness = int(value)
+        self.__samples_per_pixel = max(0.1, min(0.3, 50 / value))
+
+    def get_smoothness(self):
+        return self.__smoothness
+
+    def get_samples_per_pixel(self):
+        return self.__samples_per_pixel
 
 
 main_vis_params = VisParams()
