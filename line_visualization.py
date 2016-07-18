@@ -7,23 +7,6 @@ import time_interval
 import libavg
 import variable_width_line
 
-DATA_POSITION_X = 0
-DATA_POSITION_Y = -1
-DATA_POSITION_Z = -2
-DATA_TIME = -3
-DATA_VIEWPOINT_X = -4
-DATA_VIEWPOINT_Y = -5
-DATA_TOUCH_X = -6
-DATA_TOUCH_Y = -7
-
-DATA_POSITION = [DATA_POSITION_X, DATA_POSITION_Y, DATA_POSITION_Z]
-DATA_VIEWPOINT = [DATA_VIEWPOINT_X, DATA_VIEWPOINT_Y]
-
-VIS_X = 0
-VIS_Y = 1
-VIS_THICKNESS = 2
-VIS_OPACITY = 3
-
 
 class LineVisualization(libavg.DivNode):
     start = 0
@@ -35,7 +18,6 @@ class LineVisualization(libavg.DivNode):
         self.crop = False
 
         self.canvas_objects = []
-        custom_label_offset = -1
 
         # rect for coloured border and background
         self.background_rect = libavg.RectNode(pos=(axis.THICKNESS, 0),
@@ -99,58 +81,8 @@ class LineVisualization(libavg.DivNode):
                     posindex = int(
                         len(usr.head_positions_integral) * sample * (self.end - self.start) / float(
                             samplecount) + self.start * len(usr.head_positions_integral))
-                    current_position = []
 
                     head_position_averaged = usr.get_head_position_averaged(posindex)
-
-                    """
-                    for i in range(4):
-                        data = 0
-
-                        if i == VIS_X:
-                            data_type = self.data_type_x
-                        elif i == VIS_Y:
-                            data_type = self.data_type_y
-                        elif i == VIS_THICKNESS:
-                            data_type = self.data_type_thickness
-                        elif i == VIS_OPACITY:
-                            data_type = self.data_type_opacity
-
-                        if data_type > 0:
-                            data = data_type
-
-                        elif data_type == DATA_POSITION_X:
-                            data = (head_position_averaged[0] - global_values.x_range[0]) / float(global_values.x_range[1] - global_values.x_range[0])
-                            if i == VIS_Y:
-                                data = 1 - data
-                        elif data_type == DATA_POSITION_Y:
-                            data = (head_position_averaged[1] - global_values.y_range[0]) / float(global_values.y_range[1] - global_values.y_range[0])
-                        elif data_type == DATA_POSITION_Z:
-                            data = (head_position_averaged[2] - global_values.z_range[0]) / float(global_values.z_range[1] - global_values.z_range[0])
-
-                        elif data_type == DATA_TIME:
-                            data = float(sample) / float(max(1, samplecount - 1))
-
-                        elif data_type == DATA_VIEWPOINT_X:
-                            data = (view_point_averaged[0] - global_values.x_wall_range[0]) / float(global_values.x_wall_range[1] - global_values.x_wall_range[0])
-                        elif data_type == DATA_VIEWPOINT_Y:
-                            data = (view_point_averaged[1] - global_values.y_wall_range[0]) / float(global_values.y_wall_range[1] - global_values.y_wall_range[0])
-                            data = 1 - data
-
-                        if i == VIS_X:
-                            data *= self.data_div.width
-
-                        elif i == VIS_Y:
-                            data *= self.data_div.height
-
-                        elif i == VIS_THICKNESS and data_type <= 0:
-                            data = calculate_thickness(data, self)
-
-                        elif i == VIS_OPACITY:
-                            data = calculate_opacity(data)
-                        # x or y value of the visualization depending on i being
-                        current_position.append(data)
-"""
 
                     norm_time = float(sample) / float(max(1, samplecount - 1))
                     norm_x = 1 - (head_position_averaged[0] - global_values.x_range[0]) / float(global_values.x_range[1] - global_values.x_range[0])
