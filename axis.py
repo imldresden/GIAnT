@@ -338,7 +338,7 @@ class TimeAxisNode(AxisNode):
         :param interval: (start, end): new interval start and end as list
         :param draw_lines: if lines should be redrawn
         """
-        interval = interval_obj.get_interval_range()
+        interval = interval_obj.get_time_interval()
         self.update(interval[0], interval[1])
 
     def __change_interval(self, start, end):
@@ -353,7 +353,7 @@ class TimeAxisNode(AxisNode):
         self.update(start, end)
 
         # update time frame
-        self.__interval_obj.set_time_frame((start, end))
+        self.__interval_obj.set_time_interval((start, end))
 
         # update ScrollBar size
         new_thumb_pos = start

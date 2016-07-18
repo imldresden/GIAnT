@@ -55,7 +55,7 @@ class MovementPanel(libavg.DivNode):
     def update_time(self, interval_obj, draw_lines):
         start_orig = self.start
         end_orig = self.end
-        interval = interval_obj.get_interval_range()
+        interval = interval_obj.get_time_interval()
         total_extent = interval_obj.get_total_extent()
         self.start = interval[0] / total_extent
         self.end = interval[1] / total_extent

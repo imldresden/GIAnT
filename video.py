@@ -59,7 +59,7 @@ class Video:
             util.format_label_value(unit="ms", value=self.videoNode.getCurTime() - self.offset, short=True))
 
     def play_pause(self, play=True):
-        start_time = main_vis_params.get_interval_range()[0]
+        start_time = main_vis_params.get_time_interval()[0]
         self.is_playing = play
         time = int(start_time + self.offset)
         self.videoNode.seekToTime(time)
