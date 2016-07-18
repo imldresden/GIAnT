@@ -29,21 +29,13 @@ class LineVisualization(libavg.DivNode):
     start = 0
     end = 1
 
-    def __init__(self, parent, data_type_x, data_type_y, data_type_thickness, data_type_opacity, top_axis=False,
-                 invert_x=False, invert_y=False, name="", **kwargs):
+    def __init__(self, parent, **kwargs):
         super(LineVisualization, self).__init__(**kwargs)
         self.registerInstance(self, parent)
         self.crop = False
 
-        self.data_type_x = data_type_x
         self.canvas_objects = []
-        self.data_type_y = data_type_y
-        self.data_type_thickness = data_type_thickness
-        self.data_type_opacity = data_type_opacity
         custom_label_offset = -1
-
-        self.data_types = [self.data_type_x, self.data_type_y, self.data_type_opacity, self.data_type_thickness]
-
 
         # rect for coloured border and background
         self.background_rect = libavg.RectNode(pos=(axis.THICKNESS, 0),
@@ -62,79 +54,22 @@ class LineVisualization(libavg.DivNode):
         for i in range((len(user.users))):
             self.user_divs.append(libavg.DivNode(pos=(0, 0), parent=self.data_div, crop=True, size=self.size))
 
-        # y-axis
-        if data_type_y == DATA_TIME:
-            self.y_axis = axis.TimeAxisNode(pos=(0, 0), parent=self, size=(axis.THICKNESS, self.data_div.height),
-                                            data_range=time_interval.total_range, unit="ms", inverted=invert_y)
-        else:
-            data_range = [0, 10]
-            unit = ""
-            # set data_range according to data input
-            if data_type_y == DATA_POSITION_X:
-                data_range = global_values.x_range
-                unit = "cm"
-                custom_label_offset = 23  # to make space for cosmetic schematic wall on y-axis in main visualization
-            elif data_type_y == DATA_POSITION_Y:
-                data_range = global_values.y_range
-                unit = "cm"
-            elif data_type_y == DATA_POSITION_Z:
-                data_range = global_values.z_range
-                unit = "cm"
-            elif data_type_y == DATA_TOUCH_Y:
-                data_range = global_values.y_touch_range
-                unit = "px"
-            elif data_type_y == DATA_TOUCH_X:
-                data_range = global_values.x_touch_range
-                unit = "px"
-            elif data_type_y == DATA_VIEWPOINT_X:
-                data_range = global_values.x_wall_range
-                unit = "cm"
-            elif data_type_y == DATA_VIEWPOINT_Y:
-                data_range = global_values.y_wall_range
-                unit = "cm"
+        custom_label_offset = 23  # to make space for cosmetic schematic wall
+        self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.THICKNESS, self.data_div.height), parent=self,
+                sensitive=True, data_range=global_values.x_range, unit="cm", hide_rims=True,
+                inverted=True, label_offset=custom_label_offset)
 
-            if custom_label_offset == -1:
-                self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.THICKNESS, self.data_div.height), parent=self,
-                                            sensitive=True, data_range=data_range, unit=unit, hide_rims=True,
-                                            inverted=invert_y)
-            else:
-                self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.THICKNESS, self.data_div.height), parent=self,
-                                            sensitive=True, data_range=data_range, unit=unit, hide_rims=True,
-                                            inverted=invert_y, label_offset=custom_label_offset)
-
-        # x-axis
+        # x axis
         x_axis_pos = (axis.THICKNESS, self.data_div.height)
-        if self.data_type_x == DATA_TIME:
-            self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, parent=self, unit="ms", data_range=time_interval.total_range,
-                                            size=(self.data_div.width, axis.THICKNESS), inverted=invert_x)
-        else:
-            # set data_range according to data input
-            if data_type_x == DATA_POSITION_X:
-                data_range = global_values.x_range
-            elif data_type_x == DATA_POSITION_Y:
-                data_range = global_values.y_range
-            elif data_type_x == DATA_POSITION_Z:
-                data_range = global_values.z_range
-            elif data_type_x == DATA_TOUCH_Y:
-                data_range = global_values.y_touch_range
-            elif data_type_x == DATA_TOUCH_X:
-                data_range = global_values.x_touch_range
-            elif data_type_x == DATA_VIEWPOINT_X:
-                data_range = global_values.x_range
-            elif data_type_x == DATA_VIEWPOINT_Y:
-                data_range = global_values.y_wall_range
-            self.x_axis = axis.AxisNode(pos=x_axis_pos, size=(self.data_div.width, axis.THICKNESS), hide_rims=True,
-                                        sensitive=True, parent=self, data_range=data_range, unit="cm",
-                                        top_axis=top_axis, inverted=invert_x)
 
-        if top_axis:
-            self.x_axis.pos = (axis.THICKNESS, 0)
+        self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, parent=self, unit="ms", data_range=time_interval.total_range,
+                size=(self.data_div.width, axis.THICKNESS), inverted=False)
 
         self.createLine()
 
         # name
         libavg.WordsNode(pos=(axis.THICKNESS + global_values.APP_PADDING, global_values.APP_PADDING), parent=self,
-                         color=global_values.COLOR_FOREGROUND, text=name, sensitive=False, alignment="left")
+                         color=global_values.COLOR_FOREGROUND, text="Movement over Time", sensitive=False, alignment="left")
 
     # make start and end values in 0..1
     def update_time(self, interval_obj, draw_lines):
@@ -157,11 +92,7 @@ class LineVisualization(libavg.DivNode):
                 points = []
                 widths = []
                 opacities = []
-                samplecount = 100
-                if self.data_type_x == DATA_TIME:
-                    samplecount = int(self.data_div.width * global_values.samples_per_pixel) + 1
-                if self.data_type_y == DATA_TIME:
-                    samplecount = int(self.data_div.height * global_values.samples_per_pixel) + 1
+                samplecount = int(self.data_div.width * global_values.samples_per_pixel) + 1
                 for sample in range(samplecount):
                     if len(usr.head_positions_integral) == 0:
                         continue
@@ -170,11 +101,9 @@ class LineVisualization(libavg.DivNode):
                             samplecount) + self.start * len(usr.head_positions_integral))
                     current_position = []
 
-                    if any(data_type in self.data_types for data_type in DATA_POSITION):
-                        head_position_averaged = usr.get_head_position_averaged(posindex)
-                    if any(data_type in self.data_types for data_type in DATA_VIEWPOINT):
-                        view_point_averaged = usr.get_view_point_averaged(posindex)
+                    head_position_averaged = usr.get_head_position_averaged(posindex)
 
+                    """
                     for i in range(4):
                         data = 0
 
@@ -221,10 +150,20 @@ class LineVisualization(libavg.DivNode):
                             data = calculate_opacity(data)
                         # x or y value of the visualization depending on i being
                         current_position.append(data)
+"""
 
-                    points.append((current_position[VIS_X], current_position[VIS_Y]))
-                    widths.append(current_position[VIS_THICKNESS])
-                    opacities.append(current_position[VIS_OPACITY])
+                    norm_time = float(sample) / float(max(1, samplecount - 1))
+                    norm_x = 1 - (head_position_averaged[0] - global_values.x_range[0]) / float(global_values.x_range[1] - global_values.x_range[0])
+                    norm_z = (head_position_averaged[2] - global_values.z_range[0]) / float(global_values.z_range[1] - global_values.z_range[0])
+
+                    vis_x = norm_time * self.data_div.width
+                    vis_y = norm_x * self.data_div.height
+                    vis_thickness = calculate_thickness(norm_z, self)
+                    vis_opacity = calculate_opacity(norm_z)
+
+                    points.append((vis_x, vis_y))
+                    widths.append(vis_thickness)
+                    opacities.append(vis_opacity)
 
                 if len(self.canvas_objects) > userid:
                     userline = self.canvas_objects[userid]

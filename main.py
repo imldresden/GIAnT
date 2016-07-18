@@ -54,13 +54,7 @@ class MainDiv(app.MainDiv):
         # main visualization
         self.main_visualization = line_visualization.LineVisualization(
             parent=self, pos=(0, 0),
-            size=(main_vis_width, res_y - menu_height),
-            data_type_x=line_visualization.DATA_TIME,
-            data_type_y=line_visualization.DATA_POSITION_X,
-            data_type_thickness=line_visualization.DATA_POSITION_Z,
-            data_type_opacity=line_visualization.DATA_POSITION_Z,
-            invert_y=True,
-            name="Movement over Time")
+            size=(main_vis_width, res_y - menu_height))
         main_time_frame.subscribe(TimeInterval.CHANGED, self.main_visualization.update_time)
 
         # video
