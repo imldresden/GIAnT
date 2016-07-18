@@ -41,7 +41,7 @@ class MovementPanel(libavg.DivNode):
                 inverted=True, label_offset=custom_label_offset)
 
         x_axis_pos = (axis.THICKNESS, self.data_div.height)
-        self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, parent=self, unit="ms",
+        self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, interval_obj=time_interval, parent=self, unit="ms",
                 data_range=time_interval.get_total_range(), size=(self.data_div.width, axis.THICKNESS), inverted=False)
 
         self.create_line()
