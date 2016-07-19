@@ -81,7 +81,7 @@ class MovementPanel(libavg.DivNode):
             self.__highlight_line.pos2 = (highlight_xpos, self.__highlight_line.pos2[1])
 
         for i, user_line in enumerate(self.__user_lines):
-            user_line.node.active = vis_params.get_user_visible(i)
+            user_line.active = vis_params.get_user_visible(i)
 
     def __on_mouse_wheel(self, event):
         rel_pos = self.data_div.getRelPos(event.pos)

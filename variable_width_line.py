@@ -2,7 +2,6 @@
 # !/usr/bin/env python
 
 from libavg import player, avg
-import random
 import math
 import util
 
@@ -43,17 +42,18 @@ def calculate_line_intersection(p1, p2_selected, p3, thickness1, thickness2_sele
     return [intersection_point_1, intersection_point_2]
 
 
-class VariableWidthLine:
+class VariableWidthLine(avg.MeshNode):
     points = []
     widths = []
     opacities = []
 
-    def __init__(self, color, parent):
+    def __init__(self, color, parent, **kwargs):
+        super(VariableWidthLine, self).__init__(**kwargs)
+        self.registerInstance(self, parent)
         self.color = color
+        self.blendmode = "add"
         self.__genGradient()
-
-        self.node = avg.MeshNode(parent=parent, blendmode="add")
-        self.node.setBitmap(self.gradientBmp)
+        self.setBitmap(self.gradientBmp)
 
     def set_values(self, points, widths, opacities):
         self.points = points
@@ -98,9 +98,9 @@ class VariableWidthLine:
 
         vertexes.insert(0, vertexes[1])
         vertexes.insert(0, vertexes[1])
-        self.node.vertexcoords = vertexes
-        self.node.texcoords = texcoords
-        self.node.triangles = triangles
+        self.vertexcoords = vertexes
+        self.texcoords = texcoords
+        self.triangles = triangles
 
     def __genGradient(self):
         canvas = player.createCanvas(id="gradient", size=(256, 1))
