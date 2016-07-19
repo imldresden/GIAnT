@@ -83,7 +83,6 @@ class MovementPanel(libavg.DivNode):
     def __on_mouse_wheel(self, event):
         rel_pos = self.data_div.getRelPos(event.pos)
         pos_fraction = rel_pos[0]/self.data_div.width
-        print rel_pos[0], pos_fraction
         if event.motion.y > 0:
             self.__vis_params.zoom_in_at(pos_fraction)
         else:

@@ -22,7 +22,6 @@ class Video:
             if path.endswith(tuple(video_extensions)):
                 self.path = "csv/"+file_path[0]
                 break
-        self.frames = 0
         vid_size = (size[0], size[0] * 9.0 / 16.0)
         if size[0] / size[1] > 16.0 / 9.0:
             vid_size = (size[1] * 16.0 / 9.0, size[1])
@@ -50,11 +49,9 @@ class Video:
 
     def update_time(self, vis_params, draw_lines):
         if not self.is_playing:
-            if self.frames % 3 == 0:
-                self.videoNode.seekToTime(int(vis_params.highlight_time + self.offset))
-            self.frames += 1
+            self.videoNode.seekToTime(int(vis_params.highlight_time + self.offset))
         self.__cur_time_text.text = "Current time: {}".format(
-            util.format_label_value(unit="ms", value=self.videoNode.getCurTime() - self.offset, short=True))
+            util.format_label_value(unit="ms", value=vis_params.highlight_time, short=True))
 
     def play_pause(self, play=True):
         start_time = self.__vis_params.get_time_interval()[0]
