@@ -53,8 +53,10 @@ class MovementPanel(libavg.DivNode):
         # name
         libavg.WordsNode(pos=(axis.THICKNESS + global_values.APP_PADDING, global_values.APP_PADDING), parent=self,
                          color=global_values.COLOR_FOREGROUND, text="Movement over Time", sensitive=False, alignment="left")
+
         vis_params.subscribe(vis_params.CHANGED, self.update_time)
         self.__vis_params = vis_params
+        self.data_div.subscribe(libavg.Node.MOUSE_WHEEL, self.__on_mouse_wheel)
 
     # make start and end values in 0..1
     def update_time(self, vis_params, draw_lines):
@@ -77,6 +79,15 @@ class MovementPanel(libavg.DivNode):
             self.__highlight_line.opacity = 1
             self.__highlight_line.pos1 = (highlight_xpos, self.__highlight_line.pos1[1])
             self.__highlight_line.pos2 = (highlight_xpos, self.__highlight_line.pos2[1])
+
+    def __on_mouse_wheel(self, event):
+        rel_pos = self.data_div.getRelPos(event.pos)
+        pos_fraction = rel_pos[0]/self.data_div.width
+        print rel_pos[0], pos_fraction
+        if event.motion.y > 0:
+            self.__vis_params.zoom_in_at(pos_fraction)
+        else:
+            self.__vis_params.zoom_out_at(pos_fraction)
 
     def create_line(self, vis_params):
         userid = -1

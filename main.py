@@ -74,7 +74,6 @@ class MainDiv(app.MainDiv):
 
         self.draw_cosmetics()
 
-        self.main_visualization.subscribe(avg.Node.MOUSE_WHEEL, self.onMouseWheel)
         app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward)
         app.keyboardmanager.bindKeyDown(keyname='Left', handler=self.shift_back)
         app.keyboardmanager.bindKeyDown(keyname='Up', handler=self.zoom_in)
@@ -110,12 +109,6 @@ class MainDiv(app.MainDiv):
 
     def shift_forward(self):
         self.__vis_params.shift_time(True)
-
-    def onMouseWheel(self, event):
-        if event.motion.y > 0:
-            self.__vis_params.zoom_in_at((event.pos[0] - axis.THICKNESS) / (self.main_visualization.width - axis.THICKNESS))
-        else:
-            self.__vis_params.zoom_out_at((event.pos[0] - axis.THICKNESS) / (self.main_visualization.width - axis.THICKNESS))
 
     def play_pause(self):
         self.__vis_params.play_animation()
