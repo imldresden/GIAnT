@@ -48,17 +48,13 @@ class VariableWidthLine:
     widths = []
     opacities = []
 
-    def __init__(self, points, widths, opacities, userid, parent):
+    def __init__(self, userid, parent):
         self.id = random.randint(0, 10000000)
-        self.points = points
-        self.widths = widths
-        self.opacities = opacities
         self.color = util.get_user_color_as_hex(userid, 1)
         self.__genGradient()
 
         self.node = avg.MeshNode(parent=parent, blendmode="add")
         self.node.setBitmap(self.gradientBmp)
-        self.__genMesh()
 
     def set_values(self, points, widths, opacities):
         self.points = points

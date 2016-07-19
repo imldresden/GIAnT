@@ -16,8 +16,6 @@ class MovementPanel(libavg.DivNode):
         self.registerInstance(self, parent)
         self.crop = False
 
-        self.__user_lines = []
-
         # rect for coloured border and background
         self.background_rect = libavg.RectNode(pos=(axis.THICKNESS, 0),
                                                size=(self.width - axis.THICKNESS, self.height - axis.THICKNESS),
@@ -29,6 +27,9 @@ class MovementPanel(libavg.DivNode):
         self.data_div = libavg.DivNode(pos=(axis.THICKNESS, 0),
                                        size=(self.width - axis.THICKNESS, self.height - axis.THICKNESS),
                                        crop=True)
+        self.__user_lines = []
+        for userid in range(len(user.users)):
+            self.__user_lines.append(variable_width_line.VariableWidthLine(userid=userid, parent=self.data_div))
 
         custom_label_offset = 23  # to make space for cosmetic schematic wall
         self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.THICKNESS, self.data_div.height), parent=self,
@@ -119,13 +120,9 @@ class MovementPanel(libavg.DivNode):
                     widths.append(vis_thickness)
                     opacities.append(vis_opacity)
 
-                if len(self.__user_lines) > userid:
-                    userline = self.__user_lines[userid]
-                    userline.set_values(points, widths, opacities)
-                else:
-                    self.__user_lines.append(
-                        variable_width_line.VariableWidthLine(points=points, widths=widths, opacities=opacities,
-                                                              userid=userid, parent=self.data_div))
+                userline = self.__user_lines[userid]
+                userline.set_values(points, widths, opacities)
+
 
     def __on_hover(self, event=None):
         """
