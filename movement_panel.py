@@ -123,6 +123,7 @@ class MovementPanel(libavg.DivNode):
                     userline = self.canvas_objects[userid]
                     userline.set_values(points, widths, opacities)
                 else:
+                    print "new line"
                     self.canvas_objects.append(
                         variable_width_line.VariableWidthLine(points=points, widths=widths, opacities=opacities,
                                                               userid=userid, parent=self.user_divs[userid]))
