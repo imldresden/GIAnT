@@ -82,6 +82,9 @@ class MovementPanel(libavg.DivNode):
             self.__highlight_line.pos1 = (highlight_xpos, self.__highlight_line.pos1[1])
             self.__highlight_line.pos2 = (highlight_xpos, self.__highlight_line.pos2[1])
 
+        for i, user_div in enumerate(self.user_divs):
+            user_div.active = vis_params.get_user_visible(i)
+
     def __on_mouse_wheel(self, event):
         rel_pos = self.data_div.getRelPos(event.pos)
         pos_fraction = rel_pos[0]/self.data_div.width
@@ -125,7 +128,6 @@ class MovementPanel(libavg.DivNode):
                     userline = self.canvas_objects[userid]
                     userline.set_values(points, widths, opacities)
                 else:
-                    print "new line"
                     self.canvas_objects.append(
                         variable_width_line.VariableWidthLine(points=points, widths=widths, opacities=opacities,
                                                               userid=userid, parent=self.user_divs[userid]))

@@ -11,12 +11,11 @@ COLOR_SCHEME = 0            # user color scheme (see global_values.py for color 
 
 
 class OptionsPanel(libavg.DivNode):
-    def __init__(self, vis_params, nodes, parent, **kwargs):
+    def __init__(self, vis_params, parent, **kwargs):
         super(OptionsPanel, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
         self.__vis_params = vis_params
-        self.nodes = nodes              # DivNodes containing user data
         self.parent_div = parent        # parent node
 
         # rect for coloured border and background
@@ -120,15 +119,6 @@ class OptionsPanel(libavg.DivNode):
         :param user_id: user_id to toggle
         """
         self.__vis_params.set_user_visible(user_id, checked)
-        for node in self.nodes:
-            if isinstance(node, movement_panel.MovementPanel):
-                if checked:
-                    node.data_div.appendChild(node.user_divs[user_id])
-                    self.user_texts[user_id].color = global_values.COLOR_BACKGROUND
-                else:
-                    node.user_divs[user_id].unlink()
-                    self.user_texts[user_id].color = global_values.COLOR_FOREGROUND
-
 
     def __default_smoothness(self, value):
         """
