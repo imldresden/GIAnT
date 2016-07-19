@@ -3,7 +3,6 @@
 import time
 import database
 import global_values
-import util
 from libavg import avg
 
 total_range = [database.min_time, database.max_time]

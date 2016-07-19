@@ -6,7 +6,6 @@ import global_values
 import user
 import util
 import movement_panel
-import vis_params
 
 SHOW_F_FORMATIONS = True    # if f-formations are visible when app is launched
 LOAD_F_FORMATIONS = True    # if f-formations are being loaded on startup (app needs to be restarted to load them)
@@ -185,7 +184,7 @@ class OptionsPanel(libavg.DivNode):
         if checked:
             self.smoothness_slider.opacity = 0.2
             i_range = self.__vis_params.get_time_interval()[1] - self.__vis_params.get_time_interval()[0]
-            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / vis_params.total_range_value
+            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / self.__vis_params.get_total_extent()
             self.__vis_params.set_smoothness(s)
         else:
             self.smoothness_slider.opacity = 1
