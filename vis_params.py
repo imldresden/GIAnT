@@ -95,6 +95,20 @@ class VisParams(avg.Publisher):
         self.__users_visible[i] = visible
         self.notify()
 
+    def set_smoothness(self, value):
+        if value <= 0:
+            value = global_values.min_averaging_count
+        elif value > global_values.max_averaging_count:
+            value = global_values.max_averaging_count
+        self.__smoothness = int(value)
+        self.__samples_per_pixel = max(0.1, min(0.3, 50 / value))
+
+    def get_smoothness(self):
+        return self.__smoothness
+
+    def get_samples_per_pixel(self):
+        return self.__samples_per_pixel
+
     def __set_highlight_time(self, time):
         self.__highlight_time = time
 
@@ -112,17 +126,3 @@ class VisParams(avg.Publisher):
     def __get_last_frame_time(self):
         return self.__last_frame_time
     last_frame_time = property(__get_last_frame_time, __set_last_frame_time)
-
-    def set_smoothness(self, value):
-        if value <= 0:
-            value = global_values.min_averaging_count
-        elif value > global_values.max_averaging_count:
-            value = global_values.max_averaging_count
-        self.__smoothness = int(value)
-        self.__samples_per_pixel = max(0.1, min(0.3, 50 / value))
-
-    def get_smoothness(self):
-        return self.__smoothness
-
-    def get_samples_per_pixel(self):
-        return self.__samples_per_pixel

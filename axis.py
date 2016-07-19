@@ -270,16 +270,11 @@ class TimeAxisNode(AxisNode):
     Custom TimeAxisNode with axis lines, labeling and an interval line and slider.
     """
 
-    def __init__(self, interval_obj, parent=None, **kwargs):
-        """
-        Initialize time axis node and setup specific child nodes.
-        :param parent: where this node is parented to
-        """
-        # pass arguments to super and initialize C++ class
+    def __init__(self, vis_params, parent=None, **kwargs):
         super(TimeAxisNode, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
-        self.__interval_obj = interval_obj
+        self.__vis_params = vis_params
         self.__i_start = self._value_to_pixel(self.start, self.start, self.end)  # interval start
         self.__i_end = self._value_to_pixel(self.end, self.start, self.end)      # interval end
         self.__i_label_offset = 5                                                # offset for interval duration label
@@ -327,18 +322,18 @@ class TimeAxisNode(AxisNode):
         self.parent.data_div.subscribe(avg.Node.CURSOR_OVER, self.__show_highlight_line)
         self.parent.data_div.subscribe(avg.Node.CURSOR_OUT, self.__hide_highlight_line)
         # subscribe to global time frame publisher
-        self.__interval_obj.subscribe(self.__interval_obj.CHANGED, self.update_time)
+        self.__vis_params.subscribe(self.__vis_params.CHANGED, self.update_time)
 
         """initial update"""
         self.update(self.start, self.end)
 
-    def update_time(self, interval_obj, draw_lines):
+    def update_time(self, vis_params, draw_lines):
         """
         Called by the publisher time_frame to update the visualization to the new interval.
         :param interval: (start, end): new interval start and end as list
         :param draw_lines: if lines should be redrawn
         """
-        interval = interval_obj.get_time_interval()
+        interval = vis_params.get_time_interval()
         self.update(interval[0], interval[1])
 
     def __change_interval(self, start, end):
@@ -353,7 +348,7 @@ class TimeAxisNode(AxisNode):
         self.update(start, end)
 
         # update time frame
-        self.__interval_obj.set_time_interval((start, end))
+        self.__vis_params.set_time_interval((start, end))
 
         # update ScrollBar size
         new_thumb_pos = start
@@ -367,7 +362,7 @@ class TimeAxisNode(AxisNode):
         :param i_end: new interval end
         """
         # set new interval start and end
-        total_range = self.__interval_obj.get_total_range()
+        total_range = self.__vis_params.get_total_range()
         self.__i_start = self._value_to_pixel(i_start, total_range[0], total_range[1])
         self.__i_end = self._value_to_pixel(i_end, total_range[0], total_range[1])
 
@@ -399,7 +394,7 @@ class TimeAxisNode(AxisNode):
 
         # update position of pinned highlight line and highlight line marker
         if self.__pinned:
-            self.__highlight_pixel = self._value_to_pixel(self.__interval_obj.highlight_time,
+            self.__highlight_pixel = self._value_to_pixel(self.__vis_params.highlight_time,
                                                           self.start, self.end)
             if self.__highlight_pixel > self.width or self.__highlight_pixel < 0:
                 self.__highlight_line.opacity = 0
@@ -411,7 +406,7 @@ class TimeAxisNode(AxisNode):
                 self.__highlight_line.pos2 = (self.__highlight_pixel, self.__highlight_line.pos2[1])
 
         else:
-            self.__interval_obj.highlight_time = self.__calculate_time_from_pixel(self.__highlight_line.pos1[0])
+            self.__vis_params.highlight_time = self.__calculate_time_from_pixel(self.__highlight_line.pos1[0])
 
     def __show_interval_slider(self, event=None):
         """
@@ -446,7 +441,7 @@ class TimeAxisNode(AxisNode):
         # let line appear in front of every other child in this div
         self.removeChild(self.__highlight_line)
         self.appendChild(self.__highlight_line)
-        self.__interval_obj.notify()
+        self.__vis_params.notify()
 
     def __show_highlight_line(self, event=None):
         """
@@ -481,8 +476,8 @@ class TimeAxisNode(AxisNode):
             self.__pinned = False
         # pin line
         else:
-            self.__interval_obj.highlight_time = self.__calculate_time_from_pixel(self.__highlight_line.pos1[0])
-            marker_pos = self._value_to_pixel(self.__interval_obj.highlight_time,
+            self.__vis_params.highlight_time = self.__calculate_time_from_pixel(self.__highlight_line.pos1[0])
+            marker_pos = self._value_to_pixel(self.__vis_params.highlight_time,
                                               self.data_range[0], self.data_range[1])
             self.__highlight_marker.pos1 = (marker_pos, self.__highlight_marker.pos1[1])
             self.__highlight_marker.pos2 = (marker_pos, self.__highlight_marker.pos2[1])
@@ -490,7 +485,7 @@ class TimeAxisNode(AxisNode):
             self.__highlight_line.color = global_values.COLOR_WHITE
             self.parent.data_div.unsubscribe(avg.Node.CURSOR_MOTION, self.__hover_id)
             self.__pinned = True
-            self.__interval_obj.notify()
+            self.__vis_params.notify()
 
     def __calculate_time_from_pixel(self, pixel):
         """
