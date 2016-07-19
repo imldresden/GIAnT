@@ -16,9 +16,6 @@ import video
 
 
 class MainDiv(app.MainDiv):
-    """
-    Main drawer that initializes the three visualizations, the options panel and the video.
-    """
     last_time = 0
     viewport_change_duration = 0.3
 

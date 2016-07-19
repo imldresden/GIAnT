@@ -44,7 +44,7 @@ class MovementPanel(libavg.DivNode):
         self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, interval_obj=vis_params, parent=self, unit="ms",
                 data_range=vis_params.get_total_range(), size=(self.data_div.width, axis.THICKNESS), inverted=False)
 
-        self.create_line(vis_params.get_samples_per_pixel())
+        self.create_line(vis_params)
 
         # name
         libavg.WordsNode(pos=(axis.THICKNESS + global_values.APP_PADDING, global_values.APP_PADDING), parent=self,
@@ -60,11 +60,11 @@ class MovementPanel(libavg.DivNode):
         self.start = interval[0] / total_extent
         self.end = interval[1] / total_extent
         if draw_lines:
-            self.create_line(vis_params.get_samples_per_pixel())
+            self.create_line(vis_params)
         elif self.start != start_orig or self.end != end_orig:
-            self.create_line(vis_params.get_samples_per_pixel())
+            self.create_line(vis_params)
 
-    def create_line(self, samples_per_pixel):
+    def create_line(self, vis_params):
         userid = -1
         for usr in user.users:
             userid += 1
@@ -72,7 +72,7 @@ class MovementPanel(libavg.DivNode):
                 points = []
                 widths = []
                 opacities = []
-                samplecount = int(self.data_div.width * samples_per_pixel) + 1
+                samplecount = int(self.data_div.width * vis_params.get_samples_per_pixel()) + 1
                 for sample in range(samplecount):
                     if len(usr.head_positions_integral) == 0:
                         continue
@@ -80,7 +80,7 @@ class MovementPanel(libavg.DivNode):
                         len(usr.head_positions_integral) * sample * (self.end - self.start) / float(
                             samplecount) + self.start * len(usr.head_positions_integral))
 
-                    head_position_averaged = usr.get_head_position_averaged(posindex)
+                    head_position_averaged = usr.get_head_position_averaged(posindex, vis_params.get_smoothness())
 
                     norm_time = float(sample) / float(max(1, samplecount - 1))
                     norm_x = 1 - (head_position_averaged[0] - global_values.x_range[0]) / float(global_values.x_range[1] - global_values.x_range[0])

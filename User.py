@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import database
-from vis_params import main_vis_params
 
 users = []
 
 
 class User:
-
     def __init__(self, index):
         self.index = index - 1
 
@@ -21,11 +19,8 @@ class User:
 
         users.append(self)
 
-    def get_head_position_averaged(self, index, averaging_count=None):
-        if averaging_count is None:
-            averaging_count = main_vis_params.get_smoothness()
-
-        count = min(averaging_count, len(self.head_positions_integral) - index - 1)
+    def get_head_position_averaged(self, index, smoothness):
+        count = min(smoothness, len(self.head_positions_integral) - index - 1)
         integral = self.head_positions_integral
         if count <= 0:
             count = 1
@@ -41,8 +36,9 @@ class User:
         head_orientation = self.head_orientations[index]
         return head_orientation
 
-    def get_view_point_averaged(self, index):
-        count = min(main_vis_params.get_smoothness(), len(self.viewpoints_integral) - index - 1)
+    def get_view_point_averaged(self, index, smoothness):
+        # TODO: Unused, untested
+        count = min(smoothness, len(self.viewpoints_integral) - index - 1)
         integral = self.viewpoints_integral
         if count <= 0:
             count = 1
