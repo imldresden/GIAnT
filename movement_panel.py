@@ -28,7 +28,7 @@ class MovementPanel(libavg.DivNode):
         # div for visualization data
         self.data_div = libavg.DivNode(pos=(axis.THICKNESS, 0),
                                        size=(self.width - axis.THICKNESS, self.height - axis.THICKNESS),
-                                       parent=self, crop=True)
+                                       crop=True)
 
         # user divs to distinguish MeshNodes in data_div by user (user_divs are initialized as self.data_div's)
         self.user_divs = []
@@ -43,6 +43,8 @@ class MovementPanel(libavg.DivNode):
         x_axis_pos = (axis.THICKNESS, self.data_div.height)
         self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, vis_params=vis_params, parent=self, unit="ms",
                 data_range=vis_params.get_total_range(), size=(self.data_div.width, axis.THICKNESS), inverted=False)
+
+        self.appendChild(self.data_div)
 
         self.create_line(vis_params)
 
