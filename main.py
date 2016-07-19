@@ -162,10 +162,5 @@ def value_to_pixel(value, max_px, interval):
     return value / a - interval[0] / a
 
 
-"""start parameter"""
-OptionsPanel.SHOW_F_FORMATIONS = True
-OptionsPanel.LOAD_F_FORMATIONS = True
-OptionsPanel.COLOR_SCHEME = 0
-
 # minimum recommended resolution: 1040x331 px!
 app.App().run(MainDiv(), app_resolution=resolution["1500x800"])

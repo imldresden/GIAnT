@@ -7,19 +7,11 @@ import user
 import util
 import movement_panel
 
-SHOW_F_FORMATIONS = True    # if f-formations are visible when app is launched
-LOAD_F_FORMATIONS = True    # if f-formations are being loaded on startup (app needs to be restarted to load them)
-COLOR_SCHEME = 1            # user color scheme (see global_values.py for color schemes)
+COLOR_SCHEME = 0            # user color scheme (see global_values.py for color schemes)
 
 
 class OptionsPanel(libavg.DivNode):
     def __init__(self, vis_params, nodes, parent, **kwargs):
-        """
-        DivNode containing options.
-        :param nodes: List with user-divs and f-formation-div. Needed to toggle visibility of these nodes
-        :param parent: parent div node
-        :param kwargs: passed through args for libavg.DivNode
-        """
         super(OptionsPanel, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
@@ -75,12 +67,8 @@ class OptionsPanel(libavg.DivNode):
                                                  alignment="center"))
             self.user_texts[i].pos = (self.user_buttons[i].pos[0] + self.user_buttons[i].width/2,
                                       self.user_buttons[i].pos[1] + 6)
-
-        # the lambda sets the user_id always as the largest i when put in above for loop
-        self.user_buttons[0].subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_user(checked, user_id=0))
-        self.user_buttons[1].subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_user(checked, user_id=1))
-        self.user_buttons[2].subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_user(checked, user_id=2))
-        self.user_buttons[3].subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__toggle_user(checked, user_id=3))
+            self.user_buttons[i].subscribe(widget.CheckBox.TOGGLED,
+                    lambda checked, user_id=i: self.__toggle_user(checked, user_id=user_id))
 
         """smoothness slider"""
         # smoothness text
@@ -92,24 +80,7 @@ class OptionsPanel(libavg.DivNode):
         self.smoothness_slider.thumbPos = self.__vis_params.get_smoothness()
         # subscription to change curve smoothness
         self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, self.__on_smoothness_change)
-        # smoothness default button
-        icon_size = (12, 12)
-        self.default_button = widget.ToggleButton(uncheckedUpNode=
-                                                  avg.ImageNode(href="images/reload.png", pos=(0, 0), size=icon_size),
-                                                  uncheckedDownNode=
-                                                  avg.ImageNode(href="images/reload.png", pos=(0, 0), size=icon_size),
-                                                  uncheckedDisabledNode=
-                                                  avg.ImageNode(href="images/reload.png", pos=(0, 0), size=icon_size, opacity=0.25),
-                                                  checkedUpNode=
-                                                  avg.ImageNode(href="images/reload.png", pos=(0, 0), size=icon_size),
-                                                  checkedDownNode=
-                                                  avg.ImageNode(href="images/reload.png", pos=(0, 0), size=icon_size),
-                                                  checkedDisabledNode=
-                                                  avg.ImageNode(href="images/reload.png", pos=(0, 0), size=icon_size, opacity=0.25),
-                                                  pos=(655, 3), size=icon_size, parent=self)
-        # subscription to change smoothness to default on click
-        self.default_button.subscribe(widget.CheckBox.TOGGLED,
-                                      lambda pos: self.__default_smoothness(global_values.default_smoothness))
+
         # link smoothness to zoom level button
         icon_size = (12, 12)
         button_size = (100, 12)
@@ -148,20 +119,16 @@ class OptionsPanel(libavg.DivNode):
         :param checked: bool, True when user is being toggled on
         :param user_id: user_id to toggle
         """
-        if checked:
-            user.users[user_id].selected = True
-            for i, node in enumerate(self.nodes):
-                if isinstance(node, movement_panel.MovementPanel):
+        user.users[user_id].selected = checked
+        for node in self.nodes:
+            if isinstance(node, movement_panel.MovementPanel):
+                if checked:
                     node.data_div.appendChild(node.user_divs[user_id])
                     self.user_texts[user_id].color = global_values.COLOR_BACKGROUND
-        else:
-            user.users[user_id].selected = False
-            for i, node in enumerate(self.nodes):
-                if isinstance(node, movement_panel.MovementPanel):
+                else:
                     node.user_divs[user_id].unlink()
                     self.user_texts[user_id].color = global_values.COLOR_FOREGROUND
 
-        # publish changes
         self.__vis_params.notify()
 
     def __default_smoothness(self, value):
@@ -179,7 +146,6 @@ class OptionsPanel(libavg.DivNode):
         """
         global_values.link_smoothness = checked
         self.smoothness_slider.enabled = not checked
-        self.default_button.enabled = not checked
 
         if checked:
             self.smoothness_slider.opacity = 0.2
