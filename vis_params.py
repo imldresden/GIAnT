@@ -13,7 +13,7 @@ class VisParams(avg.Publisher):
     __highlight_time = 0
     __zoom_strength = 0.1
 
-    def __init__(self):
+    def __init__(self, num_users):
         super(VisParams, self).__init__()
         self.__play = False
         self.__last_frame_time = time.time()
@@ -21,6 +21,7 @@ class VisParams(avg.Publisher):
 
         self.__smoothness = global_values.default_smoothness
         self.__samples_per_pixel = 0.1
+        self.__users_visible = [True]*num_users
 
     def get_time_interval(self):
         return self.__time_interval
@@ -86,6 +87,13 @@ class VisParams(avg.Publisher):
     def play_animation(self):
         self.__play = not self.__play
         self.__last_frame_time = time.time()
+
+    def get_user_visible(self, i):
+        return self.__users_visible[i]
+
+    def set_user_visible(self, i, visible):
+        self.__users_visible[i] = visible
+        self.notify()
 
     def __set_highlight_time(self, time):
         self.__highlight_time = time

@@ -13,6 +13,7 @@ import OptionsPanel
 import global_values
 import Legend
 import video
+import user
 
 
 class MainDiv(app.MainDiv):
@@ -34,7 +35,7 @@ class MainDiv(app.MainDiv):
         main_vis_width = 2.0 / 3.0 * res_x
         menu_height = 50
         side_vis_height = 1.0 / 3.0 * res_y
-        self.__vis_params = vis_params.VisParams()
+        self.__vis_params = vis_params.VisParams(len(user.users))
 
         # rectangle to color background
         libavg.RectNode(parent=self, pos=(-1000, -1000), size=(10000, 10000),

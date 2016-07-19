@@ -66,9 +66,9 @@ class MovementPanel(libavg.DivNode):
 
     def create_line(self, vis_params):
         userid = -1
-        for usr in user.users:
+        for i, usr in enumerate(user.users):
             userid += 1
-            if usr.selected:
+            if vis_params.get_user_visible(i):
                 points = []
                 widths = []
                 opacities = []

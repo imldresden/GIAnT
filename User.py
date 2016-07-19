@@ -15,7 +15,6 @@ class User:
         self.viewpoints_integral = database.get_view_points_integral(index)
 
         self.touches = database.get_touch_positions(index)
-        self.selected = True
 
         users.append(self)
 

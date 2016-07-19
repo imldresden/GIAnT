@@ -119,7 +119,7 @@ class OptionsPanel(libavg.DivNode):
         :param checked: bool, True when user is being toggled on
         :param user_id: user_id to toggle
         """
-        user.users[user_id].selected = checked
+        self.__vis_params.set_user_visible(user_id, checked)
         for node in self.nodes:
             if isinstance(node, movement_panel.MovementPanel):
                 if checked:
@@ -129,7 +129,6 @@ class OptionsPanel(libavg.DivNode):
                     node.user_divs[user_id].unlink()
                     self.user_texts[user_id].color = global_values.COLOR_FOREGROUND
 
-        self.__vis_params.notify()
 
     def __default_smoothness(self, value):
         """
