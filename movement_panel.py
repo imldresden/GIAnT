@@ -46,10 +46,15 @@ class MovementPanel(libavg.DivNode):
 
         self.create_line(vis_params)
 
+        self.__highlight_line = libavg.LineNode(color=global_values.COLOR_SECONDARY,
+                pos1=(0, 0), pos2=(0, self.data_div.height), opacity=1, parent=self.data_div)
+        self.__hover_id = self.data_div.subscribe(libavg.Node.CURSOR_MOTION, self.__on_hover)
+
         # name
         libavg.WordsNode(pos=(axis.THICKNESS + global_values.APP_PADDING, global_values.APP_PADDING), parent=self,
                          color=global_values.COLOR_FOREGROUND, text="Movement over Time", sensitive=False, alignment="left")
         vis_params.subscribe(vis_params.CHANGED, self.update_time)
+        self.__vis_params = vis_params
 
     # make start and end values in 0..1
     def update_time(self, vis_params, draw_lines):
@@ -63,6 +68,15 @@ class MovementPanel(libavg.DivNode):
             self.create_line(vis_params)
         elif self.start != start_orig or self.end != end_orig:
             self.create_line(vis_params)
+
+        # update position of pinned highlight line and highlight line marker
+        highlight_xpos = self.__time_to_xpos(self.__vis_params.highlight_time)
+        if highlight_xpos > self.width or highlight_xpos < 0:
+            self.__highlight_line.opacity = 0
+        else:
+            self.__highlight_line.opacity = 1
+            self.__highlight_line.pos1 = (highlight_xpos, self.__highlight_line.pos1[1])
+            self.__highlight_line.pos2 = (highlight_xpos, self.__highlight_line.pos2[1])
 
     def create_line(self, vis_params):
         userid = -1
@@ -102,6 +116,19 @@ class MovementPanel(libavg.DivNode):
                     self.canvas_objects.append(
                         variable_width_line.VariableWidthLine(points=points, widths=widths, opacities=opacities,
                                                               userid=userid, parent=self.user_divs[userid]))
+
+    def __on_hover(self, event=None):
+        """
+        Moves the highlight line along the vertical mouse position.
+        """
+        rel_pos = self.data_div.getRelPos(event.pos)
+        self.__vis_params.highlight_time = self.x_axis.calculate_time_from_pixel(rel_pos.x)
+        self.__vis_params.notify()
+
+    def __time_to_xpos(self, t):
+        (start, end) = self.__vis_params.get_time_interval()
+        norm_time = (float(t)-start) / (end-start)
+        return norm_time * self.data_div.width
 
 
 def calculate_thickness(data, div):

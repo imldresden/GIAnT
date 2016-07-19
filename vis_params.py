@@ -71,6 +71,7 @@ class VisParams(avg.Publisher):
 
         self.__time_interval[0] += shift_amount
         self.__time_interval[1] += shift_amount
+        self.__highlight_time += shift_amount
         self.notify()
 
     def set_time_interval(self, interval):
