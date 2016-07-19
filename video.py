@@ -42,13 +42,11 @@ class Video:
                                                 pos=(pos[0], pos[1] + vid_size[1]), text="")
 
         self.videoNode.volume = 0
-        try:
-            self.videoNode.play()
-            self.videoNode.pause()
 
-            vis_params.subscribe(self)
-        except:
-            print "No video found"
+        self.videoNode.play()
+        self.videoNode.pause()
+
+        vis_params.subscribe(vis_params.CHANGED, self.update_time)
 
     def update_time(self, vis_params, draw_lines):
         if not self.is_playing:

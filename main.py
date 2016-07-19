@@ -6,7 +6,7 @@ from global_values import resolution
 import time
 from libavg import app, avg
 import libavg
-from vis_params import main_vis_params, VisParams
+import vis_params
 import movement_panel
 import axis
 import OptionsPanel
@@ -33,8 +33,8 @@ class MainDiv(app.MainDiv):
         # set aspect ratio for main visualization and elements on the right side
         main_vis_width = 2.0 / 3.0 * res_x
         menu_height = 50
-        main_vis_height = res_y - menu_height
         side_vis_height = 1.0 / 3.0 * res_y
+        self.__vis_params = vis_params.VisParams()
 
         # rectangle to color background
         libavg.RectNode(parent=self, pos=(-1000, -1000), size=(10000, 10000),
@@ -50,21 +50,20 @@ class MainDiv(app.MainDiv):
 
         # main visualization
         self.main_visualization = movement_panel.MovementPanel(
-                parent=self, vis_params=main_vis_params, pos=(0, 0), size=(main_vis_width, res_y - menu_height))
+                parent=self, vis_params=self.__vis_params, pos=(0, 0), size=(main_vis_width, res_y - menu_height))
 
         # video
         self.video = video.Video(pos=(main_vis_width + padding + axis.THICKNESS,
                                       2 * side_vis_height - 1.5 * axis.THICKNESS + padding),
                                  size=(res_x - main_vis_width - padding - axis.THICKNESS,
                                        side_vis_height + 1.5 * axis.THICKNESS - padding),
-                                 vis_params=main_vis_params, parent=self)
-        main_vis_params.subscribe(VisParams.CHANGED, self.video.update_time)
+                                 vis_params=self.__vis_params, parent=self)
 
         # nodes needed in self.menu
         nodes = [self.main_visualization]
 
         # menu
-        self.options = OptionsPanel.OptionsPanel(nodes=nodes, vis_params=main_vis_params, parent=self,
+        self.options = OptionsPanel.OptionsPanel(nodes=nodes, vis_params=self.__vis_params, parent=self,
                                                  pos=(0, self.main_visualization.height),
                                                  size=(self.main_visualization.width, menu_height))
 
@@ -82,10 +81,10 @@ class MainDiv(app.MainDiv):
         app.keyboardmanager.bindKeyDown(keyname='Space', handler=self.play_pause)
 
     def onFrame(self):
-        if main_vis_params.play:
+        if self.__vis_params.play:
             current_time = time.time()
-            main_vis_params.shift_time(True, (current_time - main_vis_params.last_frame_time) * 1000)
-            main_vis_params.last_frame_time = current_time
+            self.__vis_params.shift_time(True, (current_time - self.__vis_params.last_frame_time) * 1000)
+            self.__vis_params.last_frame_time = current_time
 
     def draw_line(self, p1, p2, color, thickness, last_thickness, opacity):
         return libavg.LineNode(pos1=p1, pos2=p2, color=color, strokewidth=thickness, parent=self)
@@ -100,26 +99,26 @@ class MainDiv(app.MainDiv):
         return [start_points[0], end_points[0], end_points[1], start_points[1]]
 
     def zoom_in(self):
-        main_vis_params.zoom_in_at(0.5)
+        self.__vis_params.zoom_in_at(0.5)
 
     def zoom_out(self):
-        main_vis_params.zoom_out_at(0.5)
+        self.__vis_params.zoom_out_at(0.5)
 
     def shift_back(self):
-        main_vis_params.shift_time(False)
+        self.__vis_params.shift_time(False)
 
     def shift_forward(self):
-        main_vis_params.shift_time(True)
+        self.__vis_params.shift_time(True)
 
     def onMouseWheel(self, event):
         if event.motion.y > 0:
-            main_vis_params.zoom_in_at((event.pos[0] - axis.THICKNESS) / (self.main_visualization.width - axis.THICKNESS))
+            self.__vis_params.zoom_in_at((event.pos[0] - axis.THICKNESS) / (self.main_visualization.width - axis.THICKNESS))
         else:
-            main_vis_params.zoom_out_at((event.pos[0] - axis.THICKNESS) / (self.main_visualization.width - axis.THICKNESS))
+            self.__vis_params.zoom_out_at((event.pos[0] - axis.THICKNESS) / (self.main_visualization.width - axis.THICKNESS))
 
     def play_pause(self):
-        main_vis_params.play_animation()
-        self.video.play_pause(main_vis_params.play)
+        self.__vis_params.play_animation()
+        self.video.play_pause(self.__vis_params.play)
 
     def draw_cosmetics(self):
         """

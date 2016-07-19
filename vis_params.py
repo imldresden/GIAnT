@@ -118,6 +118,3 @@ class VisParams(avg.Publisher):
 
     def get_samples_per_pixel(self):
         return self.__samples_per_pixel
-
-
-main_vis_params = VisParams()
