@@ -16,7 +16,7 @@ class MovementPanel(libavg.DivNode):
         self.registerInstance(self, parent)
         self.crop = False
 
-        self.canvas_objects = []
+        self.__user_lines = []
 
         # rect for coloured border and background
         self.background_rect = libavg.RectNode(pos=(axis.THICKNESS, 0),
@@ -29,11 +29,6 @@ class MovementPanel(libavg.DivNode):
         self.data_div = libavg.DivNode(pos=(axis.THICKNESS, 0),
                                        size=(self.width - axis.THICKNESS, self.height - axis.THICKNESS),
                                        crop=True)
-
-        # user divs to distinguish MeshNodes in data_div by user (user_divs are initialized as self.data_div's)
-        self.user_divs = []
-        for i in range((len(user.users))):
-            self.user_divs.append(libavg.DivNode(pos=(0, 0), parent=self.data_div, crop=True, size=self.size))
 
         custom_label_offset = 23  # to make space for cosmetic schematic wall
         self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.THICKNESS, self.data_div.height), parent=self,
@@ -82,8 +77,8 @@ class MovementPanel(libavg.DivNode):
             self.__highlight_line.pos1 = (highlight_xpos, self.__highlight_line.pos1[1])
             self.__highlight_line.pos2 = (highlight_xpos, self.__highlight_line.pos2[1])
 
-        for i, user_div in enumerate(self.user_divs):
-            user_div.active = vis_params.get_user_visible(i)
+        for i, user_line in enumerate(self.__user_lines):
+            user_line.node.active = vis_params.get_user_visible(i)
 
     def __on_mouse_wheel(self, event):
         rel_pos = self.data_div.getRelPos(event.pos)
@@ -124,13 +119,13 @@ class MovementPanel(libavg.DivNode):
                     widths.append(vis_thickness)
                     opacities.append(vis_opacity)
 
-                if len(self.canvas_objects) > userid:
-                    userline = self.canvas_objects[userid]
+                if len(self.__user_lines) > userid:
+                    userline = self.__user_lines[userid]
                     userline.set_values(points, widths, opacities)
                 else:
-                    self.canvas_objects.append(
+                    self.__user_lines.append(
                         variable_width_line.VariableWidthLine(points=points, widths=widths, opacities=opacities,
-                                                              userid=userid, parent=self.user_divs[userid]))
+                                                              userid=userid, parent=self.data_div))
 
     def __on_hover(self, event=None):
         """
