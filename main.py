@@ -57,7 +57,7 @@ class MainDiv(app.MainDiv):
                                       2 * side_vis_height - 1.5 * axis.THICKNESS + padding),
                                  size=(res_x - main_vis_width - padding - axis.THICKNESS,
                                        side_vis_height + 1.5 * axis.THICKNESS - padding),
-                                 parent=self)
+                                 vis_params=main_vis_params, parent=self)
         main_vis_params.subscribe(VisParams.CHANGED, self.video.update_time)
 
         # nodes needed in self.menu

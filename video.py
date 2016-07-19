@@ -3,7 +3,6 @@
 import libavg
 from libavg import avg
 from database import load_file
-from vis_params import main_vis_params
 import global_values
 import util
 
@@ -11,7 +10,7 @@ import util
 class Video:
     offset = (60 * 6 + 8.8) * 1000  # video is offset from data by this amount (ms)
 
-    def __init__(self, pos, size, parent):
+    def __init__(self, pos, size, vis_params, parent):
         self.path = ""
         file_paths = load_file('csv/filelist.txt')
         video_extensions = ["mpg", "mpeg", "mpeg2", "mpeg4",  "xvid", "mjpeg", "vp6", "h264"]
@@ -30,6 +29,7 @@ class Video:
 
         pos = (pos[0] + (size[0] - vid_size[0]) / 2, pos[1] + (size[1] - vid_size[1]) / 2)
 
+        self.__vis_params = vis_params
         self.is_playing = False
         self.videoNode = avg.VideoNode(href=self.path, pos=pos,
                                        parent=parent, size=vid_size, loop=True,
@@ -46,20 +46,20 @@ class Video:
             self.videoNode.play()
             self.videoNode.pause()
 
-            main_vis_params.subscribe(self)
+            vis_params.subscribe(self)
         except:
             print "No video found"
 
-    def update_time(self, interval_obj, draw_lines):
+    def update_time(self, vis_params, draw_lines):
         if not self.is_playing:
             if self.frames % 3 == 0:
-                self.videoNode.seekToTime(int(main_vis_params.highlight_time + self.offset))
+                self.videoNode.seekToTime(int(vis_params.highlight_time + self.offset))
             self.frames += 1
         self.__cur_time_text.text = "Current time: {}".format(
             util.format_label_value(unit="ms", value=self.videoNode.getCurTime() - self.offset, short=True))
 
     def play_pause(self, play=True):
-        start_time = main_vis_params.get_time_interval()[0]
+        start_time = self.__vis_params.get_time_interval()[0]
         self.is_playing = play
         time = int(start_time + self.offset)
         self.videoNode.seekToTime(time)
