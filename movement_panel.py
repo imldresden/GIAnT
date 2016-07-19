@@ -5,6 +5,7 @@ import global_values
 import axis
 import libavg
 import variable_width_line
+import util
 
 
 class MovementPanel(libavg.DivNode):
@@ -29,7 +30,8 @@ class MovementPanel(libavg.DivNode):
                                        crop=True)
         self.__user_lines = []
         for userid in range(len(user.users)):
-            self.__user_lines.append(variable_width_line.VariableWidthLine(userid=userid, parent=self.data_div))
+            color = util.get_user_color_as_hex(userid, 1)
+            self.__user_lines.append(variable_width_line.VariableWidthLine(color=color, parent=self.data_div))
 
         custom_label_offset = 23  # to make space for cosmetic schematic wall
         self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.THICKNESS, self.data_div.height), parent=self,
