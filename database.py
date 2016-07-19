@@ -4,6 +4,7 @@ import sqlite3
 import csv
 import time
 import util
+import sys
 
 # Positions in the database
 HEAD = 0
@@ -33,6 +34,7 @@ min_time = 0
 max_time = 0
 
 times = []
+timestampOffset = sys.maxint
 
 
 def executeQry(qry, doFetch=False):
@@ -121,12 +123,12 @@ def load_csv(rows):
         else:
             lastline = line
         if len(file) == 0 or not file[len(file) - 1] == split:
-            head = util.cleanString(split[HEAD])
+            head = cleanString(split[HEAD])
 
             for i in range(len(split)):
-                split[i] = util.cleanString(split[i])
+                split[i] = cleanString(split[i])
             lineTuple = (split[USER], head == 'head', split[X_VALUE], split[Y_VALUE], split[Z_VALUE], split[PITCH],
-                         split[YAW], split[ROLL], util.convertTimestamp(split[13]))
+                         split[YAW], split[ROLL], convertTimestamp(split[13]))
             file.append(lineTuple)
 
     insert_many(file, "raw", ["user", "head", "x", "y", "z", "pitch", "yaw", "roll", "time"])
@@ -488,6 +490,32 @@ def get_view_points_integral(userid):
     return executeQry("SELECT x, y, time FROM viewpointintegral WHERE user = " + str(userid) + " ORDER BY time;", True)
 
 
+def convertTimestamp(timestamp):
+    """
+    Turns the Timestring into a Number of milliseconds.
+    :param timestamp:
+    :return:
+    """
+    global timestampOffset
+    split = timestamp.split(":")
+    split[2] = float(str(split[2])) * 1000  # converting into whole milliseconds
+    hours = int(split[0]) * 60 * 60 * 1000
+    minutes = int(split[1]) * 60 * 1000
+    milliseconds = int(split[2])
+    result = hours + minutes + milliseconds
+    if result < timestampOffset:
+        timestampOffset = result
+    return result
+
+
+def cleanString(string):
+    patterns = ("\\", "\'", "[", " ", "]")
+    result = string
+    for pattern in patterns:
+        result = result.replace(pattern, "")
+    return result
+
+
 def setup_database(wall_screen_resolution):
     print "loading csv files into database:"
     setup_raw_table()
@@ -497,7 +525,7 @@ def setup_database(wall_screen_resolution):
     create_head_table()
     print "tables created 3/7"
     create_head_table_integral()
-    print "tables created 4/8"
+    print "tables created 4/7"
     create_viewpoint_table()
     print "tables created 5/7"
     create_viewpoint_table_integral()

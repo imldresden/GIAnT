@@ -1,44 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import math
-import sys
 import colorsys
-
-timestampOffset = sys.maxint
-
-
-def get_length(vector):
-    value = 0
-    for component in vector:
-        value += component * component
-
-    return math.sqrt(value)
-
-
-def cleanString(string):
-    patterns = ("\\", "\'", "[", " ", "]")
-    result = string
-    for pattern in patterns:
-        result = result.replace(pattern, "")
-    return result
-
-
-def convertTimestamp(timestamp):
-    """
-    Turns the Timestring into a Number of milliseconds.
-    :param timestamp:
-    :return:
-    """
-    global timestampOffset
-    split = timestamp.split(":")
-    split[2] = float(str(split[2])) * 1000  # converting into whole milliseconds
-    hours = int(split[0]) * 60 * 60 * 1000
-    minutes = int(split[1]) * 60 * 1000
-    milliseconds = int(split[2])
-    result = hours + minutes + milliseconds
-    if result < timestampOffset:
-        timestampOffset = result
-    return result
+import math
 
 
 def line_intersection(line1, line2):
@@ -66,11 +29,6 @@ def line_intersection(line1, line2):
     return result1
 
 
-def get_index_from_time_percentage(percentage):
-    import user
-    return int(percentage * float(len(user.users[0].head_positions_integral)))
-
-
 def get_look_direction(pitch, yaw):
     x = 0
     y = 0
@@ -94,14 +52,6 @@ def get_look_direction(pitch, yaw):
     z = new_z
 
     return -x, y, z
-
-
-def normalize_vector(vector):
-    result = []
-    length = get_length(vector)
-    for i in range(0, len(vector)):
-        result.append(float(vector[i]) / float(length))
-    return result
 
 
 def get_user_color_as_hex(index, opacity):
