@@ -33,6 +33,7 @@ class Video:
         self.videoNode = avg.VideoNode(href=self.path, pos=pos,
                                        parent=parent, size=vid_size, loop=True,
                                        mipmap=True,
+                                       threaded=False,
                                        enablesound=False)
 
         # rectangle for border
