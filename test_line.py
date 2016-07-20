@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from libavg import avg, app
-import variable_width_line
+from libavg import avg, app, player
+player.loadPlugin("vwline")
 
 
 class MyMainDiv(app.MainDiv):
@@ -23,8 +23,8 @@ class MyMainDiv(app.MainDiv):
         self.__create_line(points)
 
     def __create_line(self, points):
-        line = variable_width_line.VariableWidthLine(color="FFFFFF", parent=self)
-        line.set_values(points, self.widths, self.opacities)
+        line = vwline.VWLineNode(color="FFFFFF", parent=self)
+        line.setValues(points, self.widths, self.opacities)
         avg.PolyLineNode(pos=points, color="FF0000", parent=self)
 
 
