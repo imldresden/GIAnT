@@ -23,12 +23,13 @@ class User:
         integral = self.head_positions_integral
         if count <= 0:
             count = 1
-        index = min(max(0, index), len(integral) - count - 1)
 
-        head_position = [(integral[index + count][0] - integral[index][0]) / count,
-                         (integral[index + count][1] - integral[index][1]) / count,
-                         (integral[index + count][2] - integral[index][2]) / count,
-                         integral[index + count][3]]
+        start_index = max(0, index - count/2)
+        end_index = min(len(integral)-1, index + (count+1)/2)
+        head_position = [(integral[end_index][0] - integral[start_index][0]) / count,
+                         (integral[end_index][1] - integral[start_index][1]) / count,
+                         (integral[end_index][2] - integral[start_index][2]) / count,
+                         integral[index][3]]
         return head_position
 
     def get_head_orientation(self, index):
