@@ -63,16 +63,21 @@ class VariableWidthLine(avg.MeshNode):
             pt2 = self.points[i+1]
             offset = self.widths[i] / 2
             vi = len(vertexes)
+
+            delta0 = pt1 - pt0
+            norm0 = avg.Point2D(-delta0.y, delta0.x).getNormalized()
+            delta1 = pt2 - pt1
+            norm1 = avg.Point2D(-delta1.y, delta1.x).getNormalized()
+            texcoord = calc_tex_coord(self.opacities[i])
+
             slope1 = (pt1.y-pt0.y)/(pt1.x-pt0.x)
             slope2 = (pt2.y-pt1.y)/(pt2.x-pt1.x)
             if math.fabs(slope1-slope2) < 0.03:
                 # Near-parallel lines
-                delta = pt1 - pt0
-                norm = avg.Point2D(-delta.y, delta.x).getNormalized()
-                pt1_t = pt1 - norm*offset
-                pt1_b = pt1 + norm*offset
-                pt0_t = pt0 - norm*offset
-                pt0_b = pt0 + norm*offset
+                pt1_t = pt1 - norm0*offset
+                pt1_b = pt1 + norm0*offset
+                pt0_t = pt0 - norm0*offset
+                pt0_b = pt0 + norm0*offset
                 pt1_b = handle_overlap(pt1_b, pt0_b)
                 pt1_t = handle_overlap(pt1_t, pt0_t)
 
@@ -84,23 +89,18 @@ class VariableWidthLine(avg.MeshNode):
                 triangles.append((vi - 1, vi + 1, vi + 2))
             elif slope1 < slope2:
                 # Curve to the right: Small triangle at top.
-                delta = pt1 - pt0
-                norm = avg.Point2D(-delta.y, delta.x).getNormalized()
-                pt1_tl = pt1 - norm*offset
-                pt1_bl = pt1 + norm*offset
-                pt0_b = pt0 + norm*offset
+                pt1_tl = pt1 - norm0*offset
+                pt1_bl = pt1 + norm0*offset
+                pt0_b = pt0 + norm0*offset
 
-                delta = pt2 - pt1
-                norm = avg.Point2D(-delta.y, delta.x).getNormalized()
-                pt1_tr = pt1 - norm*offset
-                pt1_br = pt1 + norm*offset
-                pt2_b = pt2 + norm*offset
+                pt1_tr = pt1 - norm1*offset
+                pt1_br = pt1 + norm1*offset
+                pt2_b = pt2 + norm1*offset
 
                 pt1_b = intersect_lines(pt0_b, pt1_bl, pt1_br, pt2_b)
                 pt1_b = handle_overlap(pt1_b, pt0_b)
 
                 vertexes.extend((pt1_tl, pt1_tr, pt1, pt1_b))
-                texcoord = calc_tex_coord(self.opacities[i])
                 texcoords.extend((texcoord, texcoord, texcoord, texcoord))
                 triangles.append((vi - 3, vi, vi + 2))
                 triangles.append((vi - 3, vi + 2, vi - 2))
@@ -109,23 +109,18 @@ class VariableWidthLine(avg.MeshNode):
                 triangles.append((vi, vi + 1, vi + 2))
             else:
                 # Curve to the left: Small triangle at bottom
-                delta = pt1 - pt0
-                norm = avg.Point2D(-delta.y, delta.x).getNormalized()
-                pt1_bl = pt1 + norm*offset
-                pt1_tl = pt1 - norm*offset
-                pt0_t = pt0 - norm*offset
+                pt1_bl = pt1 + norm0*offset
+                pt1_tl = pt1 - norm0*offset
+                pt0_t = pt0 - norm0*offset
 
-                delta = pt2 - pt1
-                norm = avg.Point2D(-delta.y, delta.x).getNormalized()
-                pt1_br = pt1 + norm*offset
-                pt1_tr = pt1 - norm*offset
-                pt2_t = pt2 - norm*offset
+                pt1_br = pt1 + norm1*offset
+                pt1_tr = pt1 - norm1*offset
+                pt2_t = pt2 - norm1*offset
 
                 pt1_t = intersect_lines(pt0_t, pt1_tl, pt1_tr, pt2_t)
                 pt1_t = handle_overlap(pt1_t, pt0_t)
 
                 vertexes.extend((pt1_bl, pt1_t, pt1, pt1_br))
-                texcoord = calc_tex_coord(self.opacities[i])
                 texcoords.extend((texcoord, texcoord, texcoord, texcoord))
                 triangles.append((vi-3, vi+1, vi+2))
                 triangles.append((vi-3, vi+2, vi-2))
