@@ -5,6 +5,15 @@ from libavg import player, avg
 import math
 
 
+def intersect_lines(pt00, pt01, pt10, pt11):
+    # Returns intersection of two lines given two points on each line.
+    # Line0 is (pt00, pt01), line1 is (pt10, pt11)
+    # See https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line
+    denom = (pt00.x-pt01.x) * (pt10.y-pt11.y) - (pt00.y-pt01.y) * (pt10.x-pt11.x)
+    x = ((pt00.x*pt01.y - pt00.y*pt01.x) * (pt10.x-pt11.x) - (pt00.x-pt01.x) * (pt10.x*pt11.y - pt10.y*pt11.x))/denom
+    y = ((pt00.x*pt01.y - pt00.y*pt01.x) * (pt10.y-pt11.y) - (pt00.y-pt01.y) * (pt10.x*pt11.y - pt10.y*pt11.x))/denom
+    return avg.Point2D(x,y)
+
 class VariableWidthLine(avg.MeshNode):
     points = []
     widths = []
@@ -29,6 +38,12 @@ class VariableWidthLine(avg.MeshNode):
         def calc_tex_coord(opacity):
             return avg.Point2D(max(1.0/256.0,min(255.0 / 256.0, pow(opacity, 1) * 2)), 0)
 
+        def handle_overlap(pt1, pt0):
+            if pt1.x < pt0.x:
+                return pt0
+            else:
+                return pt1
+
         vertexes = []
         texcoords = []
         triangles = []
@@ -48,33 +63,41 @@ class VariableWidthLine(avg.MeshNode):
             pt2 = self.points[i+1]
             offset = self.widths[i] / 2
             vi = len(vertexes)
-            if pt1.y > pt0.y and pt1.y > pt2.y:
-                # Current point below both neighbors
+            slope1 = (pt1.y-pt0.y)/(pt1.x-pt0.x)
+            slope2 = (pt2.y-pt1.y)/(pt2.x-pt1.x)
+            if math.fabs(slope1-slope2) < 0.03:
+                # Near-parallel lines
                 delta = pt1 - pt0
                 norm = avg.Point2D(-delta.y, delta.x).getNormalized()
-                pt1_bl = pt1 + norm*offset
-                delta = pt2 - pt1
-                norm = avg.Point2D(-delta.y, delta.x).getNormalized()
-                pt1_br = pt1 + norm*offset
-                pt1_t = pt1 - (0, offset)
+                pt1_t = pt1 - norm*offset
+                pt1_b = pt1 + norm*offset
+                pt0_t = pt0 - norm*offset
+                pt0_b = pt0 + norm*offset
+                pt1_b = handle_overlap(pt1_b, pt0_b)
+                pt1_t = handle_overlap(pt1_t, pt0_t)
 
-                vertexes.extend((pt1_bl, pt1_t, pt1, pt1_br))
-                texcoord = calc_tex_coord(self.opacities[i])
-                texcoords.extend((texcoord, texcoord, texcoord, texcoord))
-                triangles.append((vi-3, vi+1, vi+2))
-                triangles.append((vi-3, vi+2, vi-2))
-                triangles.append((vi-2, vi+2, vi-1))
-                triangles.append((vi-1, vi+2, vi  ))
-                triangles.append((vi,   vi+2, vi+3))
-            elif pt1.y < pt0.y and pt1.y < pt2.y:
-                # Current point above both neighbors
+                vertexes.extend((pt1_t, pt1, pt1_b))
+                texcoords.extend((texcoord, texcoord, texcoord))
+                triangles.append((vi - 3, vi, vi + 1))
+                triangles.append((vi - 3, vi + 1, vi - 2))
+                triangles.append((vi - 2, vi + 1, vi - 1))
+                triangles.append((vi - 1, vi + 1, vi + 2))
+            elif slope1 < slope2:
+                # Curve to the right: Small triangle at top.
                 delta = pt1 - pt0
                 norm = avg.Point2D(-delta.y, delta.x).getNormalized()
                 pt1_tl = pt1 - norm*offset
+                pt1_bl = pt1 + norm*offset
+                pt0_b = pt0 + norm*offset
+
                 delta = pt2 - pt1
                 norm = avg.Point2D(-delta.y, delta.x).getNormalized()
                 pt1_tr = pt1 - norm*offset
-                pt1_b = pt1 + (0, offset)
+                pt1_br = pt1 + norm*offset
+                pt2_b = pt2 + norm*offset
+
+                pt1_b = intersect_lines(pt0_b, pt1_bl, pt1_br, pt2_b)
+                pt1_b = handle_overlap(pt1_b, pt0_b)
 
                 vertexes.extend((pt1_tl, pt1_tr, pt1, pt1_b))
                 texcoord = calc_tex_coord(self.opacities[i])
@@ -85,17 +108,30 @@ class VariableWidthLine(avg.MeshNode):
                 triangles.append((vi - 1, vi + 2, vi + 3))
                 triangles.append((vi, vi + 1, vi + 2))
             else:
-                # Current point has neighbors above and below.
-                offset = avg.Point2D(0, self.widths[i] / 2)
-                pt1_t = pt1 - offset
-                pt1_b = pt1 + offset
-                vertexes.extend((pt1_t, pt1, pt1_b))
+                # Curve to the left: Small triangle at bottom
+                delta = pt1 - pt0
+                norm = avg.Point2D(-delta.y, delta.x).getNormalized()
+                pt1_bl = pt1 + norm*offset
+                pt1_tl = pt1 - norm*offset
+                pt0_t = pt0 - norm*offset
+
+                delta = pt2 - pt1
+                norm = avg.Point2D(-delta.y, delta.x).getNormalized()
+                pt1_br = pt1 + norm*offset
+                pt1_tr = pt1 - norm*offset
+                pt2_t = pt2 - norm*offset
+
+                pt1_t = intersect_lines(pt0_t, pt1_tl, pt1_tr, pt2_t)
+                pt1_t = handle_overlap(pt1_t, pt0_t)
+
+                vertexes.extend((pt1_bl, pt1_t, pt1, pt1_br))
                 texcoord = calc_tex_coord(self.opacities[i])
-                texcoords.extend((texcoord, texcoord, texcoord))
-                triangles.append((vi-3, vi,   vi+1))
-                triangles.append((vi-3, vi+1, vi-2))
-                triangles.append((vi-2, vi+1, vi-1))
-                triangles.append((vi-1, vi+1, vi+2))
+                texcoords.extend((texcoord, texcoord, texcoord, texcoord))
+                triangles.append((vi-3, vi+1, vi+2))
+                triangles.append((vi-3, vi+2, vi-2))
+                triangles.append((vi-2, vi+2, vi-1))
+                triangles.append((vi-1, vi+2, vi  ))
+                triangles.append((vi,   vi+2, vi+3))
 
         # Last point
         i = len(self.points)-1
