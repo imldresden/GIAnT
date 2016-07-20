@@ -103,7 +103,7 @@ class MovementPanel(libavg.DivNode):
                 opacities = []
                 cur_sample_x = 0
                 done = False
-                while not(done):
+                while not done:
                     if len(usr.head_positions_integral) == 0: # TODO: Hä?
                         continue
                     posindex = int(
@@ -140,7 +140,7 @@ class MovementPanel(libavg.DivNode):
         """
         rel_pos = self.data_div.getRelPos(event.pos)
         self.__vis_params.highlight_time = self.x_axis.calculate_time_from_pixel(rel_pos.x)
-        self.__vis_params.notify()
+        self.__vis_params.notify(False)
 
     def __time_to_xpos(self, t):
         (start, end) = self.__vis_params.get_time_interval()

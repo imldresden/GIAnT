@@ -14,6 +14,7 @@ def intersect_lines(pt00, pt01, pt10, pt11):
     y = ((pt00.x*pt01.y - pt00.y*pt01.x) * (pt10.y-pt11.y) - (pt00.y-pt01.y) * (pt10.x*pt11.y - pt10.y*pt11.x))/denom
     return avg.Point2D(x,y)
 
+
 class VariableWidthLine(avg.MeshNode):
     points = []
     widths = []
@@ -65,11 +66,9 @@ class VariableWidthLine(avg.MeshNode):
             vi = len(vertexes)
 
             delta0 = pt1 - pt0
-            norm0 = avg.Point2D(-delta0.y, delta0.x).getNormalized()
-            offset0 = norm0 * w
+            offset0 = avg.Point2D(-delta0.y, delta0.x).getNormalized() * w
             delta1 = pt2 - pt1
-            norm1 = avg.Point2D(-delta1.y, delta1.x).getNormalized()
-            offset1 = norm1 * w
+            offset1 = avg.Point2D(-delta1.y, delta1.x).getNormalized() * w
             texcoord = calc_tex_coord(self.opacities[i])
 
             slope1 = (pt1.y-pt0.y)/(pt1.x-pt0.x)
