@@ -20,7 +20,6 @@ class VisParams(avg.Publisher):
         self.publish(VisParams.CHANGED)
 
         self.__smoothness = global_values.default_smoothness
-        self.__samples_per_pixel = 0.1
         self.__users_visible = [True]*num_users
 
     def get_time_interval(self):
@@ -102,13 +101,9 @@ class VisParams(avg.Publisher):
         elif value > global_values.max_averaging_count:
             value = global_values.max_averaging_count
         self.__smoothness = int(value)
-        self.__samples_per_pixel = max(0.1, min(0.3, 50 / value))
 
     def get_smoothness(self):
         return self.__smoothness
-
-    def get_samples_per_pixel(self):
-        return self.__samples_per_pixel
 
     def __set_highlight_time(self, time):
         self.__highlight_time = time

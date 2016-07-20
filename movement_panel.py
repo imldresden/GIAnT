@@ -12,6 +12,8 @@ class MovementPanel(libavg.DivNode):
     start = 0
     end = 1
 
+    PIXELS_PER_SAMPLE = 8
+
     def __init__(self, parent, vis_params, **kwargs):
         super(MovementPanel, self).__init__(**kwargs)
         self.registerInstance(self, parent)
@@ -99,17 +101,17 @@ class MovementPanel(libavg.DivNode):
                 points = []
                 widths = []
                 opacities = []
-                samplecount = int(self.data_div.width * vis_params.get_samples_per_pixel()) + 1
-                for sample in range(samplecount):
-                    if len(usr.head_positions_integral) == 0:
+                cur_sample_x = 0
+                while cur_sample_x < self.data_div.width:
+                    if len(usr.head_positions_integral) == 0: # TODO: Hä?
                         continue
                     posindex = int(
-                        len(usr.head_positions_integral) * sample * (self.end - self.start) / float(
-                            samplecount) + self.start * len(usr.head_positions_integral))
+                        len(usr.head_positions_integral) * cur_sample_x * (self.end - self.start) / float(
+                            self.data_div.width) + self.start * len(usr.head_positions_integral))
 
                     head_position_averaged = usr.get_head_position_averaged(posindex, vis_params.get_smoothness())
 
-                    norm_time = float(sample) / float(max(1, samplecount - 1))
+                    norm_time = float(cur_sample_x) / float(max(1, self.data_div.width - 1))
                     norm_x = 1 - (head_position_averaged[0] - global_values.x_range[0]) / float(global_values.x_range[1] - global_values.x_range[0])
                     norm_z = (head_position_averaged[2] - global_values.z_range[0]) / float(global_values.z_range[1] - global_values.z_range[0])
 
@@ -121,10 +123,10 @@ class MovementPanel(libavg.DivNode):
                     points.append(libavg.Point2D(vis_x, vis_y))
                     widths.append(vis_thickness)
                     opacities.append(vis_opacity)
+                    cur_sample_x += max(self.PIXELS_PER_SAMPLE, vis_thickness/2)
 
                 userline = self.__user_lines[userid]
                 userline.set_values(points, widths, opacities)
-
 
     def __on_hover(self, event=None):
         """
