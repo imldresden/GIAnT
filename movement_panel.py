@@ -102,7 +102,8 @@ class MovementPanel(libavg.DivNode):
                 widths = []
                 opacities = []
                 cur_sample_x = 0
-                while cur_sample_x < self.data_div.width:
+                done = False
+                while not(done):
                     if len(usr.head_positions_integral) == 0: # TODO: Hä?
                         continue
                     posindex = int(
@@ -123,7 +124,12 @@ class MovementPanel(libavg.DivNode):
                     points.append(libavg.Point2D(vis_x, vis_y))
                     widths.append(vis_thickness)
                     opacities.append(vis_opacity)
-                    cur_sample_x += max(self.PIXELS_PER_SAMPLE, vis_thickness/2)
+                    if cur_sample_x == self.data_div.width-1:
+                        done = True
+                    else:
+                        cur_sample_x += max(self.PIXELS_PER_SAMPLE, vis_thickness/2)
+                        if cur_sample_x > self.data_div.width-1:
+                            cur_sample_x = self.data_div.width-1
 
                 userline = self.__user_lines[userid]
                 userline.set_values(points, widths, opacities)
