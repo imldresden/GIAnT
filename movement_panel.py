@@ -118,7 +118,7 @@ class MovementPanel(libavg.DivNode):
                     vis_thickness = calculate_thickness(norm_z, self)
                     vis_opacity = calculate_opacity(norm_z)
 
-                    points.append((vis_x, vis_y))
+                    points.append(libavg.Point2D(vis_x, vis_y))
                     widths.append(vis_thickness)
                     opacities.append(vis_opacity)
 

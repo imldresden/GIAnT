@@ -20,7 +20,7 @@ class Legend(libavg.DivNode):
 
         for i in range(0, 101):
             value = i / 100.0
-            points.append((self.width * value, self.height))
+            points.append(libavg.Point2D(self.width * value, self.height))
             widths.append(movement_panel.calculate_thickness(value,
                                                                  parent.getParent().main_visualization.data_div) * 2)
             opacities.append(movement_panel.calculate_opacity(value))

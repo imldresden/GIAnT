@@ -3,43 +3,6 @@
 
 from libavg import player, avg
 import math
-import util
-
-
-def calculate_line_intersection(p1, p2_selected, p3, thickness1, thickness2_selected, thickness3):
-    thickness1 *= 0.5
-    thickness2_selected *= 0.5
-    thickness3 *= 0.5
-    vector_1 = (p2_selected[0] - p1[0], p2_selected[1] - p1[1])
-    vector_2 = (p3[0] - p2_selected[0], p3[1] - p2_selected[1])
-
-    vector_length_1 = math.sqrt(vector_1[0] * vector_1[0] + vector_1[1] * vector_1[1])
-    vector_length_2 = math.sqrt(vector_2[0] * vector_2[0] + vector_2[1] * vector_2[1])
-    try:
-        normalized_vector_1 = (vector_1[0] / vector_length_1, vector_1[1] / vector_length_1)
-        normalized_vector_2 = (vector_2[0] / vector_length_2, vector_2[1] / vector_length_2)
-    except:
-        normalized_vector_1 = (0, 1)
-        normalized_vector_2 = (0, 1)
-
-    left_1 = (p1[0] - normalized_vector_1[1] * thickness1, p1[1] + normalized_vector_1[0] * thickness1)
-    left2_1 = (p2_selected[0] - normalized_vector_1[1] * thickness2_selected,
-               p2_selected[1] + normalized_vector_1[0] * thickness2_selected)
-    left2_2 = (p2_selected[0] - normalized_vector_2[1] * thickness2_selected,
-               p2_selected[1] + normalized_vector_2[0] * thickness2_selected)
-    left_3 = (p3[0] - normalized_vector_2[1] * thickness3, p3[1] + normalized_vector_2[0] * thickness3)
-
-    right_1 = (p1[0] + normalized_vector_1[1] * thickness1, p1[1] - normalized_vector_1[0] * thickness1)
-    right2_1 = (p2_selected[0] + normalized_vector_1[1] * thickness2_selected,
-                p2_selected[1] - normalized_vector_1[0] * thickness2_selected)
-    right2_2 = (p2_selected[0] + normalized_vector_2[1] * thickness2_selected,
-                p2_selected[1] - normalized_vector_2[0] * thickness2_selected)
-    right_3 = (p3[0] + normalized_vector_2[1] * thickness3, p3[1] - normalized_vector_2[0] * thickness3)
-
-    intersection_point_1 = util.line_intersection((left_1, left2_1), (left2_2, left_3))
-    intersection_point_2 = util.line_intersection((right_1, right2_1), (right2_2, right_3))
-
-    return [intersection_point_1, intersection_point_2]
 
 
 class VariableWidthLine(avg.MeshNode):
@@ -62,42 +25,93 @@ class VariableWidthLine(avg.MeshNode):
         self.__genMesh()
 
     def __genMesh(self):
+
+        def calc_tex_coord(opacity):
+            return avg.Point2D(max(1.0/256.0,min(255.0 / 256.0, pow(opacity, 1) * 2)), 0)
+
         vertexes = []
-        texcoords = [(0.1, 0), (0.1, 1)]
+        texcoords = []
         triangles = []
-        if self.widths == None or len(self.widths)!=len(self.points):
-            self.widths = []
-            self.widths = self.widths + [3]*(len(self.points)-len(self.widths))
-        for i in range(len(self.points)):
-            p2 = self.points[i]
-            t2 = self.widths[i]
-            if i < 1:
-                p1 = (self.points[0][0] - (self.points[1][0] - self.points[0][0]), self.points[1][0])
-                p3 = self.points[i + 1]
-                t1 = self.widths[0]
-                t3 = self.widths[i + 1]
+
+        # First point
+        pt0 = self.points[0]
+        offset = avg.Point2D(0, self.widths[0]/2)
+        pt0_t = pt0 - offset
+        pt0_b = pt0 + offset
+        vertexes.extend((pt0_t, pt0, pt0_b))
+        texcoord = calc_tex_coord(self.opacities[0])
+        texcoords.extend((texcoord, texcoord, texcoord))
+
+        for i in range(1, len(self.points)-1):
+            pt0 = self.points[i-1]
+            pt1 = self.points[i]
+            pt2 = self.points[i+1]
+            offset = self.widths[i] / 2
+            vi = len(vertexes)
+            if pt1.y > pt0.y and pt1.y > pt2.y:
+                # Current point below both neighbors
+                delta = pt1 - pt0
+                norm = avg.Point2D(-delta.y, delta.x).getNormalized()
+                pt1_bl = pt1 + norm*offset
+                delta = pt2 - pt1
+                norm = avg.Point2D(-delta.y, delta.x).getNormalized()
+                pt1_br = pt1 + norm*offset
+                pt1_t = pt1 - (0, offset)
+
+                vertexes.extend((pt1_bl, pt1_t, pt1, pt1_br))
+                texcoord = calc_tex_coord(self.opacities[i])
+                texcoords.extend((texcoord, texcoord, texcoord, texcoord))
+                triangles.append((vi-3, vi+1, vi+2))
+                triangles.append((vi-3, vi+2, vi-2))
+                triangles.append((vi-2, vi+2, vi-1))
+                triangles.append((vi-1, vi+2, vi  ))
+                triangles.append((vi,   vi+2, vi+3))
+            elif pt1.y < pt0.y and pt1.y < pt2.y:
+                # Current point above both neighbors
+                delta = pt1 - pt0
+                norm = avg.Point2D(-delta.y, delta.x).getNormalized()
+                pt1_tl = pt1 - norm*offset
+                delta = pt2 - pt1
+                norm = avg.Point2D(-delta.y, delta.x).getNormalized()
+                pt1_tr = pt1 - norm*offset
+                pt1_b = pt1 + (0, offset)
+
+                vertexes.extend((pt1_tl, pt1_tr, pt1, pt1_b))
+                texcoord = calc_tex_coord(self.opacities[i])
+                texcoords.extend((texcoord, texcoord, texcoord, texcoord))
+                triangles.append((vi - 3, vi, vi + 2))
+                triangles.append((vi - 3, vi + 2, vi - 2))
+                triangles.append((vi - 2, vi + 2, vi - 1))
+                triangles.append((vi - 1, vi + 2, vi + 3))
+                triangles.append((vi, vi + 1, vi + 2))
             else:
-                p1 = self.points[i - 1]
-                t1 = self.widths[i - 1]
-                if i >= len(self.points) - 1:
-                    p3 = (2 * self.points[i][0] - self.points[i - 1][0],
-                          2 * self.points[i][1] - self.points[i - 1][1])
-                    t3 = self.widths[i]
-                else:
-                    p3 = self.points[i + 1]
-                    t3 = self.widths[i + 1]
-            linepos = calculate_line_intersection(p1, p2, p3, t1, t2, t3)
+                # Current point has neighbors above and below.
+                offset = avg.Point2D(0, self.widths[i] / 2)
+                pt1_t = pt1 - offset
+                pt1_b = pt1 + offset
+                vertexes.extend((pt1_t, pt1, pt1_b))
+                texcoord = calc_tex_coord(self.opacities[i])
+                texcoords.extend((texcoord, texcoord, texcoord))
+                triangles.append((vi-3, vi,   vi+1))
+                triangles.append((vi-3, vi+1, vi-2))
+                triangles.append((vi-2, vi+1, vi-1))
+                triangles.append((vi-1, vi+1, vi+2))
 
-            vertexes.append(linepos[0])
-            vertexes.append(linepos[1])
-            texx = max(1.0/256.0,min(255.0 / 256.0, pow(self.opacities[i], 1) * 2))
-            texcoords.append((texx, 0))
-            texcoords.append((texx, 1))
-            triangles.append((i * 2, i * 2 + 1, i * 2 + 2))
-            triangles.append((i * 2 + 1, i * 2 + 2, i * 2 + 3))
+        # Last point
+        i = len(self.points)-1
+        vi = len(vertexes)
+        pt1 = self.points[i]
+        offset = avg.Point2D(0, self.widths[i]/2)
+        pt1_t = pt1 - offset
+        pt1_b = pt1 + offset
+        vertexes.extend((pt1_t, pt1, pt1_b))
+        texcoord = calc_tex_coord(self.opacities[i])
+        texcoords.extend((texcoord, texcoord, texcoord))
+        triangles.append((vi - 3, vi, vi + 1))
+        triangles.append((vi - 3, vi + 1, vi - 2))
+        triangles.append((vi - 2, vi + 1, vi - 1))
+        triangles.append((vi - 1, vi + 1, vi + 2))
 
-        vertexes.insert(0, vertexes[1])
-        vertexes.insert(0, vertexes[1])
         self.vertexcoords = vertexes
         self.texcoords = texcoords
         self.triangles = triangles
