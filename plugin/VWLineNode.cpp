@@ -52,7 +52,7 @@ void VWLineNode::setValues(const vector<glm::vec2>& pts, const vector<float>& wi
     m_VertexCoords.push_back(pt0_b);
     appendColors(3, color, opacities[0]);
 
-    for (int i=1; i<pts.size(); ++i) {
+    for (int i=1; i<pts.size()-1; ++i) {
         pt0 = pts[i-1];
         glm::vec2 pt1 = pts[i];
         glm::vec2 pt2 = pts[i+1];
@@ -144,16 +144,26 @@ void VWLineNode::setValues(const vector<glm::vec2>& pts, const vector<float>& wi
     m_VertexCoords.push_back(pt1_t);
     m_VertexCoords.push_back(pt1);
     m_VertexCoords.push_back(pt1_b);
-    appendColors(3, color, opacities[0]);
+    appendColors(3, color, opacities[i]);
 
     m_Triangles.push_back(glm::ivec3(vi-3, vi  , vi+1));
     m_Triangles.push_back(glm::ivec3(vi-3, vi+1, vi-2));
     m_Triangles.push_back(glm::ivec3(vi-2, vi+1, vi-1));
     m_Triangles.push_back(glm::ivec3(vi-1, vi+1, vi+2));
+
+    setDrawNeeded();
 }
 
 void VWLineNode::calcVertexes(const VertexDataPtr& pVertexData, Pixel32 color)
 {
+    for (unsigned int i = 0; i < m_VertexCoords.size(); i++) {
+        pVertexData->appendPos(m_VertexCoords[i], glm::vec2(0,0), m_Colors[i]);
+    }
+
+    for (unsigned int i = 0; i < m_Triangles.size(); i++) {
+        pVertexData->appendTriIndexes(m_Triangles[i].x, m_Triangles[i].y, 
+                m_Triangles[i].z);
+    }
 }
 
 glm::vec2 VWLineNode::intersectLines(const glm::vec2& pt00, const glm::vec2& pt01,
