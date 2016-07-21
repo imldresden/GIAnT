@@ -60,9 +60,6 @@ class MainDiv(app.MainDiv):
                                        side_vis_height + 1.5 * axis.THICKNESS - padding),
                                  vis_params=self.__vis_params, parent=self)
 
-        # nodes needed in self.menu
-        nodes = [self.main_visualization]
-
         # menu
         self.options = OptionsPanel.OptionsPanel(vis_params=self.__vis_params, parent=self,
                                                  pos=(0, self.main_visualization.height),

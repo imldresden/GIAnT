@@ -5,7 +5,6 @@ import global_values
 import axis
 import libavg
 from libavg import player
-import variable_width_line
 import util
 
 player.loadPlugin("vwline")
@@ -118,6 +117,7 @@ class MovementPanel(libavg.DivNode):
                     norm_time = float(cur_sample_x) / float(max(1, self.data_div.width - 1))
                     norm_x = 1 - (head_position_averaged[0] - global_values.x_range[0]) / float(global_values.x_range[1] - global_values.x_range[0])
                     norm_z = (head_position_averaged[2] - global_values.z_range[0]) / float(global_values.z_range[1] - global_values.z_range[0])
+                    norm_z = max(0, min(norm_z,1))
 
                     vis_x = norm_time * self.data_div.width
                     vis_y = norm_x * self.data_div.height
@@ -151,9 +151,11 @@ class MovementPanel(libavg.DivNode):
         return norm_time * self.data_div.width
 
 
-def calculate_thickness(data, div):
-    return 1.4 + pow(data, 3) * (min(div.width, div.height)/12)
+def calculate_thickness(norm_z, div):
+    return 1 + norm_z * (min(div.width, div.height)/12)
 
 
-def calculate_opacity(data):
-    return 0.05 + 0.95*pow((1 - data), 2)
+def calculate_opacity(norm_z):
+    return pow(1-norm_z, 2)
+
+

@@ -5,7 +5,6 @@ from libavg import widget, avg
 import global_values
 import user
 import util
-import movement_panel
 
 COLOR_SCHEME = 0            # user color scheme (see global_values.py for color schemes)
 

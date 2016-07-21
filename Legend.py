@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import libavg
+from libavg import player
 import movement_panel
-import variable_width_line
 import global_values
 import util
+
+player.loadPlugin("vwline")
 
 
 class Legend(libavg.DivNode):
@@ -26,8 +28,8 @@ class Legend(libavg.DivNode):
             opacities.append(movement_panel.calculate_opacity(value))
 
         var_line_div = libavg.DivNode(pos=(0, 0), size=(self.width, self.height), crop=True, parent=self)
-        line = variable_width_line.VariableWidthLine(util.get_user_color_as_hex(-1, 1), var_line_div)
-        line.set_values(points, widths, opacities)
+        line = vwline.VWLineNode(color=util.get_user_color_as_hex(-1, 1), parent=var_line_div)
+        line.setValues(points, widths, opacities)
 
         # texts
         libavg.WordsNode(pos=(0, self.height - 35), text="Distance from wall", parent=self,
