@@ -20,7 +20,8 @@ void VWLineNode::registerType()
 {
     TypeDefinition def = TypeDefinition("vwlinenode", "vectornode", 
             ExportedObject::buildObject<VWLineNode>);
-    TypeRegistry::get()->registerType(def);
+    const char* allowedParentNodeNames[] = {"div", "canvas", "avg", 0};
+    TypeRegistry::get()->registerType(def, allowedParentNodeNames);
 }
 
 VWLineNode::VWLineNode(const ArgList& args, const string& sPublisherName)

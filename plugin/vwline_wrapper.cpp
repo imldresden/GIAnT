@@ -23,12 +23,10 @@ BOOST_PYTHON_MODULE(vwline)
 
 AVG_PLUGIN_API PyObject* registerPlugin()
 {
-    initvwline();
-    PyObject* VWLineModule = PyImport_ImportModule("vwline");
     VWLineNode::registerType();
+    initvwline();
+    PyObject* pyVWLineModule = PyImport_ImportModule("vwline");
 
-    avg::TypeRegistry::get()->getTypeDef("div").addChild("vwlinenode");
-    
-    return VWLineModule;
+    return pyVWLineModule;
 }
 
