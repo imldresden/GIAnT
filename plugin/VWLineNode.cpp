@@ -82,7 +82,7 @@ void VWLineNode::setValues(const vector<glm::vec2>& pts, const vector<float>& wi
                 
             m_Triangles.push_back(glm::ivec3(vi-3, vi  , vi+1));
             m_Triangles.push_back(glm::ivec3(vi-3, vi+1, vi-2));
-            m_Triangles.push_back(glm::ivec3(vi-2, vi+1, vi-2));
+            m_Triangles.push_back(glm::ivec3(vi-2, vi+1, vi-1));
             m_Triangles.push_back(glm::ivec3(vi-1, vi+1, vi+2));
         } else if (slope1 < slope2) {
             // Curve to the right: Small triangle at top.
