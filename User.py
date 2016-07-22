@@ -19,16 +19,14 @@ class User:
         users.append(self)
 
     def get_head_position_averaged(self, index, smoothness):
-        count = min(smoothness, len(self.head_positions_integral) - index - 1)
+        count = smoothness
         integral = self.head_positions_integral
-        if count <= 0:
-            count = 1
 
-        start_index = max(0, index - count/2)
-        end_index = min(len(integral)-1, index + (count+1)/2)
-        head_position = [(integral[end_index][0] - integral[start_index][0]) / count,
-                         (integral[end_index][1] - integral[start_index][1]) / count,
-                         (integral[end_index][2] - integral[start_index][2]) / count,
+        start_integral = integral[max(0, index - count/2)]
+        end_integral = integral[min(len(integral)-1, index + (count+1)/2)]
+        head_position = [(end_integral[0] - start_integral[0]) / count,
+                         (end_integral[1] - start_integral[1]) / count,
+                         (end_integral[2] - start_integral[2]) / count,
                          integral[index][3]]
         return head_position
 

@@ -23,8 +23,9 @@ class Legend(libavg.DivNode):
         for i in range(0, 101):
             value = i / 100.0
             points.append(libavg.Point2D(self.width * value, self.height))
-            widths.append(movement_panel.calculate_thickness(value,
-                                                                 parent.getParent().main_visualization.data_div) * 2)
+            data_div = parent.getParent().main_visualization.data_div
+            max_width = (min(data_div.width, data_div.height) / 12)
+            widths.append(movement_panel.calculate_thickness(value, max_width))
             opacities.append(movement_panel.calculate_opacity(value))
 
         var_line_div = libavg.DivNode(pos=(0, 0), size=(self.width, self.height), crop=True, parent=self)

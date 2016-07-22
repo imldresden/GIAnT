@@ -97,20 +97,18 @@ class MovementPanel(libavg.DivNode):
 
     def create_line(self, vis_params):
         userid = -1
+        max_width = (min(self.width, self.height) / 12)
         for i, usr in enumerate(user.users):
             userid += 1
             if vis_params.get_user_visible(i):
                 points = []
                 widths = []
                 opacities = []
-                cur_sample_x = 0
-                done = False
-                while not done:
-                    if len(usr.head_positions_integral) == 0: # TODO: Hä?
-                        continue
+                num_head_positions = len(usr.head_positions_integral)
+                for cur_sample_x in range(0, int(self.data_div.width), self.PIXELS_PER_SAMPLE):
                     posindex = int(
-                        len(usr.head_positions_integral) * cur_sample_x * (self.end - self.start) / float(
-                            self.data_div.width) + self.start * len(usr.head_positions_integral))
+                        num_head_positions * (cur_sample_x * (self.end - self.start) / float(self.data_div.width)
+                                              + self.start))
 
                     head_position_averaged = usr.get_head_position_averaged(posindex, vis_params.get_smoothness())
 
@@ -121,18 +119,12 @@ class MovementPanel(libavg.DivNode):
 
                     vis_x = norm_time * self.data_div.width
                     vis_y = norm_x * self.data_div.height
-                    vis_thickness = calculate_thickness(norm_z, self)
+                    vis_thickness = calculate_thickness(norm_z, max_width)
                     vis_opacity = calculate_opacity(norm_z)
 
                     points.append(libavg.Point2D(vis_x, vis_y))
                     widths.append(vis_thickness)
                     opacities.append(vis_opacity)
-                    if cur_sample_x == self.data_div.width-1:
-                        done = True
-                    else:
-                        cur_sample_x += self.PIXELS_PER_SAMPLE
-                        if cur_sample_x > self.data_div.width-1:
-                            cur_sample_x = self.data_div.width-1
 
                 userline = self.__user_lines[userid]
                 userline.setValues(points, widths, opacities)
@@ -151,8 +143,8 @@ class MovementPanel(libavg.DivNode):
         return norm_time * self.data_div.width
 
 
-def calculate_thickness(norm_z, div):
-    return 1 + norm_z * (min(div.width, div.height)/12)
+def calculate_thickness(norm_z, max_width):
+    return 1 + norm_z * max_width
 
 
 def calculate_opacity(norm_z):
