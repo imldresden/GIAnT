@@ -20,18 +20,21 @@ class VWLineNode: public avg::VectorNode
         virtual ~VWLineNode();
 
         void setValues(const std::vector<glm::vec2>& pts,
-                const std::vector<float>& widths,
-                const std::vector<float>& opacities);
+                const std::vector<float>& dists);
         
         virtual void calcVertexes(const avg::VertexDataPtr& pVertexData,
                 avg::Pixel32 color);
 
     private:
         void appendColors(int numEntries, avg::Pixel32 color, float opacity);
+        float calcWidth(float dist);
+        float calcOpacity(float dist);
 
         std::vector<glm::vec2> m_VertexCoords;
         std::vector<avg::Pixel32> m_Colors;
         std::vector<glm::ivec3> m_Triangles;
+
+        float m_MaxWidth;
 };
 
 typedef boost::shared_ptr<VWLineNode> VWLineNodePtr;

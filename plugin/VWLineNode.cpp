@@ -20,7 +20,9 @@ const int WIDTH_WINDOW=5;
 void VWLineNode::registerType()
 {
     TypeDefinition def = TypeDefinition("vwlinenode", "vectornode", 
-            ExportedObject::buildObject<VWLineNode>);
+            ExportedObject::buildObject<VWLineNode>)
+        .addArg(Arg<float>("maxwidth", 1, false, offsetof(VWLineNode, m_MaxWidth)))
+        ;
     const char* allowedParentNodeNames[] = {"div", "canvas", "avg", 0};
     TypeRegistry::get()->registerType(def, allowedParentNodeNames);
 }
@@ -35,8 +37,7 @@ VWLineNode::~VWLineNode()
 {
 }
 
-void VWLineNode::setValues(const vector<glm::vec2>& pts, const vector<float>& widths, 
-        const vector<float>& opacities)
+void VWLineNode::setValues(const vector<glm::vec2>& pts, const vector<float>& dists)
 {
     Pixel32 color = getColor();
     m_VertexCoords.clear();
@@ -44,11 +45,19 @@ void VWLineNode::setValues(const vector<glm::vec2>& pts, const vector<float>& wi
     m_Triangles.clear();
 
     float avgWidth = 0;
+    vector<float> clampedDists;
+    vector<float> widths;
+    for (int i=0; i<pts.size(); ++i) {
+        float dist = max(0.f, min(1.f, dists[i]));
+        clampedDists.push_back(dist);
+        widths.push_back(calcWidth(dist));
+    }
 
     for (int i=0; i<pts.size(); ++i) {
         int vi = m_VertexCoords.size();
 
         glm::vec2 pt = pts[i];
+        float opacity = calcOpacity(clampedDists[i]);
 
         bool bStartEnd = false;
         if (i >= WIDTH_WINDOW/2) {
@@ -71,7 +80,7 @@ void VWLineNode::setValues(const vector<glm::vec2>& pts, const vector<float>& wi
         glm::vec2 pt_b = pt + offset;
         m_VertexCoords.push_back(pt_t);
         m_VertexCoords.push_back(pt_b);
-        appendColors(2, color, opacities[i]);
+        appendColors(2, color, opacity);
 
         if (i>0) {
             m_Triangles.push_back(glm::ivec3(vi-2, vi, vi-1));
@@ -102,3 +111,12 @@ void VWLineNode::appendColors(int numEntries, avg::Pixel32 color, float opacity)
     }
 }
 
+float VWLineNode::calcWidth(float dist)
+{
+    return 1 + dist * m_MaxWidth;
+}
+
+float VWLineNode::calcOpacity(float dist)
+{
+    return pow(1-dist, 2);
+}

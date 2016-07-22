@@ -33,9 +33,10 @@ class MovementPanel(libavg.DivNode):
                                        size=(self.width - axis.THICKNESS, self.height - axis.THICKNESS),
                                        crop=True)
         self.__user_lines = []
+        max_width = (min(self.width, self.height) / 12)
         for userid in range(len(user.users)):
             color = util.get_user_color_as_hex(userid, 1)
-            self.__user_lines.append(vwline.VWLineNode(color=color, parent=self.data_div))
+            self.__user_lines.append(vwline.VWLineNode(color=color, maxwidth=max_width, parent=self.data_div))
 
         custom_label_offset = 23  # to make space for cosmetic schematic wall
         self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.THICKNESS, self.data_div.height), parent=self,
@@ -97,13 +98,11 @@ class MovementPanel(libavg.DivNode):
 
     def create_line(self, vis_params):
         userid = -1
-        max_width = (min(self.width, self.height) / 12)
         for i, usr in enumerate(user.users):
             userid += 1
             if vis_params.get_user_visible(i):
                 points = []
-                widths = []
-                opacities = []
+                dists = []
                 num_head_positions = len(usr.head_positions_integral)
                 for cur_sample_x in range(0, int(self.data_div.width), self.PIXELS_PER_SAMPLE):
                     posindex = int(
@@ -112,22 +111,16 @@ class MovementPanel(libavg.DivNode):
 
                     head_position_averaged = usr.get_head_position_averaged(posindex, vis_params.get_smoothness())
 
-                    norm_time = float(cur_sample_x) / float(max(1, self.data_div.width - 1))
                     norm_x = 1 - (head_position_averaged[0] - global_values.x_range[0]) / float(global_values.x_range[1] - global_values.x_range[0])
                     norm_z = (head_position_averaged[2] - global_values.z_range[0]) / float(global_values.z_range[1] - global_values.z_range[0])
-                    norm_z = max(0, min(norm_z,1))
 
-                    vis_x = norm_time * self.data_div.width
                     vis_y = norm_x * self.data_div.height
-                    vis_thickness = calculate_thickness(norm_z, max_width)
-                    vis_opacity = calculate_opacity(norm_z)
 
-                    points.append(libavg.Point2D(vis_x, vis_y))
-                    widths.append(vis_thickness)
-                    opacities.append(vis_opacity)
+                    points.append(libavg.Point2D(cur_sample_x, vis_y))
+                    dists.append(norm_z)
 
                 userline = self.__user_lines[userid]
-                userline.setValues(points, widths, opacities)
+                userline.setValues(points, dists)
 
     def __on_hover(self, event=None):
         """
@@ -141,13 +134,3 @@ class MovementPanel(libavg.DivNode):
         (start, end) = self.__vis_params.get_time_interval()
         norm_time = (float(t)-start) / (end-start)
         return norm_time * self.data_div.width
-
-
-def calculate_thickness(norm_z, max_width):
-    return 1 + norm_z * max_width
-
-
-def calculate_opacity(norm_z):
-    return pow(1-norm_z, 2)
-
-

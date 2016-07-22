@@ -2,7 +2,6 @@
 
 import libavg
 from libavg import player
-import movement_panel
 import global_values
 import util
 
@@ -17,20 +16,18 @@ class Legend(libavg.DivNode):
         self.sensitive = False
 
         points = []
-        widths = []
-        opacities = []
+        dists = []
 
         for i in range(0, 101):
             value = i / 100.0
             points.append(libavg.Point2D(self.width * value, self.height))
-            data_div = parent.getParent().main_visualization.data_div
-            max_width = (min(data_div.width, data_div.height) / 12)
-            widths.append(movement_panel.calculate_thickness(value, max_width))
-            opacities.append(movement_panel.calculate_opacity(value))
+            dists.append(value)
 
+        data_div = parent.getParent().main_visualization.data_div
         var_line_div = libavg.DivNode(pos=(0, 0), size=(self.width, self.height), crop=True, parent=self)
-        line = vwline.VWLineNode(color=util.get_user_color_as_hex(-1, 1), parent=var_line_div)
-        line.setValues(points, widths, opacities)
+        max_width = (min(data_div.width, data_div.height) / 12)
+        line = vwline.VWLineNode(color=util.get_user_color_as_hex(-1, 1), maxwidth=max_width, parent=var_line_div)
+        line.setValues(points, dists)
 
         # texts
         libavg.WordsNode(pos=(0, self.height - 35), text="Distance from wall", parent=self,
