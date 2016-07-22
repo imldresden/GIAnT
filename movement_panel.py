@@ -14,7 +14,7 @@ class MovementPanel(libavg.DivNode):
     start = 0
     end = 1
 
-    PIXELS_PER_SAMPLE = 8
+    PIXELS_PER_SAMPLE = 4
 
     def __init__(self, parent, vis_params, **kwargs):
         super(MovementPanel, self).__init__(**kwargs)
@@ -130,7 +130,7 @@ class MovementPanel(libavg.DivNode):
                     if cur_sample_x == self.data_div.width-1:
                         done = True
                     else:
-                        cur_sample_x += max(self.PIXELS_PER_SAMPLE, vis_thickness/2)
+                        cur_sample_x += self.PIXELS_PER_SAMPLE
                         if cur_sample_x > self.data_div.width-1:
                             cur_sample_x = self.data_div.width-1
 

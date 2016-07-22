@@ -19,16 +19,15 @@ class VWLineNode: public avg::VectorNode
         VWLineNode(const avg::ArgList& args, const std::string& sPublisherName="Node");
         virtual ~VWLineNode();
 
-        void setValues(const std::vector<glm::vec2>& pts, const std::vector<float>& widths, 
+        void setValues(const std::vector<glm::vec2>& pts,
+                const std::vector<float>& widths,
                 const std::vector<float>& opacities);
         
-        virtual void calcVertexes(const avg::VertexDataPtr& pVertexData, avg::Pixel32 color);
+        virtual void calcVertexes(const avg::VertexDataPtr& pVertexData,
+                avg::Pixel32 color);
 
     private:
-        glm::vec2 intersectLines(const glm::vec2& pt00, const glm::vec2& pt01,
-                const glm::vec2& pt10, const glm::vec2& pt11);
         void appendColors(int numEntries, avg::Pixel32 color, float opacity);
-        void handleOverlap(glm::vec2& pt1, const glm::vec2& pt0);
 
         std::vector<glm::vec2> m_VertexCoords;
         std::vector<avg::Pixel32> m_Colors;
