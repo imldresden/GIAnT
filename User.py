@@ -26,8 +26,7 @@ class User:
         end_integral = integral[min(len(integral)-1, index + (count+1)/2)]
         head_position = [(end_integral[0] - start_integral[0]) / count,
                          (end_integral[1] - start_integral[1]) / count,
-                         (end_integral[2] - start_integral[2]) / count,
-                         integral[index][3]]
+                         (end_integral[2] - start_integral[2]) / count]
         return head_position
 
     def get_head_orientation(self, index):
@@ -43,8 +42,7 @@ class User:
         index = min(max(0, index), len(integral) - count - 1)
 
         view_point = [(integral[index + count][0] - integral[index][0]) / count,
-                      (integral[index + count][1] - integral[index][1]) / count,
-                      integral[index + count][2]]
+                      (integral[index + count][1] - integral[index][1]) / count]
         return view_point
 
 
