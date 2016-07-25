@@ -138,7 +138,8 @@ class OptionsPanel(libavg.DivNode):
         if checked:
             self.smoothness_slider.opacity = 0.2
             i_range = self.__vis_params.get_time_interval()[1] - self.__vis_params.get_time_interval()[0]
-            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / self.__vis_params.get_total_extent()
+            time_extent = global_values.time_range[1] - global_values.time_range[0]
+            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / time_extent
             self.__vis_params.set_smoothness(s)
         else:
             self.smoothness_slider.opacity = 1

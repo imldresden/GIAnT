@@ -39,13 +39,14 @@ class MovementPanel(libavg.DivNode):
             self.__user_lines.append(vwline.VWLineNode(color=color, maxwidth=max_width, parent=self.data_div))
 
         custom_label_offset = 23  # to make space for cosmetic schematic wall
+        x_range = global_values.pos_range[0][0], global_values.pos_range[1][0]
         self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.THICKNESS, self.data_div.height), parent=self,
-                sensitive=True, data_range=global_values.x_range, unit="cm", hide_rims=True,
+                sensitive=True, data_range=x_range, unit="cm", hide_rims=True,
                 inverted=True, label_offset=custom_label_offset)
 
         x_axis_pos = (axis.THICKNESS, self.data_div.height)
         self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, vis_params=vis_params, parent=self, unit="ms",
-                data_range=vis_params.get_total_range(), size=(self.data_div.width, axis.THICKNESS), inverted=False)
+                data_range=global_values.time_range, size=(self.data_div.width, axis.THICKNESS), inverted=False)
 
         self.appendChild(self.data_div)
 
@@ -68,9 +69,9 @@ class MovementPanel(libavg.DivNode):
         start_orig = self.start
         end_orig = self.end
         interval = vis_params.get_time_interval()
-        total_extent = vis_params.get_total_extent()
-        self.start = interval[0] / total_extent
-        self.end = interval[1] / total_extent
+        time_extent = global_values.time_range[1] - global_values.time_range[0]
+        self.start = interval[0] / time_extent
+        self.end = interval[1] / time_extent
         if draw_lines:
             self.create_line(vis_params)
         elif self.start != start_orig or self.end != end_orig:
@@ -111,8 +112,9 @@ class MovementPanel(libavg.DivNode):
 
                     head_position_averaged = usr.get_head_position_averaged(posindex, vis_params.get_smoothness())
 
-                    norm_x = 1 - (head_position_averaged[0] - global_values.x_range[0]) / float(global_values.x_range[1] - global_values.x_range[0])
-                    norm_z = (head_position_averaged[2] - global_values.z_range[0]) / float(global_values.z_range[1] - global_values.z_range[0])
+                    pos_range = global_values.pos_range
+                    norm_x = 1 - (head_position_averaged[0] - pos_range[0][0]) / float(pos_range[1][0] - pos_range[0][0])
+                    norm_z = (head_position_averaged[2] - pos_range[0][2]) / float(pos_range[1][2] - pos_range[0][2])
 
                     vis_y = norm_x * self.data_div.height
 

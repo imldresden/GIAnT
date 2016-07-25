@@ -32,8 +32,9 @@ class Legend(libavg.DivNode):
         # texts
         libavg.WordsNode(pos=(0, self.height - 35), text="Distance from wall", parent=self,
                          color=global_values.COLOR_FOREGROUND)
-        libavg.WordsNode(pos=(0, self.height - 20), text="{} {}".format(str(int(global_values.z_range[0])), unit),
+        pos_range = global_values.pos_range
+        libavg.WordsNode(pos=(0, self.height - 20), text="{} {}".format(str(int(pos_range[0][2])), unit),
                          parent=self, color=global_values.COLOR_FOREGROUND, alignment="right")
         libavg.WordsNode(pos=(self.width + 2, self.height - 20), parent=self, alignment="left",
-                         text="{} {}".format(str(int(global_values.z_range[1])), unit),
+                         text="{} {}".format(str(int(pos_range[1][2])), unit),
                          color=global_values.COLOR_FOREGROUND, )

@@ -122,10 +122,12 @@ class MainDiv(app.MainDiv):
         cos_vis_offset = 4
         cos_screen_offset = 2
         cos_wall_width = 16
+
+        x_range = global_values.pos_range[0][0], global_values.pos_range[1][0]
         # space from bottom of y-axis to left side of display-wall
-        cos_wall_start = value_to_pixel(global_values.x_wall_range[0], main_size[1], global_values.x_range)
+        cos_wall_start = value_to_pixel(global_values.x_wall_range[0], main_size[1], x_range)
         # space from top of y-axis to right side of display-wall
-        cos_wall_end = value_to_pixel(global_values.wall_width, main_size[1], global_values.x_range)
+        cos_wall_end = value_to_pixel(global_values.wall_width, main_size[1], x_range)
 
         self.__cosmetics_main.pos = (
             (main_pos[0] - cos_vis_offset, main_size[1] - cos_wall_end),  # top right

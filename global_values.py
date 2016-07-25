@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import database
-
 """visualization values"""
 min_averaging_count = 1
 max_averaging_count = 2000
@@ -10,11 +8,10 @@ default_smoothness = 500
 time_step_size = 50                                 # time in ms over witch data is averaged from database
 
 """data values"""
-wall_width = 490                                    # width of display wall in cm
-wall_height = 206                                   # height of display wall in cm
-x_range = [database.min_x, database.max_x]          # data range of wall width from right (min) to left (max)
-y_range = [database.min_y, database.max_y]          # data range of wall height from bottom (min) to top (max)
-z_range = [50, 250]                                 # data range of room depth from front (min) to back (max)
+wall_width = 490
+wall_height = 206
+pos_range = [(0,0,50), (0,0,250)]  # User head position minimum and maximum
+time_range = [0,0]
 x_touch_range = [0, 4*1920]
 y_touch_range = [0, 3*1080]
 x_wall_range = [0, wall_width]

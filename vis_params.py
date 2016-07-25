@@ -9,7 +9,6 @@ from libavg import avg
 class VisParams(avg.Publisher):
     CHANGED = avg.Publisher.genMessageID()
 
-    __time_interval = [database.min_time, database.max_time]
     __highlight_time = 0
     __zoom_strength = 0.1
 
@@ -17,6 +16,7 @@ class VisParams(avg.Publisher):
         super(VisParams, self).__init__()
         self.__play = False
         self.__last_frame_time = time.time()
+        self.__time_interval = list(global_values.time_range)
         self.publish(VisParams.CHANGED)
 
         self.__smoothness = global_values.default_smoothness
@@ -25,14 +25,6 @@ class VisParams(avg.Publisher):
     def get_time_interval(self):
         return self.__time_interval
 
-    def get_total_range(self):
-        # TODO: Move to data class.
-        return [database.min_time, database.max_time]
-
-    def get_total_extent(self):
-        # TODO: Move to data class.
-        return database.max_time - database.min_time
-
     def zoom_in_at(self, fraction_in_timeframe):
         point = self.__time_interval[0] + fraction_in_timeframe * (self.__time_interval[1] - self.__time_interval[0])
         self.__time_interval[0] = point - (point - self.__time_interval[0]) * (1 - self.__zoom_strength)
@@ -40,18 +32,18 @@ class VisParams(avg.Publisher):
         self.notify()
 
     def zoom_out_at(self, fraction_in_timeframe):
-        total_range = self.get_total_range()
-        if self.__time_interval == total_range:
+        time_range = global_values.time_range
+        if self.__time_interval == time_range:
             return
         point = self.__time_interval[0] + fraction_in_timeframe * (self.__time_interval[1] - self.__time_interval[0])
         self.__time_interval[0] -= (point - self.__time_interval[0]) * 1 / ((1 / self.__zoom_strength) - 1)
         self.__time_interval[1] += (self.__time_interval[1] - point) * 1 / ((1 / self.__zoom_strength) - 1)
 
-        if self.__time_interval[0] < total_range[0]:
-            self.__time_interval[0] = total_range[0]
+        if self.__time_interval[0] < time_range[0]:
+            self.__time_interval[0] = time_range[0]
 
-        if self.__time_interval[1] > total_range[1]:
-            self.__time_interval[1] = total_range[1]
+        if self.__time_interval[1] > time_range[1]:
+            self.__time_interval[1] = time_range[1]
         self.notify()
 
     def shift_time(self, forwards, amount=-1):
@@ -62,7 +54,7 @@ class VisParams(avg.Publisher):
         else:
             shift_amount = -amount
 
-        total_range = self.get_total_range()
+        total_range = global_values.time_range
         if self.__time_interval[0] + shift_amount < total_range[0]:
             shift_amount = total_range[0] - self.__time_interval[0]
         if self.__time_interval[1] + shift_amount > total_range[1]:
@@ -80,7 +72,8 @@ class VisParams(avg.Publisher):
     def notify(self, draw_lines=True):
         if global_values.link_smoothness:
             i_range = self.__time_interval[1] - self.__time_interval[0]
-            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / self.get_total_extent()
+            time_extent = global_values.time_range[1] - global_values.time_range[0]
+            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / time_extent
             self.set_smoothness(s)
         self.notifySubscribers(VisParams.CHANGED, [self, draw_lines])
 

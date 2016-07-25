@@ -5,6 +5,7 @@ import csv
 import time
 import util
 import sys
+import global_values
 
 # Positions in the csv file
 HEAD = 0
@@ -16,18 +17,6 @@ PITCH = 5
 YAW = 6
 ROLL = 7
 TIME = 8
-
-min_x = 0
-max_x = 0
-
-min_y = 0
-max_y = 0
-
-min_z = 0
-max_z = 0
-
-min_time = 0
-max_time = 0
 
 times = []
 timestampOffset = sys.maxint
@@ -103,7 +92,6 @@ def load_csv(rows):
     :param rows:
     :return: list hierarchy of file
     """
-    global min_time
     file = []
     lastline = 0
     for line in rows:
@@ -192,7 +180,7 @@ def create_head_table():
             new_data[COL_Y] *= 100
             new_data[COL_Z] *= 100
 
-            new_data[COL_TIME] -= min_time  # shift time to start at 0
+            new_data[COL_TIME] -= global_values.time_range[0]  # shift time to start at 0
 
             # time "rounded" to closest divisible of time_stepSize
             time_step = int(new_data[COL_TIME] / global_values.time_step_size) * global_values.time_step_size
@@ -341,8 +329,6 @@ def create_touch_table(wall_screen_resolution):
         con = sqlite3.connect("db")
         cur = con.cursor()
 
-        user_start_time = time.time()
-
         # two querys, one for head-movement and one for touches
         qry = "SELECT user, x, y, time from raw WHERE user=" + str(userid) + \
               " AND head = 0 GROUP BY time ORDER BY time;"
@@ -370,7 +356,7 @@ def create_touch_table(wall_screen_resolution):
 
             data[COL_Y] = 40 + (wall_screen_resolution[1] - data[COL_Y]) * global_values.wall_height / wall_screen_resolution[1]
 
-            data[COL_TIME] -= min_time  # shift time to start at 0
+            data[COL_TIME] -= global_values.time_range[0]  # shift time to start at 0
 
             new_data = list(data)
             datalist.append(new_data)  # prepare for upload
@@ -400,8 +386,6 @@ def setup_raw_table():
 
 
 def init_raw_values():
-    global min_x, max_x, min_y, max_y, min_z, max_z
-    global min_time, max_time, times
     min_x = executeQry("SELECT min(x) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
     max_x = executeQry("SELECT max(x) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
 
@@ -410,14 +394,14 @@ def init_raw_values():
 
     min_z = executeQry("SELECT min(z) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
     max_z = executeQry("SELECT max(z) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
+    global_values.pos_range = ((min_x, min_y, min_z), (max_x, max_y, max_z))
 
     min_time = executeQry("SELECT min(time) FROM raw;", True)[0][0]
     max_time = executeQry("SELECT max(time) FROM raw;", True)[0][0]
+    global_values.time_range = (min_time, max_time)
 
 
 def init_values():
-    global min_x, max_x, min_y, max_y, min_touch_y, max_touch_y, min_z, max_z
-    global min_time, max_time, times
     try:
         min_x = executeQry("SELECT min(x) FROM headtable;", True)[0][0]
         max_x = executeQry("SELECT max(x) FROM headtable;", True)[0][0]
@@ -425,11 +409,13 @@ def init_values():
         min_y = executeQry("SELECT min(y) FROM headtable;", True)[0][0]
         max_y = executeQry("SELECT max(y) FROM headtable;", True)[0][0]
 
-        min_z = executeQry("SELECT min(z) FROM headtable;", True)[0][0]
-        max_z = executeQry("SELECT max(z) FROM headtable;", True)[0][0]
+        min_z = global_values.pos_range[0][2]
+        max_z = global_values.pos_range[1][2]
+        global_values.pos_range = ((min_x, min_y, min_z), (max_x, max_y, max_z))
 
         min_time = executeQry("SELECT min(time) FROM headtable;", True)[0][0]
         max_time = executeQry("SELECT max(time) FROM headtable;", True)[0][0]
+        global_values.time_range = (min_time, max_time)
     except:
         print "Database not set up"
 

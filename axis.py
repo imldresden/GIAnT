@@ -341,9 +341,9 @@ class TimeAxisNode(AxisNode):
         :param i_end: new interval end
         """
         # set new interval start and end
-        total_range = self.__vis_params.get_total_range()
-        self.__i_start = self._value_to_pixel(i_start, total_range[0], total_range[1])
-        self.__i_end = self._value_to_pixel(i_end, total_range[0], total_range[1])
+        time_range = global_values.time_range
+        self.__i_start = self._value_to_pixel(i_start, time_range[0], time_range[1])
+        self.__i_end = self._value_to_pixel(i_end, time_range[0], time_range[1])
 
         # update positions of interval lines
         self.__i_rect.pos = (self.__i_start, self.__i_rect.pos[1])
