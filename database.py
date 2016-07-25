@@ -6,7 +6,7 @@ import time
 import util
 import sys
 
-# Positions in the database
+# Positions in the csv file
 HEAD = 0
 USER = 1
 X_VALUE = 2
@@ -19,13 +19,9 @@ TIME = 8
 
 min_x = 0
 max_x = 0
-min_touch_x = 0
-max_touch_x = 0
 
 min_y = 0
 max_y = 0
-min_touch_y = 0
-max_touch_y = 0
 
 min_z = 0
 max_z = 0
@@ -84,12 +80,7 @@ def create_table(table, columns):
     executeQry("CREATE TABLE " + table + " (" + columns + ");")
 
 
-def load_files_into_database(filelist):
-    """
-    Loads files listed in filelist.txt in database
-    :param filelist:
-    :return:
-    """
+def load_files_into_database():
     file_paths = load_file('csv/filelist.txt')
     last_time = time.time()
     for path in file_paths:
@@ -112,7 +103,6 @@ def load_csv(rows):
     :param rows:
     :return: list hierarchy of file
     """
-    import util
     global min_time
     file = []
     lastline = 0
@@ -389,7 +379,6 @@ def create_touch_table(wall_screen_resolution):
             # upload
             cur.executemany("INSERT INTO touchtable (user, x, y, time) VALUES (?,?,?,?);", datalist)
             con.commit()
-            datalist = []
 
     con.close()
 
@@ -407,11 +396,11 @@ def setup_raw_table():
                  "time INT"
 
     create_table("raw", raw_olumns)
-    load_files_into_database("csv/filelist.txt")
+    load_files_into_database()
 
 
 def init_raw_values():
-    global min_x, max_x, min_touch_x, max_touch_x, min_y, max_y, min_touch_y, max_touch_y, min_z, max_z
+    global min_x, max_x, min_y, max_y, min_z, max_z
     global min_time, max_time, times
     min_x = executeQry("SELECT min(x) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
     max_x = executeQry("SELECT max(x) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
