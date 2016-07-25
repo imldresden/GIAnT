@@ -422,18 +422,12 @@ def init_raw_values():
     min_z = executeQry("SELECT min(z) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
     max_z = executeQry("SELECT max(z) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
 
-    min_touch_x = executeQry("SELECT min(x) FROM raw WHERE z = '' OR HEAD = 0;", True)[0][0]
-    max_touch_x = executeQry("SELECT max(x) FROM raw WHERE z = '' OR HEAD = 0;", True)[0][0]
-
-    min_touch_y = executeQry("SELECT min(y) FROM raw WHERE z = '' OR HEAD = 0;", True)[0][0]
-    max_touch_y = executeQry("SELECT max(y) FROM raw WHERE z = '' OR HEAD = 0;", True)[0][0]
-
     min_time = executeQry("SELECT min(time) FROM raw;", True)[0][0]
     max_time = executeQry("SELECT max(time) FROM raw;", True)[0][0]
 
 
 def init_values():
-    global min_x, max_x, min_touch_x, max_touch_x, min_y, max_y, min_touch_y, max_touch_y, min_z, max_z
+    global min_x, max_x, min_y, max_y, min_touch_y, max_touch_y, min_z, max_z
     global min_time, max_time, times
     try:
         min_x = executeQry("SELECT min(x) FROM headtable;", True)[0][0]
@@ -444,12 +438,6 @@ def init_values():
 
         min_z = executeQry("SELECT min(z) FROM headtable;", True)[0][0]
         max_z = executeQry("SELECT max(z) FROM headtable;", True)[0][0]
-
-        min_touch_x = executeQry("SELECT min(x) FROM touchtable;", True)[0][0]
-        max_touch_x = executeQry("SELECT max(x) FROM touchtable;", True)[0][0]
-
-        min_touch_y = executeQry("SELECT min(y) FROM touchtable;", True)[0][0]
-        max_touch_y = executeQry("SELECT max(y) FROM touchtable;", True)[0][0]
 
         min_time = executeQry("SELECT min(time) FROM headtable;", True)[0][0]
         max_time = executeQry("SELECT max(time) FROM headtable;", True)[0][0]
