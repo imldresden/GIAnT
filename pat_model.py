@@ -27,20 +27,23 @@ class User:
         return len(self.__head_positions_integral)
 
     def get_head_position_averaged(self, cur_time, smoothness):
-        count = smoothness
         integral = self.__head_positions_integral
         i = self.__time_to_index(cur_time)
-        start_integral = integral[max(0, i - count/2)]
-        end_integral = integral[min(len(integral)-1, i + (count+1)/2)]
-        head_position = [(end_integral[0] - start_integral[0]) / count,
-                         (end_integral[1] - start_integral[1]) / count,
-                         (end_integral[2] - start_integral[2]) / count]
+        start_integral = integral[max(0, i - smoothness/2)]
+        end_integral = integral[min(len(integral)-1, i + (smoothness+1)/2)]
+        head_position = [(end_integral[0] - start_integral[0]) / smoothness,
+                         (end_integral[1] - start_integral[1]) / smoothness,
+                         (end_integral[2] - start_integral[2]) / smoothness]
         return head_position
 
     def get_head_orientation(self, cur_time):
         i = self.__time_to_index(cur_time)
         head_orientation = self.__head_orientations[i]
         return head_orientation
+
+    def get_touches(self, start_time, end_time):
+        touches = [val for key, val in self.__touches.iteritems() if start_time <= key < end_time]
+        return touches
 
     def get_view_point_averaged(self, cur_time, smoothness):
         # TODO: Unused, untested

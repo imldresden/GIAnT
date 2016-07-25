@@ -7,6 +7,7 @@ import time
 import pat_model
 import util
 import sys
+from libavg import avg
 
 # Positions in the csv file
 HEAD = 0
@@ -21,6 +22,13 @@ TIME = 8
 
 times = []
 timestampOffset = sys.maxint
+
+
+class Touch:
+    def __init__(self, id, time, x, y):
+        self.id = id
+        self.time = time
+        self.pos = avg.Point2D(x,y)
 
 
 def executeQry(qry, doFetch=False):
@@ -324,7 +332,6 @@ def create_touch_table(wall_screen_resolution):
 
     # for each user (1-4)
     for userid in range(1, 5):
-        import global_values
         datalist = []
 
         con = sqlite3.connect("db")
@@ -441,8 +448,13 @@ def get_head_orientations(userid):
                       " GROUP BY time ORDER BY time;", True)
 
 
+# Returns Map time->touch
 def get_touch_positions(userid):
-    return executeQry("SELECT x, y, time FROM touchtable WHERE user = " + str(userid) + ";", True)
+    touch_list = executeQry("SELECT time, id, x, y FROM touchtable WHERE user = " + str(userid) + ";", True)
+    touch_map = {}
+    for touch in touch_list:
+        touch_map[touch[0]] = Touch(touch[1], touch[0], touch[2], touch[3])
+    return touch_map
 
 
 def get_view_points(userid):
