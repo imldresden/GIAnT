@@ -36,8 +36,8 @@ class VisParams(avg.Publisher):
         if self.__time_interval == time_range:
             return
         point = self.__time_interval[0] + fraction_in_timeframe * (self.__time_interval[1] - self.__time_interval[0])
-        self.__time_interval[0] -= (point - self.__time_interval[0]) * 1 / ((1 / self.__zoom_strength) - 1)
-        self.__time_interval[1] += (self.__time_interval[1] - point) * 1 / ((1 / self.__zoom_strength) - 1)
+        self.__time_interval[0] -= (point - self.__time_interval[0]) / ((1 / self.__zoom_strength) - 1)
+        self.__time_interval[1] += (self.__time_interval[1] - point) / ((1 / self.__zoom_strength) - 1)
 
         if self.__time_interval[0] < time_range[0]:
             self.__time_interval[0] = time_range[0]
