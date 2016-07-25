@@ -2,6 +2,8 @@
 
 import math
 import libavg
+
+import pat_model
 import util
 import custom_slider
 import global_values
@@ -341,7 +343,7 @@ class TimeAxisNode(AxisNode):
         :param i_end: new interval end
         """
         # set new interval start and end
-        time_range = global_values.time_range
+        time_range = pat_model.time_range
         self.__i_start = self._value_to_pixel(i_start, time_range[0], time_range[1])
         self.__i_end = self._value_to_pixel(i_end, time_range[0], time_range[1])
 

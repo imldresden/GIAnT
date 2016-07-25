@@ -13,7 +13,7 @@ import OptionsPanel
 import global_values
 import Legend
 import video
-import user
+import pat_model
 
 
 class MainDiv(app.MainDiv):
@@ -26,6 +26,10 @@ class MainDiv(app.MainDiv):
         # and padding inbetween elements of visualization
         padding = global_values.APP_PADDING
 
+        self.__users = []
+        for userid in range(1, 5):
+            self.__users.append(pat_model.User(userid))
+
         # position and scale main div
         self.pos = (margin, margin)
         res_x = libavg.app.instance._resolution[0] - 2 * margin
@@ -35,7 +39,7 @@ class MainDiv(app.MainDiv):
         main_vis_width = 2.0 / 3.0 * res_x
         menu_height = 50
         side_vis_height = 1.0 / 3.0 * res_y
-        self.__vis_params = vis_params.VisParams(len(user.users))
+        self.__vis_params = vis_params.VisParams(len(self.__users))
 
         # rectangle to color background
         libavg.RectNode(parent=self, pos=(-1000, -1000), size=(10000, 10000),
@@ -51,7 +55,8 @@ class MainDiv(app.MainDiv):
 
         # main visualization
         self.main_visualization = movement_panel.MovementPanel(
-                parent=self, vis_params=self.__vis_params, pos=(0, 0), size=(main_vis_width, res_y - menu_height))
+                parent=self, users=self.__users, vis_params=self.__vis_params, pos=(0, 0),
+                size=(main_vis_width, res_y - menu_height))
 
         # video
         self.video = video.Video(pos=(main_vis_width + padding + axis.THICKNESS,
@@ -61,7 +66,7 @@ class MainDiv(app.MainDiv):
                                  vis_params=self.__vis_params, parent=self)
 
         # menu
-        self.options = OptionsPanel.OptionsPanel(vis_params=self.__vis_params, parent=self,
+        self.options = OptionsPanel.OptionsPanel(users=self.__users, vis_params=self.__vis_params, parent=self,
                                                  pos=(0, self.main_visualization.height),
                                                  size=(self.main_visualization.width, menu_height))
 
@@ -123,11 +128,11 @@ class MainDiv(app.MainDiv):
         cos_screen_offset = 2
         cos_wall_width = 16
 
-        x_range = global_values.pos_range[0][0], global_values.pos_range[1][0]
+        x_range = pat_model.pos_range[0][0], pat_model.pos_range[1][0]
         # space from bottom of y-axis to left side of display-wall
-        cos_wall_start = value_to_pixel(global_values.x_wall_range[0], main_size[1], x_range)
+        cos_wall_start = value_to_pixel(pat_model.x_wall_range[0], main_size[1], x_range)
         # space from top of y-axis to right side of display-wall
-        cos_wall_end = value_to_pixel(global_values.wall_width, main_size[1], x_range)
+        cos_wall_end = value_to_pixel(pat_model.wall_width, main_size[1], x_range)
 
         self.__cosmetics_main.pos = (
             (main_pos[0] - cos_vis_offset, main_size[1] - cos_wall_end),  # top right

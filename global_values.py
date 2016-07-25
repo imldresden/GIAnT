@@ -7,16 +7,6 @@ link_smoothness = True                              # if the smoothness value sh
 default_smoothness = 500
 time_step_size = 50                                 # time in ms over witch data is averaged from database
 
-"""data values"""
-wall_width = 490
-wall_height = 206
-pos_range = [(0,0,50), (0,0,250)]  # User head position minimum and maximum
-time_range = [0,0]
-x_touch_range = [0, 4*1920]
-y_touch_range = [0, 3*1080]
-x_wall_range = [0, wall_width]
-y_wall_range = [40, 40+wall_height]
-
 """color values"""
 user_color_schemes = [                              # different user color schemes
     [[ 35 / float(360), 0.409, 1],                  # Yellow

@@ -3,6 +3,7 @@
 import libavg
 from libavg import player
 import global_values
+import pat_model
 import util
 
 player.loadPlugin("vwline")
@@ -32,7 +33,7 @@ class Legend(libavg.DivNode):
         # texts
         libavg.WordsNode(pos=(0, self.height - 35), text="Distance from wall", parent=self,
                          color=global_values.COLOR_FOREGROUND)
-        pos_range = global_values.pos_range
+        pos_range = pat_model.pos_range
         libavg.WordsNode(pos=(0, self.height - 20), text="{} {}".format(str(int(pos_range[0][2])), unit),
                          parent=self, color=global_values.COLOR_FOREGROUND, alignment="right")
         libavg.WordsNode(pos=(self.width + 2, self.height - 20), parent=self, alignment="left",

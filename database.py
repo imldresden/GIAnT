@@ -3,9 +3,10 @@
 import sqlite3
 import csv
 import time
+
+import pat_model
 import util
 import sys
-import global_values
 
 # Positions in the csv file
 HEAD = 0
@@ -180,7 +181,7 @@ def create_head_table():
             new_data[COL_Y] *= 100
             new_data[COL_Z] *= 100
 
-            new_data[COL_TIME] -= global_values.time_range[0]  # shift time to start at 0
+            new_data[COL_TIME] -= pat_model.time_range[0]  # shift time to start at 0
 
             # time "rounded" to closest divisible of time_stepSize
             time_step = int(new_data[COL_TIME] / global_values.time_step_size) * global_values.time_step_size
@@ -352,11 +353,11 @@ def create_touch_table(wall_screen_resolution):
 
             data = list(row)
 
-            data[COL_X] = data[COL_X] * global_values.wall_width / wall_screen_resolution[0]
+            data[COL_X] = data[COL_X] * pat_model.wall_width / wall_screen_resolution[0]
 
-            data[COL_Y] = 40 + (wall_screen_resolution[1] - data[COL_Y]) * global_values.wall_height / wall_screen_resolution[1]
+            data[COL_Y] = 40 + (wall_screen_resolution[1] - data[COL_Y]) * pat_model.wall_height / wall_screen_resolution[1]
 
-            data[COL_TIME] -= global_values.time_range[0]  # shift time to start at 0
+            data[COL_TIME] -= pat_model.time_range[0]  # shift time to start at 0
 
             new_data = list(data)
             datalist.append(new_data)  # prepare for upload
@@ -394,11 +395,11 @@ def init_raw_values():
 
     min_z = executeQry("SELECT min(z) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
     max_z = executeQry("SELECT max(z) FROM raw WHERE z != '' OR HEAD = 1;", True)[0][0]
-    global_values.pos_range = ((min_x, min_y, min_z), (max_x, max_y, max_z))
+    pat_model.pos_range = ((min_x, min_y, min_z), (max_x, max_y, max_z))
 
     min_time = executeQry("SELECT min(time) FROM raw;", True)[0][0]
     max_time = executeQry("SELECT max(time) FROM raw;", True)[0][0]
-    global_values.time_range = (min_time, max_time)
+    pat_model.time_range = (min_time, max_time)
 
 
 def init_values():
@@ -409,13 +410,13 @@ def init_values():
         min_y = executeQry("SELECT min(y) FROM headtable;", True)[0][0]
         max_y = executeQry("SELECT max(y) FROM headtable;", True)[0][0]
 
-        min_z = global_values.pos_range[0][2]
-        max_z = global_values.pos_range[1][2]
-        global_values.pos_range = ((min_x, min_y, min_z), (max_x, max_y, max_z))
+        min_z = pat_model.pos_range[0][2]
+        max_z = pat_model.pos_range[1][2]
+        pat_model.pos_range = ((min_x, min_y, min_z), (max_x, max_y, max_z))
 
         min_time = executeQry("SELECT min(time) FROM headtable;", True)[0][0]
         max_time = executeQry("SELECT max(time) FROM headtable;", True)[0][0]
-        global_values.time_range = (min_time, max_time)
+        pat_model.time_range = (min_time, max_time)
     except:
         print "Database not set up"
 

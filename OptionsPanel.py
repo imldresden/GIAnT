@@ -3,14 +3,14 @@
 import libavg
 from libavg import widget, avg
 import global_values
-import user
+import pat_model
 import util
 
 COLOR_SCHEME = 0            # user color scheme (see global_values.py for color schemes)
 
 
 class OptionsPanel(libavg.DivNode):
-    def __init__(self, vis_params, parent, **kwargs):
+    def __init__(self, users, vis_params, parent, **kwargs):
         super(OptionsPanel, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
@@ -46,7 +46,7 @@ class OptionsPanel(libavg.DivNode):
         # user buttons
         self.user_buttons = []
         self.user_texts = []
-        for i in range(len(user.users)):
+        for i in range(len(users)):
             user_color = util.get_user_color_as_hex(i, 1)
             size = (70, 30)
             self.user_buttons.append(
@@ -138,7 +138,7 @@ class OptionsPanel(libavg.DivNode):
         if checked:
             self.smoothness_slider.opacity = 0.2
             i_range = self.__vis_params.get_time_interval()[1] - self.__vis_params.get_time_interval()[0]
-            time_extent = global_values.time_range[1] - global_values.time_range[0]
+            time_extent = pat_model.time_range[1] - pat_model.time_range[0]
             s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / time_extent
             self.__vis_params.set_smoothness(s)
         else:

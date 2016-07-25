@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import user
+import pat_model
 import global_values
 import axis
 import libavg
@@ -16,7 +16,7 @@ class MovementPanel(libavg.DivNode):
 
     PIXELS_PER_SAMPLE = 4
 
-    def __init__(self, parent, vis_params, **kwargs):
+    def __init__(self, parent, users, vis_params, **kwargs):
         super(MovementPanel, self).__init__(**kwargs)
         self.registerInstance(self, parent)
         self.crop = False
@@ -32,21 +32,22 @@ class MovementPanel(libavg.DivNode):
         self.data_div = libavg.DivNode(pos=(axis.THICKNESS, 0),
                                        size=(self.width - axis.THICKNESS, self.height - axis.THICKNESS),
                                        crop=True)
+        self.__users = users
         self.__user_lines = []
         max_width = (min(self.width, self.height) / 12)
-        for userid in range(len(user.users)):
+        for userid in range(len(users)):
             color = util.get_user_color_as_hex(userid, 1)
             self.__user_lines.append(vwline.VWLineNode(color=color, maxwidth=max_width, parent=self.data_div))
 
         custom_label_offset = 23  # to make space for cosmetic schematic wall
-        x_range = global_values.pos_range[0][0], global_values.pos_range[1][0]
+        x_range = pat_model.pos_range[0][0], pat_model.pos_range[1][0]
         self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.THICKNESS, self.data_div.height), parent=self,
                 sensitive=True, data_range=x_range, unit="cm", hide_rims=True,
                 inverted=True, label_offset=custom_label_offset)
 
         x_axis_pos = (axis.THICKNESS, self.data_div.height)
         self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, vis_params=vis_params, parent=self, unit="ms",
-                data_range=global_values.time_range, size=(self.data_div.width, axis.THICKNESS), inverted=False)
+                data_range=pat_model.time_range, size=(self.data_div.width, axis.THICKNESS), inverted=False)
 
         self.appendChild(self.data_div)
 
@@ -69,7 +70,7 @@ class MovementPanel(libavg.DivNode):
         start_orig = self.start
         end_orig = self.end
         interval = vis_params.get_time_interval()
-        time_extent = global_values.time_range[1] - global_values.time_range[0]
+        time_extent = pat_model.time_range[1] - pat_model.time_range[0]
         self.start = interval[0] / time_extent
         self.end = interval[1] / time_extent
         if draw_lines:
@@ -99,20 +100,20 @@ class MovementPanel(libavg.DivNode):
 
     def create_line(self, vis_params):
         userid = -1
-        for i, usr in enumerate(user.users):
+        for i, user in enumerate(self.__users):
             userid += 1
             if vis_params.get_user_visible(i):
                 points = []
                 dists = []
-                num_head_positions = len(usr.head_positions_integral)
+                num_head_positions = len(user.head_positions_integral)
                 for cur_sample_x in range(0, int(self.data_div.width), self.PIXELS_PER_SAMPLE):
                     posindex = int(
                         num_head_positions * (cur_sample_x * (self.end - self.start) / float(self.data_div.width)
                                               + self.start))
 
-                    head_position_averaged = usr.get_head_position_averaged(posindex, vis_params.get_smoothness())
+                    head_position_averaged = user.get_head_position_averaged(posindex, vis_params.get_smoothness())
 
-                    pos_range = global_values.pos_range
+                    pos_range = pat_model.pos_range
                     norm_x = 1 - (head_position_averaged[0] - pos_range[0][0]) / float(pos_range[1][0] - pos_range[0][0])
                     norm_z = (head_position_averaged[2] - pos_range[0][2]) / float(pos_range[1][2] - pos_range[0][2])
 

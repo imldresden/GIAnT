@@ -2,7 +2,14 @@
 
 import database
 
-users = []
+wall_width = 490
+wall_height = 206
+pos_range = [(0,0,50), (0,0,250)]  # User head position minimum and maximum
+time_range = [0,0]
+x_touch_range = [0, 4*1920]
+y_touch_range = [0, 3*1080]
+x_wall_range = [0, wall_width]
+y_wall_range = [40, 40+wall_height]
 
 
 class User:
@@ -15,8 +22,6 @@ class User:
         self.viewpoints_integral = database.get_view_points_integral(index)
 
         self.touches = database.get_touch_positions(index)
-
-        users.append(self)
 
     def get_head_position_averaged(self, index, smoothness):
         count = smoothness
@@ -45,6 +50,3 @@ class User:
                       (integral[index + count][1] - integral[index][1]) / count]
         return view_point
 
-
-for userid in range(1, 5):
-    User(userid)
