@@ -27,7 +27,7 @@ class MainDiv(app.MainDiv):
         padding = global_values.APP_PADDING
 
         self.__users = []
-        for userid in range(1, 5):
+        for userid in range(0, 4):
             self.__users.append(pat_model.User(userid))
 
         # position and scale main div

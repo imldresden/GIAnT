@@ -11,8 +11,6 @@ player.loadPlugin("vwline")
 
 
 class MovementPanel(libavg.DivNode):
-    start = 0
-    end = 1
 
     PIXELS_PER_SAMPLE = 4
 
@@ -20,6 +18,9 @@ class MovementPanel(libavg.DivNode):
         super(MovementPanel, self).__init__(**kwargs)
         self.registerInstance(self, parent)
         self.crop = False
+
+        self.__time_min = pat_model.time_range[0]
+        self.__time_max = pat_model.time_range[1]
 
         # rect for coloured border and background
         self.background_rect = libavg.RectNode(pos=(axis.THICKNESS, 0),
@@ -65,17 +66,15 @@ class MovementPanel(libavg.DivNode):
         self.__vis_params = vis_params
         self.data_div.subscribe(libavg.Node.MOUSE_WHEEL, self.__on_mouse_wheel)
 
-    # make start and end values in 0..1
     def update_time(self, vis_params, draw_lines):
-        start_orig = self.start
-        end_orig = self.end
+        min_orig = self.__time_min
+        max_orig = self.__time_max
         interval = vis_params.get_time_interval()
-        time_extent = pat_model.time_range[1] - pat_model.time_range[0]
-        self.start = interval[0] / time_extent
-        self.end = interval[1] / time_extent
+        self.__time_min = interval[0]
+        self.__time_max = interval[1]
         if draw_lines:
             self.create_line(vis_params)
-        elif self.start != start_orig or self.end != end_orig:
+        elif self.__time_min != min_orig or self.__time_max != max_orig:
             self.create_line(vis_params)
 
         # update position of pinned highlight line and highlight line marker
@@ -105,13 +104,11 @@ class MovementPanel(libavg.DivNode):
             if vis_params.get_user_visible(i):
                 points = []
                 dists = []
-                num_head_positions = len(user.head_positions_integral)
                 for cur_sample_x in range(0, int(self.data_div.width), self.PIXELS_PER_SAMPLE):
-                    posindex = int(
-                        num_head_positions * (cur_sample_x * (self.end - self.start) / float(self.data_div.width)
-                                              + self.start))
+                    cur_time = (cur_sample_x * (self.__time_max - self.__time_min) / float(self.data_div.width)
+                            + self.__time_min)
 
-                    head_position_averaged = user.get_head_position_averaged(posindex, vis_params.get_smoothness())
+                    head_position_averaged = user.get_head_position_averaged(cur_time, vis_params.get_smoothness())
 
                     pos_range = pat_model.pos_range
                     norm_x = 1 - (head_position_averaged[0] - pos_range[0][0]) / float(pos_range[1][0] - pos_range[0][0])
