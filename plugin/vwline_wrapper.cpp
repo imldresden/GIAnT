@@ -18,6 +18,7 @@ BOOST_PYTHON_MODULE(vwline)
     class_<VWLineNode, bases<avg::VectorNode>, boost::noncopyable>("VWLineNode", no_init)
         .def("__init__", raw_constructor(createNode<VWLineNodeName>))
         .def("setValues", &VWLineNode::setValues)
+        .def("setHighlights", &VWLineNode::setHighlights)
         ;
 }
 

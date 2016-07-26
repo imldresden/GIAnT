@@ -122,19 +122,8 @@ class MovementPanel(avg.DivNode):
                 userline = self.__user_lines[i]
                 userline.setValues(points, dists)
                 touches = user.get_touches(time_start, time_end)
-                for j, touch in enumerate(touches):
-                    x = self.__time_to_xpos(touch.time)
-                    if j < len(self.__touch_nodes):
-                        touch_node = self.__touch_nodes[j]
-                    else:
-                        touch_node = avg.CircleNode(r=3, parent=self)
-                        self.__touch_nodes.append(touch_node)
-                    touch_node.pos = (x, 10)
-                    touch_node.color = util.get_user_color_as_hex(i, 1)
-                for j in range(len(touches), len(self.__touch_nodes)):
-                    self.__touch_nodes[j].unlink(True)
-                self.__touch_nodes = self.__touch_nodes[0:len(touches)]
-
+                touches_x = [int(self.__time_to_xpos(touch.time)) for touch in touches]
+                userline.setHighlights(touches_x)
 
     def __on_hover(self, event=None):
         """

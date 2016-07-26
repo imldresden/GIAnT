@@ -39,6 +39,7 @@ VWLineNode::~VWLineNode()
 
 void VWLineNode::setValues(const vector<glm::vec2>& pts, const vector<float>& dists)
 {
+    m_Pts = pts;
     Pixel32 color = getColor();
     m_VertexCoords.clear();
     m_Colors.clear();
@@ -89,6 +90,28 @@ void VWLineNode::setValues(const vector<glm::vec2>& pts, const vector<float>& di
     }
 
     setDrawNeeded();
+}
+
+void VWLineNode::setHighlights(vector<int> xPosns)
+{
+    if (m_Pts.size() == 0) {
+        throw(Exception(AVG_ERR_UNSUPPORTED, "Call setValues before setHighlights."));
+    }
+    for (auto x: xPosns) {
+        int ptIndex = 0;
+        while (m_Pts[ptIndex].x < x) {
+            ptIndex++;
+        }
+        glm::vec2 curPt(x, m_Pts[ptIndex].y);
+        int vi = m_VertexCoords.size();
+        m_VertexCoords.push_back(curPt + glm::vec2(0,-3));
+        m_VertexCoords.push_back(curPt + glm::vec2(0,3));
+        m_VertexCoords.push_back(curPt + glm::vec2(1,-3));
+        m_VertexCoords.push_back(curPt + glm::vec2(1,3));
+        appendColors(4, Pixel32(255,255,255,255), 255);
+        m_Triangles.push_back(glm::ivec3(vi, vi+3, vi+1));
+        m_Triangles.push_back(glm::ivec3(vi, vi+2, vi+3));
+    }
 }
 
 void VWLineNode::calcVertexes(const VertexDataPtr& pVertexData, Pixel32 color)
