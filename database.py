@@ -361,16 +361,13 @@ def create_touch_table(wall_screen_resolution):
             data = list(row)
 
             data[COL_X] = data[COL_X] * pat_model.wall_width / wall_screen_resolution[0]
-
             data[COL_Y] = 40 + (wall_screen_resolution[1] - data[COL_Y]) * pat_model.wall_height / wall_screen_resolution[1]
-
             data[COL_TIME] -= pat_model.time_range[0]  # shift time to start at 0
 
             new_data = list(data)
             datalist.append(new_data)  # prepare for upload
 
         if len(datalist) > 0:
-            # upload
             cur.executemany("INSERT INTO touchtable (user, x, y, time) VALUES (?,?,?,?);", datalist)
             con.commit()
 
