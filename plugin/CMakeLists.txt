@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(vwline)
+include(CheckCXXCompilerFlag)
 
 function(set_cxx_version)
     check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
@@ -42,6 +43,7 @@ else()
     include_directories("${LIBXML2_INCLUDE_DIR}")
     target_link_libraries(vwline ${LIBXML2_LIBRARIES})
 endif()
+set_cxx_version()
 
 FIND_PACKAGE(Boost REQUIRED)
 INCLUDE_DIRECTORIES("${Boost_INCLUDE_DIRS}" "${PYTHON_INCLUDE_DIRS}")
