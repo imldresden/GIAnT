@@ -21,7 +21,7 @@ class VWLineNode: public avg::VectorNode
 
         void setValues(const std::vector<glm::vec2>& pts,
                 const std::vector<float>& dists);
-        void setHighlights(std::vector<int> xPosns);
+        void setHighlights(std::vector<float> xPosns);
         
         virtual void calcVertexes(const avg::VertexDataPtr& pVertexData,
                 avg::Pixel32 color);
@@ -30,6 +30,7 @@ class VWLineNode: public avg::VectorNode
         void appendColors(int numEntries, avg::Pixel32 color, float opacity);
         float calcWidth(float dist);
         float calcOpacity(float dist);
+        glm::vec2 posOnLine(float x) const;
 
         std::vector<glm::vec2> m_Pts;
         std::vector<glm::vec2> m_VertexCoords;

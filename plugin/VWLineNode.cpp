@@ -92,17 +92,13 @@ void VWLineNode::setValues(const vector<glm::vec2>& pts, const vector<float>& di
     setDrawNeeded();
 }
 
-void VWLineNode::setHighlights(vector<int> xPosns)
+void VWLineNode::setHighlights(vector<float> xPosns)
 {
     if (m_Pts.size() == 0) {
         throw(Exception(AVG_ERR_UNSUPPORTED, "Call setValues before setHighlights."));
     }
     for (auto x: xPosns) {
-        int ptIndex = 0;
-        while (m_Pts[ptIndex].x < x) {
-            ptIndex++;
-        }
-        glm::vec2 curPt(x, m_Pts[ptIndex].y);
+        glm::vec2 curPt = posOnLine(x);
         int vi = m_VertexCoords.size();
         m_VertexCoords.push_back(curPt + glm::vec2(0,-3));
         m_VertexCoords.push_back(curPt + glm::vec2(0,3));
@@ -142,4 +138,23 @@ float VWLineNode::calcWidth(float dist)
 float VWLineNode::calcOpacity(float dist)
 {
     return pow(1-dist, 2);
+}
+
+glm::vec2 VWLineNode::posOnLine(float x) const
+{
+    // TODO: Binary search.
+    int ptIndex = 0;
+    while (m_Pts[ptIndex].x < x && ptIndex < m_Pts.size()-1) {
+        ptIndex++;
+    }
+    glm::vec2 curPt;
+    if (ptIndex == 0 || ptIndex == m_Pts.size()-1) {
+        curPt = glm::vec2(x, m_Pts[ptIndex].y);
+    } else {
+        float part = (x - m_Pts[ptIndex-1].x)/(m_Pts[ptIndex].x - m_Pts[ptIndex-1].x);
+        AVG_ASSERT(part >= 0 && part <= 1);
+        float y = (1-part)*m_Pts[ptIndex-1].y + part*m_Pts[ptIndex].y;
+        curPt = glm::vec2(x, y);
+    }
+    return curPt;
 }
