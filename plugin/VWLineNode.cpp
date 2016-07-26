@@ -97,22 +97,29 @@ void VWLineNode::setValues(const vector<glm::vec2>& pts, const vector<float>& di
 
 static ProfilingZoneID SetHighlightsProfilingZone("VWLineNode::setHighlights");
 
-void VWLineNode::setHighlights(vector<float> xPosns)
+void VWLineNode::setHighlights(vector<float> xPosns, vector<float> widths)
 {
     ScopeTimer timer(SetHighlightsProfilingZone);
     if (m_Pts.size() == 0) {
         throw(Exception(AVG_ERR_UNSUPPORTED, "Call setValues before setHighlights."));
     }
-    for (auto x: xPosns) {
-        glm::vec2 curPt = posOnLine(x);
-        int vi = m_VertexCoords.size();
+    for (int i=0; i<xPosns.size(); ++i) {
+        float leftX = xPosns[i];
+        float w = max(widths[i], 2.f);
+        float rightX = leftX + w;
+        glm::vec2 curPt = posOnLine(leftX);
         m_VertexCoords.push_back(curPt + glm::vec2(0,-3));
         m_VertexCoords.push_back(curPt + glm::vec2(0,3));
-        m_VertexCoords.push_back(curPt + glm::vec2(1,-3));
-        m_VertexCoords.push_back(curPt + glm::vec2(1,3));
-        appendColors(4, Pixel32(255,255,255,255), 255);
-        m_Triangles.push_back(glm::ivec3(vi, vi+3, vi+1));
-        m_Triangles.push_back(glm::ivec3(vi, vi+2, vi+3));
+        appendColors(2, Pixel32(255,255,255,255), 255);
+        for (float x = leftX+1; x < rightX; ++x) {
+            int vi = m_VertexCoords.size();
+            curPt = posOnLine(x);
+            m_VertexCoords.push_back(curPt + glm::vec2(0,-3));
+            m_VertexCoords.push_back(curPt + glm::vec2(0,3));
+            appendColors(2, Pixel32(255,255,255,255), 255);
+            m_Triangles.push_back(glm::ivec3(vi-2, vi+1, vi-1));
+            m_Triangles.push_back(glm::ivec3(vi-2, vi  , vi+1));
+        }
     }
 }
 

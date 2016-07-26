@@ -125,7 +125,8 @@ class MovementPanel(avg.DivNode):
                 userline.setValues(points, dists)
                 touches = user.get_touches(time_start, time_end)
                 touches_x = [self.__time_to_xpos(touch.time) for touch in touches]
-                userline.setHighlights(touches_x)
+                touches_width = [touch.duration*self.__time_factor for touch in touches]
+                userline.setHighlights(touches_x, touches_width)
 
     def __on_hover(self, event=None):
         """
