@@ -91,7 +91,7 @@ class VisParams(avg.Publisher):
         self.notify()
 
     def set_smoothness(self, value):
-        if value <= 0:
+        if value <= global_values.min_averaging_count:
             value = global_values.min_averaging_count
         elif value > global_values.max_averaging_count:
             value = global_values.max_averaging_count

@@ -30,7 +30,7 @@ class User:
         integral = self.__head_positions_integral
         i = self.__time_to_index(cur_time)
         start_integral = integral[max(0, i - smoothness/2)]
-        end_integral = integral[min(len(integral)-1, i + (smoothness+1)/2)]
+        end_integral = integral[min(len(integral)-1, i + int((smoothness+1)/2))]
         head_position = [(end_integral[0] - start_integral[0]) / smoothness,
                          (end_integral[1] - start_integral[1]) / smoothness,
                          (end_integral[2] - start_integral[2]) / smoothness]

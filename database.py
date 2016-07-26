@@ -25,10 +25,11 @@ timestampOffset = sys.maxint
 
 
 class Touch:
-    def __init__(self, id, time, x, y):
+    def __init__(self, id, time, x, y, duration):
         self.id = id
         self.time = time
         self.pos = avg.Point2D(x,y)
+        self.duration = duration
 
 
 def executeQry(qry, doFetch=False):
@@ -328,7 +329,8 @@ def create_touch_table(wall_screen_resolution):
                                "user TINYINT NOT NULL,"
                                "x FLOAT,"
                                "y FLOAT,"
-                               "time FLOAT NOT NULL")
+                               "time FLOAT NOT NULL,"
+                               "duration FLOAT NOT NULL")
 
     # for each user (1-4)
     for userid in range(1, 5):
@@ -344,17 +346,19 @@ def create_touch_table(wall_screen_resolution):
         COL_X = 1
         COL_Y = 2
         COL_TIME = 3
+        COL_DURATION = 4
 
         print "executing " + qry
         cur.execute(qry)
         fetch = cur.fetchall()
 
+        last_time = -1
         print "uploading " + str(len(fetch))
         for row in fetch:
 
             if len(datalist) >= 500:  # upload 500 at a time
                 # upload
-                cur.executemany("INSERT INTO touchtable (user, x, y, time) VALUES (?,?,?,?);", datalist)
+                cur.executemany("INSERT INTO touchtable (user, x, y, time, duration) VALUES (?,?,?,?,?);", datalist)
                 con.commit()
                 datalist = []  # clear
 
@@ -363,12 +367,19 @@ def create_touch_table(wall_screen_resolution):
             data[COL_X] = data[COL_X] * pat_model.wall_width / wall_screen_resolution[0]
             data[COL_Y] = 40 + (wall_screen_resolution[1] - data[COL_Y]) * pat_model.wall_height / wall_screen_resolution[1]
             data[COL_TIME] -= pat_model.time_range[0]  # shift time to start at 0
-
-            new_data = list(data)
-            datalist.append(new_data)  # prepare for upload
+            data.append(30)             # COL_DURATION
+            if data[COL_TIME] > last_time + 100:
+                # New touch
+                new_data = list(data)
+                datalist.append(new_data)  # prepare for upload
+            else:
+                # Touch continuation
+                new_data[COL_DURATION] += data[COL_TIME] - last_time
+                datalist[-1] = new_data
+            last_time = data[COL_TIME]
 
         if len(datalist) > 0:
-            cur.executemany("INSERT INTO touchtable (user, x, y, time) VALUES (?,?,?,?);", datalist)
+            cur.executemany("INSERT INTO touchtable (user, x, y, time, duration) VALUES (?,?,?,?,?);", datalist)
             con.commit()
 
     con.close()
@@ -447,10 +458,10 @@ def get_head_orientations(userid):
 
 # Returns Map time->touch
 def get_touch_positions(userid):
-    touch_list = executeQry("SELECT time, id, x, y FROM touchtable WHERE user = " + str(userid) + ";", True)
+    touch_list = executeQry("SELECT time, id, x, y, duration FROM touchtable WHERE user = " + str(userid) + ";", True)
     touch_map = {}
     for touch in touch_list:
-        touch_map[touch[0]] = Touch(touch[1], touch[0], touch[2], touch[3])
+        touch_map[touch[0]] = Touch(touch[1], touch[0], touch[2], touch[3], touch[4])
     return touch_map
 
 
