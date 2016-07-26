@@ -37,8 +37,11 @@ VWLineNode::~VWLineNode()
 {
 }
 
+static ProfilingZoneID SetValuesProfilingZone("VWLineNode::setValues");
+
 void VWLineNode::setValues(const vector<glm::vec2>& pts, const vector<float>& dists)
 {
+    ScopeTimer timer(SetValuesProfilingZone);
     m_Pts = pts;
     Pixel32 color = getColor();
     m_VertexCoords.clear();
@@ -92,8 +95,11 @@ void VWLineNode::setValues(const vector<glm::vec2>& pts, const vector<float>& di
     setDrawNeeded();
 }
 
+static ProfilingZoneID SetHighlightsProfilingZone("VWLineNode::setHighlights");
+
 void VWLineNode::setHighlights(vector<float> xPosns)
 {
+    ScopeTimer timer(SetHighlightsProfilingZone);
     if (m_Pts.size() == 0) {
         throw(Exception(AVG_ERR_UNSUPPORTED, "Call setValues before setHighlights."));
     }
@@ -142,7 +148,6 @@ float VWLineNode::calcOpacity(float dist)
 
 glm::vec2 VWLineNode::posOnLine(float x) const
 {
-    // TODO: Binary search.
     int ptIndex = 0;
     while (m_Pts[ptIndex].x < x && ptIndex < m_Pts.size()-1) {
         ptIndex++;
