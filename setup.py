@@ -50,8 +50,9 @@ class HeadData:
     def __init__(self, csv_record):
         self.timestamp = csvtime_to_float(csv_record[0])
         self.userid = eval(csv_record[1])
-        self.pos = eval(csv_record[2])
-        self.rotation = eval(csv_record[3])
+        self.pos = eval(csv_record[2])          # In Meters. If facing the wall, x points left, y up, z into the wall.
+                                                # Origin is lower left corner of the wall.
+        self.rotation = eval(csv_record[3])  # yaw, pitch, roll
 
     def as_list(self):
         return (self.userid,
