@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import database
+import time
+import sqlite3
 
 wall_width = 490
 wall_height = 206
@@ -12,16 +13,87 @@ x_wall_range = [0, wall_width]
 y_wall_range = [40, 40+wall_height]
 
 
+def execute_qry(qry, doFetch=False):
+    """
+    :param qry: the query to execute (string)
+    :param doFetch:  whether data should be fetched and returned
+    :return:
+    """
+    con = sqlite3.connect("db")
+    cur = con.cursor()
+    cur.execute(qry)
+    if doFetch:
+        data = cur.fetchall()
+    con.commit()
+    con.close()
+    if doFetch:
+        return data
+
+
+# Converts time from csv format to float seconds since 1970.
+def csvtime_to_float(date, csv_time):
+    time_str = date + " " + csv_time
+    (time_str, millisecs_str) = time_str.split(".")
+    time_struct = time.strptime(time_str, "%Y-%m-%d %H:%M:%S")
+    millisecs = int(millisecs_str)
+    return time.mktime(time_struct) + float(millisecs) / 1000
+
+
+class HeadData:
+    def __init__(self):
+        pass
+
+    def as_list(self):
+        return (self.userid,
+                self.pos[0], self.pos[1], self.pos[2],
+                self.rotation[0], self.rotation[1], self.rotation[2],
+                self.timestamp,
+                self.pos_prefix_sum[0], self.pos_prefix_sum[1], self.pos_prefix_sum[2])
+
+    def __eq__(self, other):
+        return self.timestamp == other.timestamp and self.userid == other.userid
+
+    def __ne__(self, other):
+        return not(self == other)
+
+    @classmethod
+    def from_csv(cls, csv_record, date, prev_data):
+        head_data = HeadData()
+        head_data.timestamp = csvtime_to_float(date, csv_record[0])
+        head_data.userid = eval(csv_record[1])
+        head_data.pos = eval(csv_record[2])  # In Meters. If facing the wall, x points left, y up, z into the wall.
+                                             # Origin is lower left corner of the wall.
+        head_data.rotation = eval(csv_record[3])  # yaw, pitch, roll
+        if prev_data:
+            head_data.pos_prefix_sum = (
+                prev_data.pos_prefix_sum[0] + head_data.pos[0],
+                prev_data.pos_prefix_sum[1] + head_data.pos[1],
+                prev_data.pos_prefix_sum[2] + head_data.pos[2])
+        else:
+            head_data.pos_prefix_sum = head_data.pos
+        return head_data
+
+    @classmethod
+    def from_list(cls, head_list):
+        head_data = HeadData()
+        head_data.userid = head_list[0]
+        head_data.pos = head_list[1], head_list[2], head_list[3]
+        head_data.rotation = head_list[4], head_list[5], head_list[6]
+        head_data.timestamp = head_list[7]
+        head_data.pos_prefix_sum = head_list[8], head_list[9], head_list[10]
+        return head_data
+
+
 class User:
-    def __init__(self, index):
-        self.index = index
+    def __init__(self, userid):
+        self.userid = userid
 
-        self.__head_positions_integral = database.get_head_positions_integral(index+1)
-        self.__head_orientations = database.get_head_orientations(index+1)
+        head_data_list = execute_qry("SELECT user, x, y, z, pitch, yaw, roll, time, x_sum, y_sum, z_sum "
+                          "FROM head WHERE user = " + str(userid+1) +
+                          " GROUP BY time ORDER BY time;", True)
+        self.__head_data = [HeadData.from_list(head_list) for head_list in head_data_list]
 
-        self.__viewpoints_integral = database.get_view_points_integral(index+1)
-
-        self.__touches = database.get_touch_positions(index+1)
+#        self.__touches = database.get_touch_positions(index+1)
 
     def get_num_states(self):
         return len(self.__head_positions_integral)
