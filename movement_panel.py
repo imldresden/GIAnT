@@ -19,8 +19,8 @@ class MovementPanel(avg.DivNode):
         self.registerInstance(self, parent)
         self.crop = False
 
-        self.__time_min = pat_model.time_range[0]
-        self.__time_max = pat_model.time_range[1]
+        self.__time_min = 0
+        self.__time_max = pat_model.time_range[1] - pat_model.time_range[0]
 
         # rect for coloured border and background
         self.background_rect = avg.RectNode(pos=(axis.THICKNESS, 0),
@@ -137,8 +137,7 @@ class MovementPanel(avg.DivNode):
         self.__vis_params.notify(False)
 
     def __xpos_to_time(self, x):
-        norm_time = x / self.data_div.width
-        return norm_time * (self.__time_max - self.__time_min) + self.__time_min
+        return x / self.__time_factor + self.__time_min
 
     def __time_to_xpos(self, t):
         return (float(t)-self.__time_min) * self.__time_factor

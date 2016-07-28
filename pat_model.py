@@ -121,7 +121,6 @@ class User:
     def get_head_position_averaged(self, cur_time, smoothness):
 
         i = self.__time_to_index(cur_time)
-        print i, smoothness
         start_integral = self.__head_data[max(0, i - smoothness/2)].pos_prefix_sum
         end_integral = self.__head_data[min(len(self.__head_data)-1, i + int((smoothness+1)/2))].pos_prefix_sum
         head_position = [(end_integral[0] - start_integral[0]) / smoothness,
@@ -153,7 +152,7 @@ class User:
         return view_point
 
     def __time_to_index(self, t):
-        return int((t - time_range[0]) / (time_range[1] - time_range[0]))
+        return int(t * len(self.__head_data) / (time_range[1] - time_range[0]))
 
 
 time_range[0] = execute_qry("SELECT min(time) FROM head;", True)[0][0]

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import time
-import database
 import global_values
 from libavg import avg
 
@@ -18,7 +17,7 @@ class VisParams(avg.Publisher):
         super(VisParams, self).__init__()
         self.__play = False
         self.__last_frame_time = time.time()
-        self.__time_interval = list(pat_model.time_range)
+        self.__time_interval = [0, pat_model.time_range[1] - pat_model.time_range[0]]
         self.publish(VisParams.CHANGED)
 
         self.__smoothness = global_values.default_smoothness
@@ -34,7 +33,7 @@ class VisParams(avg.Publisher):
         self.notify()
 
     def zoom_out_at(self, fraction_in_timeframe):
-        time_range = pat_model.time_range
+        time_range = [0, pat_model.time_range[1] - pat_model.time_range[0]]
         if self.__time_interval == time_range:
             return
         point = self.__time_interval[0] + fraction_in_timeframe * (self.__time_interval[1] - self.__time_interval[0])
