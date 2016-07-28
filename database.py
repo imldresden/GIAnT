@@ -516,6 +516,3 @@ def setup_database(wall_screen_resolution):
     print "tables created 6/7"
     create_touch_table(wall_screen_resolution)
     print "tables created 7/7"
-
-
-init_values()

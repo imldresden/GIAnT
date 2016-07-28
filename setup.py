@@ -9,6 +9,8 @@ DATA_DIR = "Study Data/Session 3"
 OPTITRACK_FILENAME = "optitrack_Beginner's Village15-24_17-03-2016_log.csv"
 TOUCH_FILENAME = "touch_Beginner's Village15-24_17-03-2016_log.csv"
 DATE = "2016-03-17"
+NUMBER_OF_USERS = 4
+TIME_STEP = 1./30            # User position data stored with 30 FPS
 
 
 def create_table(table, columns):
@@ -39,13 +41,29 @@ def import_optitrack():
         reader = csv.reader(f)
         csv_data = list(reader)
         csv_data.pop(0)
-    last_line = None
+    last_lines = [None] * NUMBER_OF_USERS
+    last_db_time = [None] * NUMBER_OF_USERS
+    last_interpol_data = [None] * NUMBER_OF_USERS
     db_list = []
+    i = 0
     for data_line in csv_data:
-        head_data = pat_model.HeadData.from_csv(data_line, DATE, last_line)
-        if (last_line is None) or (head_data != last_line):  # Discard equal lines
-            last_line = head_data
-            db_list.append(head_data.as_list())
+        head_data = pat_model.HeadData.from_csv(data_line, DATE)
+        userid = head_data.userid
+        last_data = last_lines[userid]
+        if (last_data is not None) and (last_data.timestamp == head_data.timestamp):  # Discard equal lines
+            continue
+        while last_db_time[userid] < head_data.timestamp:
+            # The original (csv) data has irregular timestamps, the db should contain data every
+            # TIME_STEP.
+            interpol_data = pat_model.HeadData.create_interpolated(last_data, head_data, last_db_time[userid])
+            interpol_data.calc_sums(last_interpol_data[head_data.userid])
+            db_list.append(interpol_data.as_list())
+            if last_db_time[userid] is None:
+                last_db_time[userid] = head_data.timestamp
+            else:
+                last_db_time[userid] += TIME_STEP
+            last_interpol_data[userid] = interpol_data
+        last_lines[userid] = head_data
     con = sqlite3.connect("db")
     cur = con.cursor()
     cur.executemany(

@@ -41,7 +41,11 @@ def csvtime_to_float(date, csv_time):
 
 class HeadData:
     def __init__(self):
-        pass
+        self.userid = None
+        self.pos = None
+        self.rotation = None
+        self.timestamp = None
+        self.pos_prefix_sum = None
 
     def as_list(self):
         return (self.userid,
@@ -50,27 +54,23 @@ class HeadData:
                 self.timestamp,
                 self.pos_prefix_sum[0], self.pos_prefix_sum[1], self.pos_prefix_sum[2])
 
-    def __eq__(self, other):
-        return self.timestamp == other.timestamp and self.userid == other.userid
-
-    def __ne__(self, other):
-        return not(self == other)
+    def calc_sums(self, prev_data):
+        if prev_data:
+            self.pos_prefix_sum = (
+                prev_data.pos_prefix_sum[0] + self.pos[0],
+                prev_data.pos_prefix_sum[1] + self.pos[1],
+                prev_data.pos_prefix_sum[2] + self.pos[2])
+        else:
+            self.pos_prefix_sum = self.pos
 
     @classmethod
-    def from_csv(cls, csv_record, date, prev_data):
+    def from_csv(cls, csv_record, date):
         head_data = HeadData()
         head_data.timestamp = csvtime_to_float(date, csv_record[0])
-        head_data.userid = eval(csv_record[1])
+        head_data.userid = eval(csv_record[1])-1
         head_data.pos = eval(csv_record[2])  # In Meters. If facing the wall, x points left, y up, z into the wall.
                                              # Origin is lower left corner of the wall.
         head_data.rotation = eval(csv_record[3])  # yaw, pitch, roll
-        if prev_data:
-            head_data.pos_prefix_sum = (
-                prev_data.pos_prefix_sum[0] + head_data.pos[0],
-                prev_data.pos_prefix_sum[1] + head_data.pos[1],
-                prev_data.pos_prefix_sum[2] + head_data.pos[2])
-        else:
-            head_data.pos_prefix_sum = head_data.pos
         return head_data
 
     @classmethod
@@ -83,26 +83,47 @@ class HeadData:
         head_data.pos_prefix_sum = head_list[8], head_list[9], head_list[10]
         return head_data
 
+    @classmethod
+    def create_interpolated(cls, data1, data2, cur_time):
+
+        def interpolate(x1, x2, part):
+            return x1*part + x2*(1-part)
+
+        if data1 is None:
+            return data2
+        else:
+            part = (cur_time - data1.timestamp) / (data2.timestamp - data1.timestamp)
+            assert(data1.userid == data2.userid)
+            head_data = HeadData()
+            head_data.timestamp = cur_time
+            head_data.userid = data1.userid
+            head_data.pos = [interpolate(data1.pos[0], data2.pos[0], part),
+                    interpolate(data1.pos[1], data2.pos[1], part),
+                    interpolate(data1.pos[2], data2.pos[2], part)]
+            head_data.rotation = [interpolate(data1.rotation[0], data2.rotation[0], part),
+                    interpolate(data1.rotation[1], data2.rotation[1], part),
+                    interpolate(data1.rotation[2], data2.rotation[2], part)]
+            return head_data
 
 class User:
     def __init__(self, userid):
         self.userid = userid
 
         head_data_list = execute_qry("SELECT user, x, y, z, pitch, yaw, roll, time, x_sum, y_sum, z_sum "
-                          "FROM head WHERE user = " + str(userid+1) +
+                          "FROM head WHERE user = " + str(userid) +
                           " GROUP BY time ORDER BY time;", True)
         self.__head_data = [HeadData.from_list(head_list) for head_list in head_data_list]
-
 #        self.__touches = database.get_touch_positions(index+1)
 
     def get_num_states(self):
-        return len(self.__head_positions_integral)
+        return len(self.__head_data)
 
     def get_head_position_averaged(self, cur_time, smoothness):
-        integral = self.__head_positions_integral
+
         i = self.__time_to_index(cur_time)
-        start_integral = integral[max(0, i - smoothness/2)]
-        end_integral = integral[min(len(integral)-1, i + int((smoothness+1)/2))]
+        print i, smoothness
+        start_integral = self.__head_data[max(0, i - smoothness/2)].pos_prefix_sum
+        end_integral = self.__head_data[min(len(self.__head_data)-1, i + int((smoothness+1)/2))].pos_prefix_sum
         head_position = [(end_integral[0] - start_integral[0]) / smoothness,
                          (end_integral[1] - start_integral[1]) / smoothness,
                          (end_integral[2] - start_integral[2]) / smoothness]
@@ -114,8 +135,9 @@ class User:
         return head_orientation
 
     def get_touches(self, start_time, end_time):
-        touches = [val for key, val in self.__touches.iteritems() if start_time <= key < end_time]
-        return touches
+        return []
+#        touches = [val for key, val in self.__touches.iteritems() if start_time <= key < end_time]
+#        return touches
 
     def get_view_point_averaged(self, cur_time, smoothness):
         # TODO: Unused, untested
@@ -131,4 +153,18 @@ class User:
         return view_point
 
     def __time_to_index(self, t):
-        return int(t * len(self.__head_positions_integral) / (time_range[1] - time_range[0]))
+        return int((t - time_range[0]) / (time_range[1] - time_range[0]))
+
+
+time_range[0] = execute_qry("SELECT min(time) FROM head;", True)[0][0]
+time_range[1] = execute_qry("SELECT max(time) FROM head;", True)[0][0]
+
+min_x = execute_qry("SELECT min(x) FROM head;", True)[0][0]
+max_x = execute_qry("SELECT max(x) FROM head;", True)[0][0]
+
+min_y = execute_qry("SELECT min(y) FROM head;", True)[0][0]
+max_y = execute_qry("SELECT max(y) FROM head;", True)[0][0]
+
+min_z = pos_range[0][2]
+max_z = pos_range[1][2]
+pos_range = ((min_x, min_y, min_z), (max_x, max_y, max_z))
