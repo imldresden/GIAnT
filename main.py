@@ -85,7 +85,7 @@ class MainDiv(app.MainDiv):
     def onFrame(self):
         if self.__vis_params.play:
             current_time = time.time()
-            self.__vis_params.shift_time(True, (current_time - self.__vis_params.last_frame_time) * 1000)
+            self.__vis_params.shift_time(True, current_time - self.__vis_params.last_frame_time)
             self.__vis_params.last_frame_time = current_time
 
     def draw_line(self, p1, p2, color, thickness, last_thickness, opacity):

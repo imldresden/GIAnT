@@ -6,7 +6,7 @@ import sqlite3
 wall_width = 490
 wall_height = 206
 pos_range = [(0,0,50), (0,0,250)]  # User head position minimum and maximum
-time_range = [0,0]
+max_time = 0
 x_touch_range = [0, 4*1920]
 y_touch_range = [0, 3*1080]
 x_wall_range = [0, wall_width]
@@ -152,18 +152,24 @@ class User:
         return view_point
 
     def __time_to_index(self, t):
-        return int(t * len(self.__head_data) / (time_range[1] - time_range[0]))
+        return int(t * len(self.__head_data) / max_time)
 
 
-time_range[0] = execute_qry("SELECT min(time) FROM head;", True)[0][0]
-time_range[1] = execute_qry("SELECT max(time) FROM head;", True)[0][0]
+def init_globals():
+    global max_time
+    max_time = (execute_qry("SELECT max(time) FROM head;", True)[0][0] -
+            execute_qry("SELECT min(time) FROM head;", True)[0][0])
 
-min_x = execute_qry("SELECT min(x) FROM head;", True)[0][0]
-max_x = execute_qry("SELECT max(x) FROM head;", True)[0][0]
+    min_x = execute_qry("SELECT min(x) FROM head;", True)[0][0]
+    max_x = execute_qry("SELECT max(x) FROM head;", True)[0][0]
 
-min_y = execute_qry("SELECT min(y) FROM head;", True)[0][0]
-max_y = execute_qry("SELECT max(y) FROM head;", True)[0][0]
+    min_y = execute_qry("SELECT min(y) FROM head;", True)[0][0]
+    max_y = execute_qry("SELECT max(y) FROM head;", True)[0][0]
 
-min_z = pos_range[0][2]
-max_z = pos_range[1][2]
-pos_range = ((min_x, min_y, min_z), (max_x, max_y, max_z))
+    min_z = pos_range[0][2]
+    max_z = pos_range[1][2]
+
+    global pos_range
+    pos_range = ((min_x, min_y, min_z), (max_x, max_y, max_z))
+
+init_globals()

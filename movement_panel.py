@@ -20,7 +20,7 @@ class MovementPanel(avg.DivNode):
         self.crop = False
 
         self.__time_min = 0
-        self.__time_max = pat_model.time_range[1] - pat_model.time_range[0]
+        self.__time_max = pat_model.max_time
 
         # rect for coloured border and background
         self.background_rect = avg.RectNode(pos=(axis.THICKNESS, 0),
@@ -48,8 +48,8 @@ class MovementPanel(avg.DivNode):
                 inverted=True, label_offset=custom_label_offset)
 
         x_axis_pos = (axis.THICKNESS, self.data_div.height)
-        self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, vis_params=vis_params, parent=self, unit="ms",
-                data_range=pat_model.time_range, size=(self.data_div.width, axis.THICKNESS), inverted=False)
+        self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, vis_params=vis_params, parent=self, unit="s",
+                data_range=[0, pat_model.max_time], size=(self.data_div.width, axis.THICKNESS), inverted=False)
 
         self.appendChild(self.data_div)
 

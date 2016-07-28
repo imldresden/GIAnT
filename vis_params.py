@@ -17,7 +17,7 @@ class VisParams(avg.Publisher):
         super(VisParams, self).__init__()
         self.__play = False
         self.__last_frame_time = time.time()
-        self.__time_interval = [0, pat_model.time_range[1] - pat_model.time_range[0]]
+        self.__time_interval = [0, pat_model.max_time]
         self.publish(VisParams.CHANGED)
 
         self.__smoothness = global_values.default_smoothness
@@ -33,7 +33,7 @@ class VisParams(avg.Publisher):
         self.notify()
 
     def zoom_out_at(self, fraction_in_timeframe):
-        time_range = [0, pat_model.time_range[1] - pat_model.time_range[0]]
+        time_range = [0, pat_model.max_time]
         if self.__time_interval == time_range:
             return
         point = self.__time_interval[0] + fraction_in_timeframe * (self.__time_interval[1] - self.__time_interval[0])
@@ -55,11 +55,10 @@ class VisParams(avg.Publisher):
         else:
             shift_amount = -amount
 
-        total_range = pat_model.time_range
-        if self.__time_interval[0] + shift_amount < total_range[0]:
-            shift_amount = total_range[0] - self.__time_interval[0]
-        if self.__time_interval[1] + shift_amount > total_range[1]:
-            shift_amount = total_range[1] - self.__time_interval[1]
+        if self.__time_interval[0] + shift_amount < 0:
+            shift_amount = 0 - self.__time_interval[0]
+        if self.__time_interval[1] + shift_amount > pat_model.max_time:
+            shift_amount = pat_model.max_time - self.__time_interval[1]
 
         self.__time_interval[0] += shift_amount
         self.__time_interval[1] += shift_amount
@@ -73,8 +72,7 @@ class VisParams(avg.Publisher):
     def notify(self, draw_lines=True):
         if global_values.link_smoothness:
             i_range = self.__time_interval[1] - self.__time_interval[0]
-            time_extent = pat_model.time_range[1] - pat_model.time_range[0]
-            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / time_extent
+            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / pat_model.max_time
             self.set_smoothness(s)
         self.notifySubscribers(VisParams.CHANGED, [self, draw_lines])
 

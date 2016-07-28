@@ -82,10 +82,10 @@ def format_label_value(unit, value, short=False):
         str_v = "{} m".format(meter)
 
     # time units in milliseconds
-    elif unit is "ms":
+    elif unit is "s":
         # calculate seconds and minutes from milliseconds
-        s, ms = divmod(value, 1000)
-        m, s = divmod(s, 60)
+        ms = int((value - int(value)) * 1000)
+        m, s = divmod(value, 60)
 
         ms = int(ms)
         s = int(s)

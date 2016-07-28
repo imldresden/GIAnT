@@ -8,7 +8,7 @@ import util
 
 
 class Video:
-    offset = (60 * 6 + 8.8) * 1000  # video is offset from data by this amount (ms)
+    offset = 0.0  # video is offset from data by this amount (secs)
 
     def __init__(self, pos, size, vis_params, parent):
         self.path = ""
@@ -50,7 +50,7 @@ class Video:
 
     def update_time(self, vis_params, draw_lines):
         if not self.is_playing:
-            self.videoNode.seekToTime(int(vis_params.highlight_time + self.offset))
+            self.videoNode.seekToTime(int((vis_params.highlight_time + self.offset)*1000))
         self.__cur_time_text.text = "Current time: {}".format(
             util.format_label_value(unit="ms", value=vis_params.highlight_time, short=True))
 
