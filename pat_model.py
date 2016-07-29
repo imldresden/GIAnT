@@ -119,6 +119,7 @@ class Touch:
         self.userid = None
         self.pos = avg.Point2D()
         self.timestamp = None
+        self.duration = None
 
 
     @classmethod
@@ -127,6 +128,7 @@ class Touch:
         touch.userid = touch_list[0]
         touch.pos = avg.Point2D(touch_list[1], touch_list[2])
         touch.timestamp = touch_list[3] - time_offset
+        touch.duration = touch_list[4]
         return touch
 
 
@@ -140,7 +142,7 @@ class User:
         self.__head_data = [HeadData.from_list(head_list) for head_list in head_data_list]
 
 
-        touch_data_list = execute_qry("SELECT user, x, y, time "
+        touch_data_list = execute_qry("SELECT user, x, y, time, duration "
                                      "FROM touch WHERE user = " + str(userid) +
                                      " GROUP BY time ORDER BY time;", True)
         self.__touches = [Touch.from_list(touch_list) for touch_list in touch_data_list]

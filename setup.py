@@ -86,23 +86,34 @@ def import_touches():
                          "user TINYINT NOT NULL,"
                          "x FLOAT,"
                          "y FLOAT,"
-                         "time FLOAT NOT NULL")
+                         "time FLOAT NOT NULL,"
+                         "duration FLOAT NOT NULL")
 
     with open(DATA_DIR + "/" + TOUCH_FILENAME) as f:
         reader = csv.reader(f)
         csv_data = list(reader)
         csv_data.pop(0)
     db_list = []
-    for data_line in csv_data:
-        timestamp = pat_model.csvtime_to_float(DATE, data_line[0])
-        pos = list(eval(data_line[1]))
-        userid = tool_to_userid(data_line[2])
-        print timestamp, userid, pos
-        if userid is not None:
-            db_list.append((userid, pos[0], pos[1], timestamp))
+    last_time = 0
+    for data in csv_data:
+        timestamp = pat_model.csvtime_to_float(DATE, data[0])
+        pos = list(eval(data[1]))
+        userid = tool_to_userid(data[2])
+        if userid is None:
+            continue
+        touch = [userid, pos[0], pos[1], timestamp, 0.03]
+        if touch[3] > last_time + 0.1:
+            # New touch
+            db_list.append(touch)  # prepare for upload
+        else:
+            # Touch continuation
+            touch[4] += touch[3] - last_time
+            db_list[-1] = touch
+        last_time = touch[3]
+
     con = sqlite3.connect("db")
     cur = con.cursor()
-    cur.executemany("INSERT INTO touch (user, x, y, time) VALUES (?,?,?,?);", db_list)
+    cur.executemany("INSERT INTO touch (user, x, y, time, duration) VALUES (?,?,?,?,?);", db_list)
     con.commit()
     con.close()
 
