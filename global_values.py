@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-"""visualization values"""
-time_step_size = 50                                 # time in ms over witch data is averaged from database
-
 """color values"""
 user_color_schemes = [                              # different user color schemes
     [[ 35 / float(360), 0.409, 1],                  # Yellow

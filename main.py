@@ -72,7 +72,7 @@ class MainDiv(app.MainDiv):
                                                  size=(self.main_visualization.width, menu_height))
 
         # legend
-        self.legend = Legend.Legend(parent=self.options, min_value=0, max_value=1, unit="cm", size=(210, 200))
+        self.legend = Legend.Legend(parent=self.options, min_value=0, max_value=1, unit="m", size=(210, 200))
         self.legend.pos = (self.options.width - self.legend.width, menu_height - self.legend.height)
 
         self.draw_cosmetics()
@@ -138,15 +138,8 @@ class MainDiv(app.MainDiv):
 
 
 def value_to_pixel(value, max_px, interval):
-    """
-    Calculate pixel position.
-    :param value: Value to be converted into pixel position
-    :param max_px: Maximum possible value
-    :param interval: Current interval
-    :return: pixel position
-    """
     a = (interval[1] - interval[0]) / max_px
-    return value / a - interval[0] / a
+    return (value - interval[0]) / a
 
 
 # minimum recommended resolution: 1040x331 px!
