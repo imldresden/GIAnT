@@ -26,6 +26,7 @@ class MainDiv(app.MainDiv):
         # and padding inbetween elements of visualization
         padding = global_values.APP_PADDING
 
+        pat_model.init_globals()
         self.__users = []
         for userid in range(0, 4):
             self.__users.append(pat_model.User(userid))
@@ -87,18 +88,6 @@ class MainDiv(app.MainDiv):
             current_time = time.time()
             self.__vis_params.shift_time(True, current_time - self.__vis_params.last_frame_time)
             self.__vis_params.last_frame_time = current_time
-
-    def draw_line(self, p1, p2, color, thickness, last_thickness, opacity):
-        return libavg.LineNode(pos1=p1, pos2=p2, color=color, strokewidth=thickness, parent=self)
-
-    def draw_line_variable_thickness(self, color, opacity, p1, p2, p3, p4, thickness1, thickness2, thickness3,
-                                     thickness4, newNode=True):
-        start_points = calculate_line_intersection(p1, p2, p3, thickness1, thickness2, thickness3)
-        end_points = calculate_line_intersection(p2, p3, p4, thickness2, thickness3, thickness4)
-        if newNode:
-            return libavg.PolygonNode(pos=[start_points[0], end_points[0], end_points[1], start_points[1]],
-                                      opacity=opacity, color=color, parent=self)
-        return [start_points[0], end_points[0], end_points[1], start_points[1]]
 
     def zoom_in(self):
         self.__vis_params.zoom_in_at(0.5)

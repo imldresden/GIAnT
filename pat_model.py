@@ -5,7 +5,7 @@ import sqlite3
 
 wall_width = 490
 wall_height = 206
-pos_range = [(0,0,50), (0,0,250)]  # User head position minimum and maximum
+pos_range = [(0,0,0.5), (0,0,2.5)]  # User head position minimum and maximum
 max_time = 0
 x_touch_range = [0, 4*1920]
 y_touch_range = [0, 3*1080]
@@ -68,8 +68,14 @@ class HeadData:
         head_data = HeadData()
         head_data.timestamp = csvtime_to_float(date, csv_record[0])
         head_data.userid = eval(csv_record[1])-1
-        head_data.pos = eval(csv_record[2])  # In Meters. If facing the wall, x points left, y up, z into the wall.
-                                             # Origin is lower left corner of the wall.
+        head_data.pos = list(eval(csv_record[2]))
+        # pos is in Meters, origin is lower left corner of the wall.
+        # In the CSV file:
+        #   If facing the wall, x points left, y up, z into the wall
+        # In the DB:
+        #   If facing the wall, x points right, y up, z away from the wall
+        head_data.pos[0] = -head_data.pos[0]
+        head_data.pos[2] = -head_data.pos[2]
         head_data.rotation = eval(csv_record[3])  # yaw, pitch, roll
         return head_data
 
@@ -104,6 +110,7 @@ class HeadData:
                     interpolate(data1.rotation[1], data2.rotation[1], part),
                     interpolate(data1.rotation[2], data2.rotation[2], part)]
             return head_data
+
 
 class User:
     def __init__(self, userid):
@@ -166,10 +173,7 @@ def init_globals():
     min_y = execute_qry("SELECT min(y) FROM head;", True)[0][0]
     max_y = execute_qry("SELECT max(y) FROM head;", True)[0][0]
 
+    global pos_range
     min_z = pos_range[0][2]
     max_z = pos_range[1][2]
-
-    global pos_range
     pos_range = ((min_x, min_y, min_z), (max_x, max_y, max_z))
-
-init_globals()
