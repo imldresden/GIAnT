@@ -2,7 +2,7 @@
 
 """visualization values"""
 min_averaging_count = 1
-max_averaging_count = 2000
+max_averaging_count = 500
 link_smoothness = True                              # if the smoothness value should be linked to the current zoom level
 default_smoothness = 500
 time_step_size = 50                                 # time in ms over witch data is averaged from database

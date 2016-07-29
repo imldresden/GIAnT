@@ -167,8 +167,8 @@ def init_globals():
     max_time = (execute_qry("SELECT max(time) FROM head;", True)[0][0] -
             execute_qry("SELECT min(time) FROM head;", True)[0][0])
 
-    min_x = execute_qry("SELECT min(x) FROM head;", True)[0][0]
-    max_x = execute_qry("SELECT max(x) FROM head;", True)[0][0]
+    min_x = execute_qry("SELECT min(x) FROM head;", True)[0][0] - 0.5
+    max_x = execute_qry("SELECT max(x) FROM head;", True)[0][0] + 0.5
 
     min_y = execute_qry("SELECT min(y) FROM head;", True)[0][0]
     max_y = execute_qry("SELECT max(y) FROM head;", True)[0][0]

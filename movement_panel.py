@@ -44,7 +44,7 @@ class MovementPanel(avg.DivNode):
         custom_label_offset = 23  # to make space for cosmetic schematic wall
         x_range = pat_model.pos_range[0][0], pat_model.pos_range[1][0]
         self.y_axis = axis.AxisNode(pos=(0, 0), size=(axis.THICKNESS, self.data_div.height), parent=self,
-                sensitive=True, data_range=x_range, unit="cm", hide_rims=True,
+                sensitive=True, data_range=x_range, unit="m", hide_rims=True,
                 inverted=True, label_offset=custom_label_offset)
 
         x_axis_pos = (axis.THICKNESS, self.data_div.height)

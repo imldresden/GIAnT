@@ -52,7 +52,7 @@ class Video:
         if not self.is_playing:
             self.videoNode.seekToTime(int((vis_params.highlight_time + self.offset)*1000))
         self.__cur_time_text.text = "Current time: {}".format(
-            util.format_label_value(unit="ms", value=vis_params.highlight_time, short=True))
+            util.format_label_value(unit="s", value=vis_params.highlight_time))
 
     def play_pause(self, play=True):
         start_time = self.__vis_params.get_time_interval()[0]

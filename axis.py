@@ -13,7 +13,7 @@ THICKNESS = 50     # space needed for axis display (means height if axis is hori
 
 
 class AxisNode(avg.DivNode):
-    def __init__(self, data_range, unit="cm", hide_rims=False, top_axis=False, inverted=False, parent=None,
+    def __init__(self, data_range, unit="m", hide_rims=False, top_axis=False, inverted=False, parent=None,
                  label_offset=0, **kwargs):
         """
         Custom AxisNode with axis lines, grid lines and labeling.
@@ -96,7 +96,7 @@ class AxisNode(avg.DivNode):
         self.__end = end
 
         # calculate tick marks with R's pretty algorithm and format numbers
-        if self.__unit is "ms":
+        if self.__unit is "s":
             self.__label_values = r_pretty(dmin=self.__start, dmax=self.__end, n=5, time=True)
         else:
             self.__label_values = r_pretty(dmin=self.__start, dmax=self.__end, n=5)
@@ -355,7 +355,7 @@ class TimeAxisNode(AxisNode):
         super(TimeAxisNode, self).update(i_start, i_end)
 
         # update interval details on demand (hover over)
-        self.__i_label.text = "{}".format(util.format_label_value(self.unit, self.end - self.start, True))
+        self.__i_label.text = "{}".format(util.format_label_value(self.unit, self.end - self.start))
         if self.__i_rect.size[0] > self.__i_label.width + self.__i_label_offset:
             self.__i_label.color = global_values.COLOR_BACKGROUND
             self.__i_label.pos = (self.__i_rect.pos[0] + self.__i_rect.size[0] / 2 - self.__i_label.width / 2,
