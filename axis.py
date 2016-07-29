@@ -206,12 +206,6 @@ class AxisNode(avg.DivNode):
             return pixel_pos
 
     """python properties"""
-    def __getSize(self):
-        return self.__div_size
-
-    def __setSize(self, size):
-        self.__div_size = size
-
     def __get_vertical(self):
         return self.__vertical
 
@@ -251,7 +245,6 @@ class AxisNode(avg.DivNode):
     def __get_unit(self):
         return self.__unit
 
-    size = property(__getSize, __setSize)
     vertical = property(__get_vertical, __set_vertical)
     label_values = property(__get_label_values)
     start = property(__get_start)
@@ -264,7 +257,6 @@ class AxisNode(avg.DivNode):
     unit = property(__get_unit)
 
     __update = update               # private copy of original update() method
-    __div_size = avg.DivNode.size   # private copy of DivNode size
 
 
 class TimeAxisNode(AxisNode):
@@ -319,11 +311,6 @@ class TimeAxisNode(AxisNode):
         self.update(self.start, self.end)
 
     def update_time(self, vis_params, draw_lines):
-        """
-        Called by the publisher time_frame to update the visualization to the new interval.
-        :param interval: (start, end): new interval start and end as list
-        :param draw_lines: if lines should be redrawn
-        """
         interval = vis_params.get_time_interval()
         self.update(interval[0], interval[1])
 
@@ -336,12 +323,6 @@ class TimeAxisNode(AxisNode):
         self.__vis_params.set_time_interval((start, end))
 
     def update(self, i_start, i_end):
-        """
-        Updates position of interval start and interval end.
-        Needs to be called whenever corresponding data is changing (e.g. in onFrame()).
-        :param i_start: new interval start
-        :param i_end: new interval end
-        """
         # set new interval start and end
         time_range = [0, pat_model.max_time]
         self.__i_start = self._value_to_pixel(i_start, time_range[0], time_range[1])
@@ -374,10 +355,6 @@ class TimeAxisNode(AxisNode):
         self.__i_scrollbar.setThumbExtent(self.end - self.start)
 
     def calculate_time_from_pixel(self, pixel):
-        """
-        Calculates the time in milliseconds of the given pixel value within the width of the axis.
-        :param pixel the pixel value to be converted to time in ms
-        """
         time_i_range = self.end - self.start            # time
         ratio = pixel / self.width                      # %
         time = ratio * time_i_range + self.start        # time
