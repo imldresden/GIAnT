@@ -58,7 +58,7 @@ class OptionsPanel(libavg.DivNode):
                                     avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=user_color, fillcolor=user_color),
                                     checkedDownNode=
                                     avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=user_color, fillcolor=user_color),
-                                    pos=(i * 80 + 50, 0), size=size, parent=self, enabled=True))
+                                    pos=(i * 80 + 50, 0), size=size, parent=self))
             self.user_buttons[i].checked = True
             self.user_texts.append(avg.WordsNode(color=global_values.COLOR_BACKGROUND,
                                                  parent=self, sensitive=False, text="User {}".format(i + 1),
@@ -72,42 +72,19 @@ class OptionsPanel(libavg.DivNode):
         # smoothness text
         self.smoothness_text = avg.WordsNode(pos=(500, 0), color=global_values.COLOR_FOREGROUND,
                                              parent=self, text="Smoothness: {}s".format(
-                                                 self.__vis_params.get_smoothness() * global_values.time_step_size / 1000))
+                                                 self.__vis_params.get_smoothness_factor()))
         # smoothness slider
-        self.smoothness_slider = widget.Slider(pos=(495, 20), width=180, parent=self, range=(2, 2000))
-        self.smoothness_slider.thumbPos = self.__vis_params.get_smoothness()
+        smoothness_range = vis_params.MIN_SMOOTHNESS_FACTOR, vis_params.MAX_SMOOTHNESS_FACTOR
+        self.smoothness_slider = widget.Slider(pos=(495, 20), width=180, range=smoothness_range, parent=self)
+        self.smoothness_slider.thumbPos = self.__vis_params.get_smoothness_factor()
         # subscription to change curve smoothness
         self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, self.__on_smoothness_change)
-
-        # link smoothness to zoom level button
-        icon_size = (12, 12)
-        button_size = (100, 12)
-        self.link_s_button = widget.ToggleButton(uncheckedUpNode=
-                                                 avg.RectNode(size=icon_size, fillopacity=0, strokewidth=1, color=global_values.COLOR_FOREGROUND),
-                                                 uncheckedDownNode=
-                                                 avg.RectNode(size=icon_size, fillopacity=0, strokewidth=1, color=global_values.COLOR_FOREGROUND),
-                                                 uncheckedDisabledNode=
-                                                 avg.RectNode(size=icon_size, fillopacity=0, strokewidth=1, color=global_values.COLOR_SECONDARY),
-                                                 checkedUpNode=
-                                                 avg.RectNode(size=icon_size, fillopacity=1, strokewidth=1, color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_FOREGROUND),
-                                                 checkedDownNode=
-                                                 avg.RectNode(size=icon_size, fillopacity=1, strokewidth=1, color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_FOREGROUND),
-                                                 checkedDisabledNode=
-                                                 avg.RectNode(size=icon_size, fillopacity=0, strokewidth=1, color=global_values.COLOR_SECONDARY),
-                                                 pos=(500, 38), size=button_size, parent=self)
-        self.__toggle_smoothness_link(global_values.link_smoothness)
-        self.link_s_button.checked = global_values.link_smoothness
-        self.link_s_text = avg.WordsNode(pos=(500 + button_size[1] + 5, 36), color=global_values.COLOR_FOREGROUND,
-                                         parent=self, text="Link to Zoom", sensitive=False)
-        # subscription to link smoothness to zoom level
-        self.link_s_button.subscribe(widget.CheckBox.TOGGLED,
-                                     lambda checked: self.__toggle_smoothness_link(checked))
 
         """subscribe to global time_frame"""
         self.__vis_params.subscribe(self.__vis_params.CHANGED, self.update_time)
 
     def __on_smoothness_change(self, pos):
-        self.__vis_params.set_smoothness(pos)
+        self.__vis_params.set_smoothness_factor(pos)
         self.__vis_params.notify()
 
     def __toggle_user(self, checked, user_id):
@@ -118,32 +95,6 @@ class OptionsPanel(libavg.DivNode):
         :param user_id: user_id to toggle
         """
         self.__vis_params.set_user_visible(user_id, checked)
-
-    def __default_smoothness(self, value):
-        """
-        Resets smoothness back to value.
-        :param value: Smoothness value
-        """
-        self.__vis_params.set_smoothness(value)
-        self.smoothness_slider.thumbPos = self.__vis_params.get_smoothness()
-
-    def __toggle_smoothness_link(self, checked):
-        """
-        Links/Unlinks zooming and the curve smoothness. Disables smoothness slider and smoothness default button.
-        :param checked: bool, True if link is active
-        """
-        global_values.link_smoothness = checked
-        self.smoothness_slider.enabled = not checked
-
-        if checked:
-            self.smoothness_slider.opacity = 0.2
-            i_range = self.__vis_params.get_time_interval()[1] - self.__vis_params.get_time_interval()[0]
-            time_extent = pat_model.max_time
-            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / time_extent
-            self.__vis_params.set_smoothness(s)
-        else:
-            self.smoothness_slider.opacity = 1
-            self.__vis_params.notify()
 
     def __play_pause(self, checked):
         """
@@ -159,6 +110,5 @@ class OptionsPanel(libavg.DivNode):
         if self.play_button.checked is not self.__vis_params.play:
             self.play_button.checked = self.__vis_params.play
 
-        self.smoothness_text.text = "Smoothness: {}s".format(
-            self.__vis_params.get_smoothness() * global_values.time_step_size / 1000.0)
-        self.smoothness_slider.thumbPos = self.__vis_params.get_smoothness()
+        self.smoothness_text.text = "Smoothness: {:1.2f}".format(
+                self.__vis_params.get_smoothness_factor())

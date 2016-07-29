@@ -6,9 +6,13 @@ from libavg import avg
 
 import pat_model
 
-
 class VisParams(avg.Publisher):
     CHANGED = avg.Publisher.genMessageID()
+
+    MIN_SMOOTHNESS_FACTOR = 0.01
+    MAX_SMOOTHNESS_FACTOR = 1
+
+    MAX_SMOOTHNESS = 500
 
     __highlight_time = 0
     __zoom_strength = 0.1
@@ -20,7 +24,8 @@ class VisParams(avg.Publisher):
         self.__time_interval = [0, pat_model.max_time]
         self.publish(VisParams.CHANGED)
 
-        self.__smoothness = global_values.default_smoothness
+        self.__smoothness_factor = 1
+        self.__calc_smoothness()
         self.__users_visible = [True]*num_users
 
     def get_time_interval(self):
@@ -70,10 +75,7 @@ class VisParams(avg.Publisher):
         self.notify()
 
     def notify(self, draw_lines=True):
-        if global_values.link_smoothness:
-            i_range = self.__time_interval[1] - self.__time_interval[0]
-            s = i_range * (global_values.max_averaging_count - global_values.min_averaging_count) / pat_model.max_time
-            self.set_smoothness(s)
+        self.__calc_smoothness()
         self.notifySubscribers(VisParams.CHANGED, [self, draw_lines])
 
     def play_animation(self):
@@ -87,12 +89,12 @@ class VisParams(avg.Publisher):
         self.__users_visible[i] = visible
         self.notify()
 
-    def set_smoothness(self, value):
-        if value <= global_values.min_averaging_count:
-            value = global_values.min_averaging_count
-        elif value > global_values.max_averaging_count:
-            value = global_values.max_averaging_count
-        self.__smoothness = int(value)
+    def set_smoothness_factor(self, value):
+        self.__smoothness_factor = value
+        self.__calc_smoothness()
+
+    def get_smoothness_factor(self):
+        return self.__smoothness_factor
 
     def get_smoothness(self):
         return self.__smoothness
@@ -114,3 +116,9 @@ class VisParams(avg.Publisher):
     def __get_last_frame_time(self):
         return self.__last_frame_time
     last_frame_time = property(__get_last_frame_time, __set_last_frame_time)
+
+    def __calc_smoothness(self):
+        time_range = self.__time_interval[1] - self.__time_interval[0]
+        self.__smoothness = int((time_range / pat_model.max_time) * self.MAX_SMOOTHNESS * self.__smoothness_factor)
+        if self.__smoothness < 1:
+            self.__smoothness = 1
