@@ -310,7 +310,7 @@ class TimeAxisNode(AxisNode):
         """initial update"""
         self.update(self.start, self.end)
 
-    def update_time(self, vis_params, draw_lines):
+    def update_time(self, vis_params):
         interval = vis_params.get_time_interval()
         self.update(interval[0], interval[1])
 

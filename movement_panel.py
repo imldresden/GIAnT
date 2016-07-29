@@ -68,17 +68,12 @@ class MovementPanel(avg.DivNode):
         self.__vis_params = vis_params
         self.data_div.subscribe(avg.Node.MOUSE_WHEEL, self.__on_mouse_wheel)
 
-    def update_time(self, vis_params, draw_lines):
-        min_orig = self.__time_min
-        max_orig = self.__time_max
+    def update_time(self, vis_params):
         interval = vis_params.get_time_interval()
         self.__time_min = interval[0]
         self.__time_max = interval[1]
         self.__time_factor = self.data_div.width / (self.__time_max - self.__time_min)
-        if draw_lines:
-            self.__create_lines(vis_params)
-        elif self.__time_min != min_orig or self.__time_max != max_orig:
-            self.__create_lines(vis_params)
+        self.__create_lines(vis_params)
         # update position of pinned highlight line and highlight line marker
         highlight_xpos = self.__time_to_xpos(self.__vis_params.highlight_time)
         if highlight_xpos > self.width or highlight_xpos < 0:
@@ -134,7 +129,7 @@ class MovementPanel(avg.DivNode):
         """
         rel_pos = self.data_div.getRelPos(event.pos)
         self.__vis_params.highlight_time = self.x_axis.calculate_time_from_pixel(rel_pos.x)
-        self.__vis_params.notify(False)
+        self.__vis_params.notify()
 
     def __xpos_to_time(self, x):
         return x / self.__time_factor + self.__time_min

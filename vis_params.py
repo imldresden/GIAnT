@@ -74,9 +74,9 @@ class VisParams(avg.Publisher):
         self.__time_interval = list(interval)
         self.notify()
 
-    def notify(self, draw_lines=True):
+    def notify(self):
         self.__calc_smoothness()
-        self.notifySubscribers(VisParams.CHANGED, [self, draw_lines])
+        self.notifySubscribers(VisParams.CHANGED, [self])
 
     def play_animation(self):
         self.__play = not self.__play

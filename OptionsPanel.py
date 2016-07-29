@@ -103,13 +103,9 @@ class OptionsPanel(libavg.DivNode):
         """
         self.parent_div.play_pause()
 
-    def update_time(self, interval_obj, draw_lines):
-        """
-        Called by the publisher time_frame to update the visualization if changes are made.
-        :param interval: (start, end): new interval start and end as list
-        """
-        if self.play_button.checked is not self.__vis_params.play:
-            self.play_button.checked = self.__vis_params.play
+    def update_time(self, vis_params):
+        if self.play_button.checked is not vis_params.play:
+            self.play_button.checked = vis_params.play
         self.__update_smoothness_text()
 
     def __update_smoothness_text(self):

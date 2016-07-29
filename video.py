@@ -48,7 +48,7 @@ class Video:
 
         vis_params.subscribe(vis_params.CHANGED, self.update_time)
 
-    def update_time(self, vis_params, draw_lines):
+    def update_time(self, vis_params):
         if not self.is_playing:
             self.videoNode.seekToTime(int((vis_params.highlight_time + self.offset)*1000))
         self.__cur_time_text.text = "Current time: {}".format(
