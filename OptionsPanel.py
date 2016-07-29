@@ -71,8 +71,9 @@ class OptionsPanel(libavg.DivNode):
         """smoothness slider"""
         # smoothness text
         self.smoothness_text = avg.WordsNode(pos=(500, 0), color=global_values.COLOR_FOREGROUND,
-                                             parent=self, text="Smoothness: {}s".format(
-                                                 self.__vis_params.get_smoothness_factor()))
+                                             parent=self)
+        self.__update_smoothness_text()
+
         # smoothness slider
         smoothness_range = vis_params.MIN_SMOOTHNESS_FACTOR, vis_params.MAX_SMOOTHNESS_FACTOR
         self.smoothness_slider = widget.Slider(pos=(495, 20), width=180, range=smoothness_range, parent=self)
@@ -109,6 +110,8 @@ class OptionsPanel(libavg.DivNode):
         """
         if self.play_button.checked is not self.__vis_params.play:
             self.play_button.checked = self.__vis_params.play
+        self.__update_smoothness_text()
 
+    def __update_smoothness_text(self):
         self.smoothness_text.text = "Smoothness: {:1.2f}".format(
                 self.__vis_params.get_smoothness_factor())
