@@ -45,7 +45,6 @@ def import_optitrack():
     last_db_time = [None] * NUMBER_OF_USERS
     last_interpol_data = [None] * NUMBER_OF_USERS
     db_list = []
-    i = 0
     for data_line in csv_data:
         head_data = pat_model.HeadData.from_csv(data_line, DATE)
         userid = head_data.userid
@@ -72,6 +71,42 @@ def import_optitrack():
     con.close()
 
 
-import_optitrack()
+def import_touches():
+    def tool_to_userid(tool):
+        if tool == "Pick":
+            return 0
+        elif tool == "Girder":
+            return 1
+        elif tool == "Lantern":
+            return 2
+        elif tool == "Ladder":
+            return 3
+
+    create_table("touch", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                         "user TINYINT NOT NULL,"
+                         "x FLOAT,"
+                         "y FLOAT,"
+                         "time FLOAT NOT NULL")
+
+    with open(DATA_DIR + "/" + TOUCH_FILENAME) as f:
+        reader = csv.reader(f)
+        csv_data = list(reader)
+        csv_data.pop(0)
+    db_list = []
+    for data_line in csv_data:
+        timestamp = pat_model.csvtime_to_float(DATE, data_line[0])
+        pos = list(eval(data_line[1]))
+        userid = tool_to_userid(data_line[2])
+        print timestamp, userid, pos
+        if userid is not None:
+            db_list.append((userid, pos[0], pos[1], timestamp))
+    con = sqlite3.connect("db")
+    cur = con.cursor()
+    cur.executemany("INSERT INTO touch (user, x, y, time) VALUES (?,?,?,?);", db_list)
+    con.commit()
+    con.close()
+
+#import_optitrack()
+import_touches()
 
 print "Database setup complete."

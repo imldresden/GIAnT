@@ -2,11 +2,13 @@
 
 import time
 import sqlite3
+from libavg import avg
 
 wall_width = 490
 wall_height = 206
 pos_range = [(0,0,0.5), (0,0,2.5)]  # User head position minimum and maximum
 max_time = 0
+time_offset = 0
 x_touch_range = [0, 4*1920]
 y_touch_range = [0, 3*1080]
 x_wall_range = [0, wall_width]
@@ -112,6 +114,22 @@ class HeadData:
             return head_data
 
 
+class Touch:
+    def __init__(self):
+        self.userid = None
+        self.pos = avg.Point2D()
+        self.timestamp = None
+
+
+    @classmethod
+    def from_list(cls, touch_list):
+        touch = Touch()
+        touch.userid = touch_list[0]
+        touch.pos = avg.Point2D(touch_list[1], touch_list[2])
+        touch.timestamp = touch_list[3] - time_offset
+        return touch
+
+
 class User:
     def __init__(self, userid):
         self.userid = userid
@@ -120,7 +138,12 @@ class User:
                           "FROM head WHERE user = " + str(userid) +
                           " GROUP BY time ORDER BY time;", True)
         self.__head_data = [HeadData.from_list(head_list) for head_list in head_data_list]
-#        self.__touches = database.get_touch_positions(index+1)
+
+
+        touch_data_list = execute_qry("SELECT user, x, y, time "
+                                     "FROM touch WHERE user = " + str(userid) +
+                                     " GROUP BY time ORDER BY time;", True)
+        self.__touches = [Touch.from_list(touch_list) for touch_list in touch_data_list]
 
     def get_num_states(self):
         return len(self.__head_data)
@@ -141,9 +164,8 @@ class User:
         return head_orientation
 
     def get_touches(self, start_time, end_time):
-        return []
-#        touches = [val for key, val in self.__touches.iteritems() if start_time <= key < end_time]
-#        return touches
+        touches = [touch for touch in self.__touches if start_time <= touch.timestamp < end_time]
+        return touches
 
     def get_view_point_averaged(self, cur_time, smoothness):
         # TODO: Unused, untested
@@ -166,6 +188,8 @@ def init_globals():
     global max_time
     max_time = (execute_qry("SELECT max(time) FROM head;", True)[0][0] -
             execute_qry("SELECT min(time) FROM head;", True)[0][0])
+    global time_offset
+    time_offset = execute_qry("SELECT min(time) FROM head;", True)[0][0]
 
     min_x = execute_qry("SELECT min(x) FROM head;", True)[0][0] - 0.5
     max_x = execute_qry("SELECT max(x) FROM head;", True)[0][0] + 0.5
