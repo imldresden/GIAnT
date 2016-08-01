@@ -18,7 +18,6 @@ class VideoPanel(avg.DivNode):
         else:
             vid_size = (size[0], size[0] * 9.0 / 16.0)
         vid_pos = (size - vid_size)/2
-        print time_offset
         self.__time_offset = time_offset
 
         self.__vis_params = vis_params
@@ -67,4 +66,4 @@ class VideoPanel(avg.DivNode):
 
     def __update_time_label(self):
         self.__cur_time_text.text = "Current time: {}".format(
-            util.format_label_value(unit="s", value=self.__vis_params.highlight_time))
+                util.format_label_value(unit="s", value=self.__vis_params.highlight_time))
