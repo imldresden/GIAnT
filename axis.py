@@ -385,7 +385,6 @@ def r_pretty(dmin, dmax, n, time=False):
     if dx is 0 and dmax is 0:
         cell = 1.0
         i_small = True
-        u = 1
     else:
         cell = max(abs(dmin), abs(dmax))
         if h5 >= 1.5 * h + 0.5:
@@ -447,9 +446,6 @@ def r_pretty(dmin, dmax, n, time=False):
         else:
             ns -= k / 2
             nu = nu + k / 2 + k % 2
-        ndiv = min_n
-    else:
-        ndiv = k
 
     graphmin = ns * unit
     graphmax = nu * unit
