@@ -6,29 +6,33 @@ import global_values
 import util
 
 
-class Video:
+class VideoPanel(avg.DivNode):
     offset = 0.0  # video is offset from data by this amount (secs)
 
-    def __init__(self, filename, pos, size, vis_params, parent):
+    def __init__(self, filename, vis_params, parent=None, **kwargs):
+        super(VideoPanel, self).__init__(**kwargs)
+        self.registerInstance(self, parent)
+
         self.path = filename
-        vid_size = (size[0], size[0] * 9.0 / 16.0)
+        size = self.size
         if size[0] / size[1] > 16.0 / 9.0:
             vid_size = (size[1] * 16.0 / 9.0, size[1])
-
-        pos = (pos[0] + (size[0] - vid_size[0]) / 2, pos[1] + (size[1] - vid_size[1]) / 2)
+        else:
+            vid_size = (size[0], size[0] * 9.0 / 16.0)
+        vid_pos = (size - vid_size)/2
 
         self.__vis_params = vis_params
         self.is_playing = False
-        self.videoNode = avg.VideoNode(href=self.path, pos=pos,
-                                       parent=parent, size=vid_size, loop=True,
+        self.videoNode = avg.VideoNode(href=self.path, pos=vid_pos,
+                                       parent=self, size=vid_size, loop=True,
                                        mipmap=True,
                                        threaded=False,
                                        enablesound=False)
 
         # rectangle for border
-        libavg.RectNode(parent=parent, pos=pos, size=vid_size, strokewidth=1, color=global_values.COLOR_FOREGROUND)
-        self.__cur_time_text = libavg.WordsNode(color=global_values.COLOR_FOREGROUND, parent=parent,
-                                                pos=(pos[0], pos[1] + vid_size[1]), text="")
+        libavg.RectNode(parent=self, pos=vid_pos, size=vid_size, strokewidth=1, color=global_values.COLOR_FOREGROUND)
+        self.__cur_time_text = libavg.WordsNode(color=global_values.COLOR_FOREGROUND, parent=self,
+                                                pos=(vid_pos + (0, vid_size[1])), text="")
 
         self.videoNode.volume = 0
 
@@ -44,10 +48,7 @@ class Video:
             util.format_label_value(unit="s", value=vis_params.highlight_time))
 
     def play_pause(self, play=True):
-        start_time = self.__vis_params.get_time_interval()[0]
         self.is_playing = play
-        time = int(start_time + self.offset)
-        self.videoNode.seekToTime(time)
         if play:
             self.videoNode.play()
         else:

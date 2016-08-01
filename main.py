@@ -12,7 +12,7 @@ import axis
 import OptionsPanel
 import global_values
 import Legend
-import video
+import video_panel
 import pat_model
 
 
@@ -57,7 +57,7 @@ class MainDiv(app.MainDiv):
                 size=(main_vis_width, res_y - menu_height))
 
         # video
-        self.video = video.Video(
+        self.video = video_panel.VideoPanel(
                 filename=self.session.data_dir + "/" + self.session.video_filename,
                 pos=(main_vis_width + padding + axis.THICKNESS, 2 * side_vis_height - 1.5 * axis.THICKNESS + padding),
                 size=(res_x - main_vis_width - padding - axis.THICKNESS,
