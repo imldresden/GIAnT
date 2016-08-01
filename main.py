@@ -28,8 +28,6 @@ class MainDiv(app.MainDiv):
 
         self.session = pat_model.create_session()
 
-        pat_model.init_globals()
-
         # position and scale main div
         self.pos = (margin, margin)
         res_x = libavg.app.instance._resolution[0] - 2 * margin

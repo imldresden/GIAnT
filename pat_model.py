@@ -6,7 +6,7 @@ from libavg import avg
 
 wall_width = 490
 wall_height = 206
-pos_range = [(0,0,0.5), (0,0,2.5)]  # User head position minimum and maximum
+pos_range = [(-0.5,0,0.5), (5.5,2.5,2.5)]  # User head position minimum and maximum
 max_time = 0
 time_offset = 0
 x_touch_range = [0, 4*1920]
@@ -215,16 +215,3 @@ def create_session():
         video_start_time="15:12:15",
         num_users=4
     )
-
-
-def init_globals():
-    min_x = execute_qry("SELECT min(x) FROM head;", True)[0][0] - 0.5
-    max_x = execute_qry("SELECT max(x) FROM head;", True)[0][0] + 0.5
-
-    min_y = execute_qry("SELECT min(y) FROM head;", True)[0][0]
-    max_y = execute_qry("SELECT max(y) FROM head;", True)[0][0]
-
-    global pos_range
-    min_z = pos_range[0][2]
-    max_z = pos_range[1][2]
-    pos_range = ((min_x, min_y, min_z), (max_x, max_y, max_z))
