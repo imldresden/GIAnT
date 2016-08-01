@@ -33,7 +33,7 @@ class VideoPanel(avg.DivNode):
         # rectangle for border
         libavg.RectNode(parent=self, pos=vid_pos, size=vid_size, strokewidth=1, color=global_values.COLOR_FOREGROUND)
         self.__cur_time_text = libavg.WordsNode(color=global_values.COLOR_FOREGROUND, parent=self,
-                                                pos=(vid_pos + (0, vid_size[1])))
+                                                pos=vid_pos + (0, vid_size[1]))
 
         self.videoNode.volume = 0
 

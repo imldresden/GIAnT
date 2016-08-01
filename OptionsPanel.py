@@ -3,7 +3,6 @@
 import libavg
 from libavg import widget, avg
 import global_values
-import pat_model
 import util
 
 COLOR_SCHEME = 0            # user color scheme (see global_values.py for color schemes)
