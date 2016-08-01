@@ -82,12 +82,6 @@ class MainDiv(app.MainDiv):
         app.keyboardmanager.bindKeyDown(keyname='Down', handler=self.zoom_out)
         app.keyboardmanager.bindKeyDown(keyname='Space', handler=self.play_pause)
 
-    def onFrame(self):
-        if self.__vis_params.play:
-            current_time = time.time()
-            self.__vis_params.shift_time(True, current_time - self.__vis_params.last_frame_time)
-            self.__vis_params.last_frame_time = current_time
-
     def zoom_in(self):
         self.__vis_params.zoom_in_at(0.5)
 
