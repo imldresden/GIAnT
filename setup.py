@@ -32,10 +32,13 @@ def import_optitrack(session):
                          "y_sum FLOAT,"
                          "z_sum FLOAT")
 
+    print "Importing optitrack data:"
+    print "  Reading csv"
     with open(session.data_dir+"/"+session.optitrack_filename) as f:
         reader = csv.reader(f)
         csv_data = list(reader)
         csv_data.pop(0)
+    print "  Processing"
     last_lines = [None] * session.number_of_users
     last_db_time = [None] * session.number_of_users
     last_interpol_data = [None] * session.number_of_users
@@ -58,6 +61,7 @@ def import_optitrack(session):
                 last_db_time[userid] += TIME_STEP
             last_interpol_data[userid] = interpol_data
         last_lines[userid] = head_data
+    print "  Writing database"
     con = sqlite3.connect("db")
     cur = con.cursor()
     cur.executemany(
@@ -77,6 +81,7 @@ def import_touches(session):
         elif tool == "Ladder":
             return 3
 
+    print "Importing touch data:"
     create_table("touch", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
                          "user TINYINT NOT NULL,"
                          "x FLOAT,"
@@ -84,10 +89,13 @@ def import_touches(session):
                          "time FLOAT NOT NULL,"
                          "duration FLOAT NOT NULL")
 
+
+    print "  Reading csv"
     with open(session.data_dir + "/" + session.touch_filename) as f:
         reader = csv.reader(f)
         csv_data = list(reader)
         csv_data.pop(0)
+    print "  Processing"
     db_list = []
     last_time = 0
     for data in csv_data:
@@ -106,6 +114,7 @@ def import_touches(session):
             db_list[-1] = touch
         last_time = touch[3]
 
+    print "  Writing database"
     con = sqlite3.connect("db")
     cur = con.cursor()
     cur.executemany("INSERT INTO touch (user, x, y, time, duration) VALUES (?,?,?,?,?);", db_list)
@@ -114,6 +123,7 @@ def import_touches(session):
 
 def setup():
     session = pat_model.create_session()
+    print "---- "+session.optitrack_filename+" ----"
     import_optitrack(session)
     import_touches(session)
 
