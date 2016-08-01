@@ -9,7 +9,7 @@ import libavg
 import vis_params
 import movement_panel
 import axis
-import OptionsPanel
+import options_panel
 import global_values
 import Legend
 import video_panel
@@ -68,7 +68,7 @@ class MainDiv(app.MainDiv):
                 parent=self)
 
         # menu
-        self.options = OptionsPanel.OptionsPanel(users=self.session.users, vis_params=self.__vis_params, parent=self,
+        self.options = options_panel.OptionsPanel(users=self.session.users, vis_params=self.__vis_params, parent=self,
                                                  pos=(0, self.main_visualization.height),
                                                  size=(self.main_visualization.width, menu_height))
 

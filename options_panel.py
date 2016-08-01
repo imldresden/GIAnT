@@ -88,18 +88,9 @@ class OptionsPanel(libavg.DivNode):
         self.__vis_params.notify()
 
     def __toggle_user(self, checked, user_id):
-        """
-        Toggles visibility of user with user_id. Checks self.nodes for Line_Visualization nodes and unlinks/appends
-        user_divs within them.
-        :param checked: bool, True when user is being toggled on
-        :param user_id: user_id to toggle
-        """
         self.__vis_params.set_user_visible(user_id, checked)
 
     def __play_pause(self, checked):
-        """
-        Plays or pauses animation of visualizations and video playback.
-        """
         self.parent_div.play_pause()
 
     def update_time(self, vis_params):
