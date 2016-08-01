@@ -8,7 +8,7 @@ class VisParams(avg.Publisher):
     IS_PLAYING = avg.Publisher.genMessageID()
 
     MIN_SMOOTHNESS_FACTOR = 0.01
-    MAX_SMOOTHNESS_FACTOR = 1
+    MAX_SMOOTHNESS_FACTOR = 1.
 
     __highlight_time = 0
     __zoom_strength = 0.1
@@ -20,7 +20,7 @@ class VisParams(avg.Publisher):
         self.publish(VisParams.CHANGED)
         self.publish(VisParams.IS_PLAYING)
 
-        self.__smoothness_factor = 1
+        self.__smoothness_factor = self.MAX_SMOOTHNESS_FACTOR/2.
         self.__users_visible = [True]*session.num_users
         self.__duration = session.duration
 
