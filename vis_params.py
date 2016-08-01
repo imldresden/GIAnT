@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import time
 from libavg import avg
 
 
 class VisParams(avg.Publisher):
     CHANGED = avg.Publisher.genMessageID()
+    IS_PLAYING = avg.Publisher.genMessageID()
 
     MIN_SMOOTHNESS_FACTOR = 0.01
     MAX_SMOOTHNESS_FACTOR = 1
@@ -15,10 +15,10 @@ class VisParams(avg.Publisher):
 
     def __init__(self, session):
         super(VisParams, self).__init__()
-        self.__play = False
-        self.__last_frame_time = time.time()
+        self.__is_playing = False
         self.__time_interval = [0, session.duration]
         self.publish(VisParams.CHANGED)
+        self.publish(VisParams.IS_PLAYING)
 
         self.__smoothness_factor = 1
         self.__users_visible = [True]*session.num_users
@@ -73,10 +73,6 @@ class VisParams(avg.Publisher):
     def notify(self):
         self.notifySubscribers(VisParams.CHANGED, [self])
 
-    def play_animation(self):
-        self.__play = not self.__play
-        self.__last_frame_time = time.time()
-
     def get_user_visible(self, i):
         return self.__users_visible[i]
 
@@ -97,14 +93,10 @@ class VisParams(avg.Publisher):
         return self.__highlight_time
     highlight_time = property(__get_highlight_time, __set_highlight_time)
 
-    def __get_play(self):
-        return self.__play
-    play = property(__get_play)
+    def __set_is_playing(self, is_playing):
+        self.__is_playing = is_playing
+        self.notifySubscribers(VisParams.IS_PLAYING, [self.__is_playing])
 
-    def __set_last_frame_time(self, t):
-        self.__last_frame_time = t
-
-    def __get_last_frame_time(self):
-        return self.__last_frame_time
-    last_frame_time = property(__get_last_frame_time, __set_last_frame_time)
-
+    def __get_is_playing(self):
+        return self.__is_playing
+    is_playing = property(__get_is_playing, __set_is_playing)

@@ -40,6 +40,7 @@ class VideoPanel(avg.DivNode):
         self.videoNode.pause()
 
         vis_params.subscribe(vis_params.CHANGED, self.update_time)
+        vis_params.subscribe(vis_params.IS_PLAYING, self.__play_pause)
         player.subscribe(player.ON_FRAME, self.__time_changed)
 
     def update_time(self, vis_params):
@@ -47,7 +48,7 @@ class VideoPanel(avg.DivNode):
             self.videoNode.seekToTime(int((vis_params.highlight_time + self.offset)*1000))
             self.__update_time_label()
 
-    def play_pause(self, play=True):
+    def __play_pause(self, play=True):
         self.is_playing = play
         if play:
             self.videoNode.play()

@@ -104,8 +104,8 @@ class OptionsPanel(libavg.DivNode):
         self.parent_div.play_pause()
 
     def update_time(self, vis_params):
-        if self.play_button.checked is not vis_params.play:
-            self.play_button.checked = vis_params.play
+        if self.play_button.checked is not vis_params.is_playing:
+            self.play_button.checked = vis_params.is_playing
         self.__update_smoothness_text()
 
     def __update_smoothness_text(self):

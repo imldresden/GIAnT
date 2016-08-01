@@ -67,7 +67,10 @@ class MovementPanel(avg.DivNode):
         avg.WordsNode(pos=(axis.THICKNESS + global_values.APP_PADDING, global_values.APP_PADDING), parent=self,
                          color=global_values.COLOR_FOREGROUND, text="Movement over Time", sensitive=False, alignment="left")
 
+        self.__enable_time = True
         vis_params.subscribe(vis_params.CHANGED, self.update_time)
+        vis_params.subscribe(vis_params.IS_PLAYING, self.__on_play_pause)
+
         self.__vis_params = vis_params
         self.data_div.subscribe(avg.Node.MOUSE_WHEEL, self.__on_mouse_wheel)
 
@@ -89,13 +92,17 @@ class MovementPanel(avg.DivNode):
         for i, user_line in enumerate(self.__user_lines):
             user_line.active = vis_params.get_user_visible(i)
 
+    def __on_play_pause(self, playing):
+        self.__enable_time = not playing
+
     def __on_mouse_wheel(self, event):
-        rel_pos = self.data_div.getRelPos(event.pos)
-        pos_fraction = rel_pos[0]/self.data_div.width
-        if event.motion.y > 0:
-            self.__vis_params.zoom_in_at(pos_fraction)
-        else:
-            self.__vis_params.zoom_out_at(pos_fraction)
+        if self.__enable_time:
+            rel_pos = self.data_div.getRelPos(event.pos)
+            pos_fraction = rel_pos[0]/self.data_div.width
+            if event.motion.y > 0:
+                self.__vis_params.zoom_in_at(pos_fraction)
+            else:
+                self.__vis_params.zoom_out_at(pos_fraction)
 
     def __create_lines(self, vis_params):
         time_start = self.__xpos_to_time(0)
@@ -131,9 +138,10 @@ class MovementPanel(avg.DivNode):
         """
         Moves the highlight line along the vertical mouse position.
         """
-        rel_pos = self.data_div.getRelPos(event.pos)
-        self.__vis_params.highlight_time = self.x_axis.calculate_time_from_pixel(rel_pos.x)
-        self.__vis_params.notify()
+        if self.__enable_time:
+            rel_pos = self.data_div.getRelPos(event.pos)
+            self.__vis_params.highlight_time = self.x_axis.calculate_time_from_pixel(rel_pos.x)
+            self.__vis_params.notify()
 
     def __xpos_to_time(self, x):
         return x / self.__time_factor + self.__time_min

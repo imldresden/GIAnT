@@ -95,8 +95,7 @@ class MainDiv(app.MainDiv):
         self.__vis_params.shift_time(True)
 
     def play_pause(self):
-        self.__vis_params.play_animation()
-        self.video.play_pause(self.__vis_params.play)
+        self.__vis_params.is_playing = not self.__vis_params.is_playing
 
     def draw_cosmetics(self):
         """

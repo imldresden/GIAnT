@@ -283,6 +283,7 @@ class TimeAxisNode(AxisNode):
         self.subscribe(avg.Node.CURSOR_OUT, self.__hide_interval_slider)
 
         self.__vis_params.subscribe(self.__vis_params.CHANGED, self.update_time)
+        self.__vis_params.subscribe(vis_params.IS_PLAYING, self.__on_play_pause)
 
         """initial update"""
         self.update(self.start, self.end)
@@ -290,6 +291,9 @@ class TimeAxisNode(AxisNode):
     def update_time(self, vis_params):
         interval = vis_params.get_time_interval()
         self.update(interval[0], interval[1])
+
+    def __on_play_pause(self, playing):
+        self.__i_scrollbar.sensitive = not playing
 
     def __change_interval(self, start, end):
         self.update(start, end)
