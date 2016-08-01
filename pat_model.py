@@ -130,6 +130,7 @@ class Touch(object):
 class User(object):
     def __init__(self, session, userid):
         self.userid = userid
+        self.__duration = session.duration
 
         head_data_list = execute_qry("SELECT user, x, y, z, pitch, yaw, roll, time, x_sum, y_sum, z_sum "
                           "FROM head WHERE user = " + str(userid) +
@@ -178,7 +179,7 @@ class User(object):
         return view_point
 
     def __time_to_index(self, t):
-        return int(t * len(self.__head_data) / max_time)
+        return int(t * len(self.__head_data) / self.__duration)
 
 
 class Session(object):
@@ -217,10 +218,6 @@ def create_session():
 
 
 def init_globals():
-    global max_time
-    max_time = (execute_qry("SELECT max(time) FROM head;", True)[0][0] -
-            execute_qry("SELECT min(time) FROM head;", True)[0][0])
-
     min_x = execute_qry("SELECT min(x) FROM head;", True)[0][0] - 0.5
     max_x = execute_qry("SELECT max(x) FROM head;", True)[0][0] + 0.5
 

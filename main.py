@@ -39,7 +39,7 @@ class MainDiv(app.MainDiv):
         main_vis_width = 2.0 / 3.0 * res_x
         menu_height = 50
         side_vis_height = 1.0 / 3.0 * res_y
-        self.__vis_params = vis_params.VisParams(self.session.num_users)
+        self.__vis_params = vis_params.VisParams(self.session)
 
         # rectangle to color background
         libavg.RectNode(parent=self, pos=(-1000, -1000), size=(10000, 10000),

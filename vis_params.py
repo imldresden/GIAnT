@@ -3,7 +3,6 @@
 import time
 from libavg import avg
 
-import pat_model
 
 class VisParams(avg.Publisher):
     CHANGED = avg.Publisher.genMessageID()
@@ -14,15 +13,16 @@ class VisParams(avg.Publisher):
     __highlight_time = 0
     __zoom_strength = 0.1
 
-    def __init__(self, num_users):
+    def __init__(self, session):
         super(VisParams, self).__init__()
         self.__play = False
         self.__last_frame_time = time.time()
-        self.__time_interval = [0, pat_model.max_time]
+        self.__time_interval = [0, session.duration]
         self.publish(VisParams.CHANGED)
 
         self.__smoothness_factor = 1
-        self.__users_visible = [True]*num_users
+        self.__users_visible = [True]*session.num_users
+        self.__duration = session.duration
 
     def get_time_interval(self):
         return self.__time_interval
@@ -34,7 +34,7 @@ class VisParams(avg.Publisher):
         self.notify()
 
     def zoom_out_at(self, fraction_in_timeframe):
-        time_range = [0, pat_model.max_time]
+        time_range = [0, self.__duration]
         if self.__time_interval == time_range:
             return
         point = self.__time_interval[0] + fraction_in_timeframe * (self.__time_interval[1] - self.__time_interval[0])
@@ -58,8 +58,8 @@ class VisParams(avg.Publisher):
 
         if self.__time_interval[0] + shift_amount < 0:
             shift_amount = 0 - self.__time_interval[0]
-        if self.__time_interval[1] + shift_amount > pat_model.max_time:
-            shift_amount = pat_model.max_time - self.__time_interval[1]
+        if self.__time_interval[1] + shift_amount > self.__duration:
+            shift_amount = self.__duration - self.__time_interval[1]
 
         self.__time_interval[0] += shift_amount
         self.__time_interval[1] += shift_amount
