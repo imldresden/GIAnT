@@ -3,7 +3,6 @@
 
 from global_values import resolution
 
-import time
 from libavg import app, avg
 import libavg
 import vis_params
@@ -11,7 +10,6 @@ import movement_panel
 import axis
 import options_panel
 import global_values
-import Legend
 import video_panel
 import pat_model
 
@@ -71,10 +69,6 @@ class MainDiv(app.MainDiv):
         self.options = options_panel.OptionsPanel(users=self.session.users, vis_params=self.__vis_params, parent=self,
                                                  pos=(0, self.main_visualization.height),
                                                  size=(self.main_visualization.width, menu_height))
-
-        # legend
-        self.legend = Legend.Legend(parent=self.options, min_value=0, max_value=1, unit="m", size=(210, 200))
-        self.legend.pos = (self.options.width - self.legend.width, menu_height - self.legend.height)
 
         self.draw_cosmetics()
 
