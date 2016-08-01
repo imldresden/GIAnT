@@ -28,6 +28,7 @@ class VideoPanel(avg.DivNode):
                                        mipmap=True,
                                        threaded=False,
                                        enablesound=False)
+        player.setTimeout(0, lambda: self.videoNode.setMirror(self.videoNode.HORIZONTAL))
 
         # rectangle for border
         libavg.RectNode(parent=self, pos=vid_pos, size=vid_size, strokewidth=1, color=global_values.COLOR_FOREGROUND)
