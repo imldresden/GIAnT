@@ -117,7 +117,7 @@ def import_touches():
     con.commit()
     con.close()
 
-#import_optitrack()
+import_optitrack()
 import_touches()
 
 print "Database setup complete."

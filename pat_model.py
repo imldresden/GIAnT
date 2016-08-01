@@ -15,20 +15,15 @@ x_wall_range = [0, wall_width]
 y_wall_range = [40, 40+wall_height]
 
 
-def execute_qry(qry, doFetch=False):
-    """
-    :param qry: the query to execute (string)
-    :param doFetch:  whether data should be fetched and returned
-    :return:
-    """
+def execute_qry(qry, do_fetch=False):
     con = sqlite3.connect("db")
     cur = con.cursor()
     cur.execute(qry)
-    if doFetch:
+    if do_fetch:
         data = cur.fetchall()
     con.commit()
     con.close()
-    if doFetch:
+    if do_fetch:
         return data
 
 
@@ -41,7 +36,7 @@ def csvtime_to_float(date, csv_time):
     return time.mktime(time_struct) + float(millisecs) / 1000
 
 
-class HeadData:
+class HeadData(object):
     def __init__(self):
         self.userid = None
         self.pos = None
@@ -94,8 +89,8 @@ class HeadData:
     @classmethod
     def create_interpolated(cls, data1, data2, cur_time):
 
-        def interpolate(x1, x2, part):
-            return x1*part + x2*(1-part)
+        def interpolate(x1, x2, ratio):
+            return x1 * ratio + x2 * (1 - ratio)
 
         if data1 is None:
             return data2
@@ -114,7 +109,7 @@ class HeadData:
             return head_data
 
 
-class Touch:
+class Touch(object):
     def __init__(self):
         self.userid = None
         self.pos = avg.Point2D()
@@ -132,7 +127,7 @@ class Touch:
         return touch
 
 
-class User:
+class User(object):
     def __init__(self, userid):
         self.userid = userid
 
