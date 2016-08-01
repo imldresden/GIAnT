@@ -30,8 +30,8 @@ class MainDiv(app.MainDiv):
 
         # position and scale main div
         self.pos = (margin, margin)
-        res_x = libavg.app.instance._resolution[0] - 2 * margin
-        res_y = libavg.app.instance._resolution[1] - 2 * margin
+        res_x = self.size[0] - 2 * margin
+        res_y = self.size[1] - 2 * margin
 
         # set aspect ratio for main visualization and elements on the right side
         main_vis_width = 2.0 / 3.0 * res_x

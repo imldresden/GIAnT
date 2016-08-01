@@ -3,7 +3,6 @@
 import math
 import libavg
 
-import pat_model
 import util
 import custom_slider
 import global_values
@@ -13,7 +12,7 @@ THICKNESS = 50     # space needed for axis display (means height if axis is hori
 
 
 class AxisNode(avg.DivNode):
-    def __init__(self, data_range, unit="m", hide_rims=False, top_axis=False, inverted=False, parent=None,
+    def __init__(self, data_range, panel_height, unit="m", hide_rims=False, top_axis=False, inverted=False, parent=None,
                  label_offset=0, **kwargs):
         """
         Custom AxisNode with axis lines, grid lines and labeling.
@@ -50,21 +49,7 @@ class AxisNode(avg.DivNode):
         self.__unit = unit                                   # unit of measurement (time: ms, length: cm)
         self.__hide_rims = hide_rims                         # determines if the first and last tick are shown
         self.__inverted = inverted                           # shows values on axis inverted if true
-
-        """
-        TODO:
-        Workaround for not working self.__parent.data_div.height for yet unknown reasons.
-        The workaround should set the height when initializing a time axis.
-        """
-        try:
-            self.__vis_height = self.__parent.data_div.height
-        except:
-            self.__vis_height = 0
-            if isinstance(self, TimeAxisNode):
-                # workaround in TimeAxisNode!
-                pass
-            else:
-                print "Info: Could not get height of data_div in {}!".format(self)
+        self.__panel_height = panel_height
 
         # axis is displayed vertical if width smaller than height
         if self.height > self.width:
@@ -161,9 +146,9 @@ class AxisNode(avg.DivNode):
             else:
                 self.__grid[i].pos1 = (pos, self.__axis_line.pos1[0])
                 if self.__top_axis:
-                    self.__grid[i].pos2 = (pos, + self.__vis_height)
+                    self.__grid[i].pos2 = (pos, + self.__panel_height)
                 else:
-                    self.__grid[i].pos2 = (pos, - self.__vis_height)
+                    self.__grid[i].pos2 = (pos, - self.__panel_height)
                 self.__ticks[i].pos1 = (pos, self.__axis_line.pos1[0] - self.__tick_length)
                 self.__ticks[i].pos2 = (pos, self.__axis_line.pos1[0])
                 if not self.__top_axis:
@@ -236,12 +221,6 @@ class AxisNode(avg.DivNode):
     def __get_data_range(self):
         return self.__data_range
 
-    def __get_vis_height(self):
-        return self.__vis_height
-
-    def __set_vis_height(self, height):
-        self.__vis_height = height
-
     def __get_unit(self):
         return self.__unit
 
@@ -253,7 +232,6 @@ class AxisNode(avg.DivNode):
     tick_length = property(__get_tick_length)
     label_offset = property(__get_label_offset, __set_label_offset)
     data_range = property(__get_data_range)
-    vis_height = property(__get_vis_height, __set_vis_height)
     unit = property(__get_unit)
 
     __update = update               # private copy of original update() method
@@ -276,7 +254,6 @@ class TimeAxisNode(AxisNode):
         self.__highlight_pixel = 0                                               # pixel position on axis of highlight
         self.label_offset = 0                                                    # smaller label offset for time axis
         self.vertical = False                                                    # TimeAxisNode can only be horizontal
-        self.vis_height = self.parent.data_div.height                            # workaround (see comment in AxisNode)
 
         """setup Nodes"""
         # interval lines and rectangle
