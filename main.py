@@ -41,20 +41,9 @@ class MainDiv(app.MainDiv):
         libavg.RectNode(parent=self, pos=(-1000, -1000), size=(10000, 10000),
                         strokewidth=0, fillcolor=global_values.COLOR_BACKGROUND, fillopacity=1)
 
-        # cosmetics (abstract wall image on left side of main visualization and wall front visualization)
-        self.__cosmetics_wall = libavg.PolygonNode(parent=self, opacity=0, fillopacity=1,
-                                                   fillcolor=global_values.COLOR_DARK_GREY)
-        self.__cosmetics_main = libavg.PolygonNode(parent=self, opacity=0, fillopacity=1,
-                                                   fillcolor=global_values.COLOR_DARK_GREY)
-        self.__cosmetics_main_screen = libavg.PolygonNode(parent=self, opacity=0, fillopacity=1,
-                                                          fillcolor=global_values.COLOR_BLACK)
-
-        # main visualization
         self.main_visualization = movement_panel.MovementPanel(
                 parent=self, session=self.session, vis_params=self.__vis_params, pos=(0, 0),
                 size=(main_vis_width, res_y - menu_height))
-
-        # video
 
         self.video = video_panel.VideoPanel(
                 filename=self.session.data_dir + "/" + self.session.video_filename,
@@ -65,12 +54,9 @@ class MainDiv(app.MainDiv):
                 vis_params=self.__vis_params,
                 parent=self)
 
-        # menu
         self.options = options_panel.OptionsPanel(users=self.session.users, vis_params=self.__vis_params, parent=self,
                                                  pos=(0, self.main_visualization.height),
                                                  size=(self.main_visualization.width, menu_height))
-
-        self.draw_cosmetics()
 
         app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward)
         app.keyboardmanager.bindKeyDown(keyname='Left', handler=self.shift_back)
@@ -92,37 +78,6 @@ class MainDiv(app.MainDiv):
 
     def play_pause(self):
         self.__vis_params.is_playing = not self.__vis_params.is_playing
-
-    def draw_cosmetics(self):
-        """
-        Position cosmetic wall image left of the main visualization and wall image behind wall visualization.
-        """
-        # set position of cosmetic wall image left of the main visualization
-        main_pos = (self.main_visualization.pos[0] + axis.THICKNESS, self.main_visualization.pos[1])
-        main_size = (self.main_visualization.width - axis.THICKNESS, self.main_visualization.size[1] - axis.THICKNESS)
-        cos_offset = 9
-        cos_vis_offset = 4
-        cos_screen_offset = 2
-        cos_wall_width = 16
-
-        x_range = pat_model.pos_range[0][0], pat_model.pos_range[1][0]
-        # space from bottom of y-axis to left side of display-wall
-        cos_wall_start = value_to_pixel(pat_model.x_wall_range[0], main_size[1], x_range)
-        # space from top of y-axis to right side of display-wall
-        cos_wall_end = value_to_pixel(pat_model.wall_width, main_size[1], x_range)
-
-        self.__cosmetics_main.pos = (
-            (main_pos[0] - cos_vis_offset, main_size[1] - cos_wall_end),  # top right
-            (main_pos[0] - cos_vis_offset, main_size[1] - cos_wall_start),  # bottom right
-            (main_pos[0] - cos_vis_offset - cos_wall_width, main_size[1] - cos_wall_start),  # bottom mid
-            (main_pos[0] - cos_vis_offset - cos_wall_width - cos_offset, main_size[1] - cos_offset - cos_wall_start),  # bottom left
-            (main_pos[0] - cos_vis_offset - cos_wall_width - cos_offset, main_size[1] - cos_wall_end - cos_offset),  # top left
-            (main_pos[0] - cos_vis_offset - cos_offset, main_size[1] - cos_wall_end - cos_offset))  # top mid
-        self.__cosmetics_main_screen.pos = (
-            (main_pos[0] - cos_vis_offset - cos_screen_offset, main_size[1] - cos_wall_end + cos_screen_offset),
-            (main_pos[0] - cos_vis_offset - cos_screen_offset, main_size[1] - cos_wall_start - cos_screen_offset),
-            (main_pos[0] - cos_vis_offset - cos_offset, main_size[1] - cos_wall_start - cos_offset - cos_screen_offset),
-            (main_pos[0] - cos_vis_offset - cos_offset, main_size[1] - cos_wall_end - cos_offset + cos_screen_offset))
 
 
 def value_to_pixel(value, max_px, interval):

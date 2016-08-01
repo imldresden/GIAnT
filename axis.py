@@ -89,10 +89,10 @@ class AxisNode(avg.DivNode):
 
         # calculate positions of ticks within AxisNode
         if self.__inverted:
-            offset = self._value_to_pixel(end, 0, self.__end - self.__start)
+            offset = self.value_to_pixel(end)
         else:
-            offset = self._value_to_pixel(start, 0, self.__end - self.__start)
-        self.__label_pos = [self._value_to_pixel(t, 0, self.__end - self.__start) - offset for t in self.__label_values]
+            offset = self.value_to_pixel(start)
+        self.__label_pos = [self.value_to_pixel(t) - offset for t in self.__label_values]
 
         self.__draw_ticks()
 
@@ -169,21 +169,19 @@ class AxisNode(avg.DivNode):
             if not self.__top_axis:
                 self.__label_nodes[len(self.__label_values) - 1].unlink()
 
-    def _value_to_pixel(self, value, start, end):
-        """
-        Calculate pixel position on axis line of label value.
-        :param value: Value in unit of measurement
-        :param start: start value in unit of measurement
-        :param end: end value in unit of measurement
-        :return: pixel position of value
-        """
+    def value_to_pixel(self, value, start=None, end=None):
+        if start is None:
+            start = self.__start
+        if end is None:
+            end = self.__end
+
         if self.__vertical:
             length = self.height
         else:
             length = self.width
 
         a = (end - start) / length
-        pixel_pos = value / a - start / a
+        pixel_pos = (value - start) / a
 
         if self.__inverted:
             return length - pixel_pos
@@ -247,8 +245,8 @@ class TimeAxisNode(AxisNode):
         self.registerInstance(self, parent)
 
         self.__vis_params = vis_params
-        self.__i_start = self._value_to_pixel(self.start, self.start, self.end)  # interval start
-        self.__i_end = self._value_to_pixel(self.end, self.start, self.end)      # interval end
+        self.__i_start = self.value_to_pixel(self.start)  # interval start
+        self.__i_end = self.value_to_pixel(self.end)      # interval end
         self.__i_label_offset = 5                                                # offset for interval duration label
         self.__pinned = False                                                    # if highlight line is pinned
         self.__highlight_pixel = 0                                               # pixel position on axis of highlight
@@ -303,8 +301,8 @@ class TimeAxisNode(AxisNode):
     def update(self, i_start, i_end):
         # set new interval start and end
         time_range = self.data_range
-        self.__i_start = self._value_to_pixel(i_start, time_range[0], time_range[1])
-        self.__i_end = self._value_to_pixel(i_end, time_range[0], time_range[1])
+        self.__i_start = self.value_to_pixel(i_start, time_range[0], time_range[1])
+        self.__i_end = self.value_to_pixel(i_end, time_range[0], time_range[1])
 
         # update positions of interval lines
         self.__i_rect.pos = (self.__i_start, self.__i_rect.pos[1])

@@ -54,6 +54,7 @@ class MovementPanel(avg.DivNode):
         self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, panel_height=self.data_div.height, vis_params=vis_params,
                 parent=self, unit="s", data_range=[0, session.duration], size=(self.data_div.width, axis.THICKNESS),
                 inverted=False)
+        self.__create_wall_rect()
 
         self.appendChild(self.data_div)
 
@@ -134,6 +135,13 @@ class MovementPanel(avg.DivNode):
                 touches_x = [self.__time_to_xpos(touch.timestamp) for touch in touches]
                 touches_width = [touch.duration*self.__time_factor for touch in touches]
                 userline.setHighlights(touches_x, touches_width)
+
+    def __create_wall_rect(self):
+        y_min = self.y_axis.value_to_pixel(0)
+        y_max = self.y_axis.value_to_pixel(pat_model.wall_width)
+
+        avg.RectNode(pos=(axis.THICKNESS-20, y_min), size=(16, y_max-y_min), fillcolor=global_values.COLOR_DARK_GREY,
+                fillopacity=1, parent=self)
 
     def __on_hover(self, event=None):
         """
