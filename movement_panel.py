@@ -40,7 +40,8 @@ class MovementPanel(avg.DivNode):
         max_width = (min(self.width, self.height) / 12)
         for userid in range(session.num_users):
             color = util.get_user_color_as_hex(userid, 1)
-            self.__user_lines.append(vwline.VWLineNode(color=color, maxwidth=max_width, parent=self.data_div))
+            self.__user_lines.append(vwline.VWLineNode(color=color, maxwidth=max_width,
+                    blendmode="add", parent=self.data_div))
 
         custom_label_offset = 23  # to make space for cosmetic schematic wall
         x_range = pat_model.pos_range[0][0], pat_model.pos_range[1][0]
