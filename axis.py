@@ -268,9 +268,6 @@ class TimeAxisNode(AxisNode):
         # interactive interval scrollbar
         self.__i_scrollbar = custom_slider.IntervalScrollBar(pos=(0, self.__i_rect.pos[1]), width=self.width, opacity=0,
                                                              range=self.data_range, parent=self)
-        # label for total interval time range
-        self.__i_label = libavg.WordsNode(color=global_values.COLOR_BACKGROUND, text="", opacity=0, sensitive=False,
-                                          parent=self)
 
         """subscriptions"""
         # change of thumb pos of interval slider
@@ -316,21 +313,6 @@ class TimeAxisNode(AxisNode):
         # call update from AxisNode (updates self.end and self.start)
         super(TimeAxisNode, self).update(i_start, i_end)
 
-        # update interval details on demand (hover over)
-        self.__i_label.text = "{}".format(util.format_label_value(self.unit, self.end - self.start))
-        if self.__i_rect.size[0] > self.__i_label.width + self.__i_label_offset:
-            self.__i_label.color = global_values.COLOR_BACKGROUND
-            self.__i_label.pos = (self.__i_rect.pos[0] + self.__i_rect.size[0] / 2 - self.__i_label.width / 2,
-                                  self.__i_rect.pos[1])
-        else:
-            self.__i_label.color = global_values.COLOR_FOREGROUND
-            if self.__i_rect.pos[0] > self.__i_label.width + self.__i_label_offset:
-                self.__i_label.pos = (self.__i_rect.pos[0] - self.__i_label.width - self.__i_label_offset,
-                                      self.__i_rect.pos[1])
-            else:
-                self.__i_label.pos = (self.__i_rect.pos[0] + self.__i_rect.size[0] + self.__i_label_offset,
-                                      self.__i_rect.pos[1])
-
         # update scrollbar
         self.__i_scrollbar.setThumbPos(self.start)
         self.__i_scrollbar.setThumbExtent(self.end - self.start)
@@ -347,20 +329,13 @@ class TimeAxisNode(AxisNode):
         """
         # make interval rect bigger
         self.__i_rect.size = (self.__i_rect.size[0], 13)
-        # show label with current total interval time
-        self.__i_label.opacity = 1
-        # show interval scrollbar
         self.__i_scrollbar.opacity = 1
 
     def __hide_interval_slider(self, event=None):
         """
         Hide Details on Demand of interval when mouse hovers out of TimeAxisNodeDiv area.
         """
-        # make interval rect normal size again
         self.__i_rect.size = (self.__i_rect.size[0], 5)
-        # hide label with current total interval time
-        self.__i_label.opacity = 0
-        # hide interval scrollbar
         self.__i_scrollbar.opacity = 0
 
 
