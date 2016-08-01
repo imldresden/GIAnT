@@ -2,7 +2,6 @@
 
 import libavg
 from libavg import avg
-from database import load_file
 import global_values
 import util
 
@@ -10,18 +9,8 @@ import util
 class Video:
     offset = 0.0  # video is offset from data by this amount (secs)
 
-    def __init__(self, pos, size, vis_params, parent):
-        self.path = ""
-        file_paths = load_file('csv/filelist.txt')
-        video_extensions = ["mpg", "mpeg", "mpeg2", "mpeg4",  "xvid", "mjpeg", "vp6", "h264"]
-        for file_path in file_paths:
-            path = file_path[0].lower()
-            if path.endswith(".csv"):
-                continue
-
-            if path.endswith(tuple(video_extensions)):
-                self.path = "csv/"+file_path[0]
-                break
+    def __init__(self, filename, pos, size, vis_params, parent):
+        self.path = filename
         vid_size = (size[0], size[0] * 9.0 / 16.0)
         if size[0] / size[1] > 16.0 / 9.0:
             vid_size = (size[1] * 16.0 / 9.0, size[1])
