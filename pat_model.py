@@ -183,15 +183,18 @@ class User(object):
 
 
 class Session(object):
-    def __init__(self, data_dir, optitrack_filename, touch_filename, video_filename, date, video_start_time,
-            num_users):
+    def __init__(self, data_dir, optitrack_filename, touch_filename, video_filename, date,
+            video_start_time, video_time_offset, num_users):
         self.data_dir = data_dir
         self.optitrack_filename = optitrack_filename
         self.touch_filename = touch_filename
         self.video_filename = video_filename
         self.date = date
-        self.video_start_time = video_start_time
         self.num_users = num_users
+
+        time_str = date + " " + video_start_time
+        time_struct = time.strptime(time_str, "%Y-%m-%d %H:%M:%S")
+        self.video_start_time = time.mktime(time_struct) + video_time_offset
 
         self.start_time = execute_qry("SELECT min(time) FROM head;", True)[0][0]
         self.duration = execute_qry("SELECT max(time) FROM head;", True)[0][0] - self.start_time
@@ -199,6 +202,9 @@ class Session(object):
         self.__users = []
         for userid in range(0, num_users):
             self.__users.append(User(self, userid))
+
+    def get_video_time_offset(self):
+        return self.start_time - self.video_start_time
 
     @property
     def users(self):
@@ -213,5 +219,6 @@ def create_session():
         video_filename="2016.03.17-151215.avi",
         date="2016-03-17",
         video_start_time="15:12:15",
+        video_time_offset=0.3,
         num_users=4
     )

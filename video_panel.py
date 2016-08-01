@@ -7,9 +7,7 @@ import util
 
 
 class VideoPanel(avg.DivNode):
-    offset = 0.0  # video is offset from data by this amount (secs)
-
-    def __init__(self, filename, vis_params, parent=None, **kwargs):
+    def __init__(self, filename, vis_params, time_offset, parent=None, **kwargs):
         super(VideoPanel, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
@@ -20,6 +18,8 @@ class VideoPanel(avg.DivNode):
         else:
             vid_size = (size[0], size[0] * 9.0 / 16.0)
         vid_pos = (size - vid_size)/2
+        print time_offset
+        self.__time_offset = time_offset
 
         self.__vis_params = vis_params
         self.is_playing = False
@@ -46,7 +46,7 @@ class VideoPanel(avg.DivNode):
 
     def update_time(self, vis_params):
         if not self.is_playing:
-            self.videoNode.seekToTime(int((vis_params.highlight_time + self.offset)*1000))
+            self.videoNode.seekToTime(int((vis_params.highlight_time + self.__time_offset)*1000))
             self.__update_time_label()
 
     def __play_pause(self, play=True):

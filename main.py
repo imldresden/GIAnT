@@ -57,11 +57,13 @@ class MainDiv(app.MainDiv):
                 size=(main_vis_width, res_y - menu_height))
 
         # video
+
         self.video = video_panel.VideoPanel(
                 filename=self.session.data_dir + "/" + self.session.video_filename,
                 pos=(main_vis_width + padding + axis.THICKNESS, 2 * side_vis_height - 1.5 * axis.THICKNESS + padding),
                 size=(res_x - main_vis_width - padding - axis.THICKNESS,
                         side_vis_height + 1.5 * axis.THICKNESS - padding),
+                time_offset=self.session.get_video_time_offset(),
                 vis_params=self.__vis_params,
                 parent=self)
 
