@@ -181,6 +181,32 @@ class User(object):
         return int(t * len(self.__head_data) / max_time)
 
 
+class Session(object):
+    def __init__(self, data_dir, optitrack_filename, touch_filename, video_filename, date, video_start_time,
+            session_start_time, number_of_users):
+        self.data_dir = data_dir
+        self.optitrack_filename = optitrack_filename
+        self.touch_filename = touch_filename
+        self.video_filename = video_filename
+        self.date = date
+        self.video_start_time = video_start_time
+        self.session_start_time = session_start_time
+        self.number_of_users = number_of_users
+
+
+def create_session():
+    return Session(
+        data_dir="Study Data/Session 3",
+        optitrack_filename="optitrack_Beginner's Village15-24_17-03-2016_log.csv",
+        touch_filename="touch_Beginner's Village15-24_17-03-2016_log.csv",
+        video_filename="2016.03.17-151215.avi",
+        date="2016-03-17",
+        video_start_time="15:12:15",
+        session_start_time="15:24:36.685",
+        number_of_users=4
+    )
+
+
 def init_globals():
     global max_time
     max_time = (execute_qry("SELECT max(time) FROM head;", True)[0][0] -

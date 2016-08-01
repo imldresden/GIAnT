@@ -5,11 +5,6 @@ import csv
 import sqlite3
 import pat_model
 
-DATA_DIR = "Study Data/Session 3"
-OPTITRACK_FILENAME = "optitrack_Beginner's Village15-24_17-03-2016_log.csv"
-TOUCH_FILENAME = "touch_Beginner's Village15-24_17-03-2016_log.csv"
-DATE = "2016-03-17"
-NUMBER_OF_USERS = 4
 TIME_STEP = 1./30            # User position data stored with 30 FPS
 
 
@@ -23,7 +18,7 @@ def create_table(table, columns):
     pat_model.execute_qry("CREATE TABLE " + table + " (" + columns + ");")
 
 
-def import_optitrack():
+def import_optitrack(session):
     create_table("head", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
                          "user TINYINT NOT NULL,"
                          "x FLOAT,"
@@ -37,16 +32,16 @@ def import_optitrack():
                          "y_sum FLOAT,"
                          "z_sum FLOAT")
 
-    with open(DATA_DIR+"/"+OPTITRACK_FILENAME) as f:
+    with open(session.data_dir+"/"+session.optitrack_filename) as f:
         reader = csv.reader(f)
         csv_data = list(reader)
         csv_data.pop(0)
-    last_lines = [None] * NUMBER_OF_USERS
-    last_db_time = [None] * NUMBER_OF_USERS
-    last_interpol_data = [None] * NUMBER_OF_USERS
+    last_lines = [None] * session.number_of_users
+    last_db_time = [None] * session.number_of_users
+    last_interpol_data = [None] * session.number_of_users
     db_list = []
     for data_line in csv_data:
-        head_data = pat_model.HeadData.from_csv(data_line, DATE)
+        head_data = pat_model.HeadData.from_csv(data_line, session.date)
         userid = head_data.userid
         last_data = last_lines[userid]
         if (last_data is not None) and (last_data.timestamp == head_data.timestamp):  # Discard equal lines
@@ -71,7 +66,7 @@ def import_optitrack():
     con.close()
 
 
-def import_touches():
+def import_touches(session):
     def tool_to_userid(tool):
         if tool == "Pick":
             return 0
@@ -89,14 +84,14 @@ def import_touches():
                          "time FLOAT NOT NULL,"
                          "duration FLOAT NOT NULL")
 
-    with open(DATA_DIR + "/" + TOUCH_FILENAME) as f:
+    with open(session.data_dir + "/" + session.touch_filename) as f:
         reader = csv.reader(f)
         csv_data = list(reader)
         csv_data.pop(0)
     db_list = []
     last_time = 0
     for data in csv_data:
-        timestamp = pat_model.csvtime_to_float(DATE, data[0])
+        timestamp = pat_model.csvtime_to_float(session.date, data[0])
         pos = list(eval(data[1]))
         userid = tool_to_userid(data[2])
         if userid is None:
@@ -117,7 +112,10 @@ def import_touches():
     con.commit()
     con.close()
 
-import_optitrack()
-import_touches()
+def setup():
+    session = pat_model.create_session()
+    import_optitrack(session)
+    import_touches(session)
 
+setup()
 print "Database setup complete."

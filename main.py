@@ -26,6 +26,8 @@ class MainDiv(app.MainDiv):
         # and padding inbetween elements of visualization
         padding = global_values.APP_PADDING
 
+        self.session = pat_model.create_session()
+
         pat_model.init_globals()
         self.__users = []
         for userid in range(0, 4):
