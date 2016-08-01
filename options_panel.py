@@ -82,7 +82,7 @@ class OptionsPanel(libavg.DivNode):
         self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, self.__on_smoothness_change)
 
         # legend
-        self.legend = Legend(parent=self, min_value=0, max_value=1, unit="m", size=(210, 200))
+        self.legend = Legend(parent=self, size=(210, 200))
         self.legend.pos = (self.width - self.legend.width, self.height - self.legend.height)
 
         self.__vis_params.subscribe(self.__vis_params.CHANGED, self.update_time)
@@ -108,7 +108,7 @@ class OptionsPanel(libavg.DivNode):
 
 
 class Legend(libavg.DivNode):
-    def __init__(self, parent, min_value, max_value, unit, **kwargs):
+    def __init__(self, parent, **kwargs):
         super(Legend, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
@@ -129,11 +129,12 @@ class Legend(libavg.DivNode):
         line.setValues(points, dists)
 
         # texts
-        libavg.WordsNode(pos=(0, self.height - 35), text="Distance from wall", parent=self,
+        libavg.WordsNode(pos=(0, self.height - 60), text="Distance from wall", parent=self,
                          color=global_values.COLOR_FOREGROUND)
         pos_range = pat_model.pos_range
-        libavg.WordsNode(pos=(0, self.height - 20), text="{} {}".format(str(int(pos_range[0][2])), unit),
-                         parent=self, color=global_values.COLOR_FOREGROUND, alignment="right")
-        libavg.WordsNode(pos=(self.width + 2, self.height - 20), parent=self, alignment="left",
-                         text="{} {}".format(str(int(pos_range[1][2])), unit),
-                         color=global_values.COLOR_FOREGROUND, )
+        self.__create_label(pos=(0, self.height - 25), val=pos_range[0][2])
+        self.__create_label(pos=(self.width + 2, self.height - 25), val=pos_range[1][2])
+
+    def __create_label(self, pos, val):
+        val_str = "{:1.2f}m".format(val)
+        libavg.WordsNode(pos=pos, text=val_str, color=global_values.COLOR_FOREGROUND, alignment="center", parent=self)
