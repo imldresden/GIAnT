@@ -122,7 +122,7 @@ class Touch(object):
         touch = Touch()
         touch.userid = touch_list[0]
         touch.pos = avg.Point2D(touch_list[1], touch_list[2])
-        touch.timestamp = touch_list[3] - session.session_start_time
+        touch.timestamp = touch_list[3] - session.start_time
         touch.duration = touch_list[4]
         return touch
 
@@ -183,15 +183,25 @@ class User(object):
 
 class Session(object):
     def __init__(self, data_dir, optitrack_filename, touch_filename, video_filename, date, video_start_time,
-            number_of_users):
+            num_users):
         self.data_dir = data_dir
         self.optitrack_filename = optitrack_filename
         self.touch_filename = touch_filename
         self.video_filename = video_filename
         self.date = date
         self.video_start_time = video_start_time
-        self.session_start_time = execute_qry("SELECT min(time) FROM head;", True)[0][0]
-        self.number_of_users = number_of_users
+        self.num_users = num_users
+
+        self.start_time = execute_qry("SELECT min(time) FROM head;", True)[0][0]
+        self.duration = execute_qry("SELECT max(time) FROM head;", True)[0][0] - self.start_time
+
+        self.__users = []
+        for userid in range(0, num_users):
+            self.__users.append(User(self, userid))
+
+    @property
+    def users(self):
+        return self.__users
 
 
 def create_session():
@@ -202,7 +212,7 @@ def create_session():
         video_filename="2016.03.17-151215.avi",
         date="2016-03-17",
         video_start_time="15:12:15",
-        number_of_users=4
+        num_users=4
     )
 
 

@@ -29,9 +29,6 @@ class MainDiv(app.MainDiv):
         self.session = pat_model.create_session()
 
         pat_model.init_globals()
-        self.__users = []
-        for userid in range(0, 4):
-            self.__users.append(pat_model.User(self.session, userid))
 
         # position and scale main div
         self.pos = (margin, margin)
@@ -42,7 +39,7 @@ class MainDiv(app.MainDiv):
         main_vis_width = 2.0 / 3.0 * res_x
         menu_height = 50
         side_vis_height = 1.0 / 3.0 * res_y
-        self.__vis_params = vis_params.VisParams(len(self.__users))
+        self.__vis_params = vis_params.VisParams(self.session.num_users)
 
         # rectangle to color background
         libavg.RectNode(parent=self, pos=(-1000, -1000), size=(10000, 10000),
@@ -58,7 +55,7 @@ class MainDiv(app.MainDiv):
 
         # main visualization
         self.main_visualization = movement_panel.MovementPanel(
-                parent=self, users=self.__users, vis_params=self.__vis_params, pos=(0, 0),
+                parent=self, session=self.session, vis_params=self.__vis_params, pos=(0, 0),
                 size=(main_vis_width, res_y - menu_height))
 
         # video
@@ -69,7 +66,7 @@ class MainDiv(app.MainDiv):
                                  vis_params=self.__vis_params, parent=self)
 
         # menu
-        self.options = OptionsPanel.OptionsPanel(users=self.__users, vis_params=self.__vis_params, parent=self,
+        self.options = OptionsPanel.OptionsPanel(users=self.session.users, vis_params=self.__vis_params, parent=self,
                                                  pos=(0, self.main_visualization.height),
                                                  size=(self.main_visualization.width, menu_height))
 

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import time
-import global_values
 from libavg import avg
 
 import pat_model
@@ -11,8 +10,6 @@ class VisParams(avg.Publisher):
 
     MIN_SMOOTHNESS_FACTOR = 0.01
     MAX_SMOOTHNESS_FACTOR = 1
-
-    MAX_SMOOTHNESS = 500
 
     __highlight_time = 0
     __zoom_strength = 0.1
@@ -25,7 +22,6 @@ class VisParams(avg.Publisher):
         self.publish(VisParams.CHANGED)
 
         self.__smoothness_factor = 1
-        self.__calc_smoothness()
         self.__users_visible = [True]*num_users
 
     def get_time_interval(self):
@@ -75,7 +71,6 @@ class VisParams(avg.Publisher):
         self.notify()
 
     def notify(self):
-        self.__calc_smoothness()
         self.notifySubscribers(VisParams.CHANGED, [self])
 
     def play_animation(self):
@@ -91,13 +86,9 @@ class VisParams(avg.Publisher):
 
     def set_smoothness_factor(self, value):
         self.__smoothness_factor = value
-        self.__calc_smoothness()
 
     def get_smoothness_factor(self):
         return self.__smoothness_factor
-
-    def get_smoothness(self):
-        return self.__smoothness
 
     def __set_highlight_time(self, time):
         self.__highlight_time = time
@@ -117,8 +108,3 @@ class VisParams(avg.Publisher):
         return self.__last_frame_time
     last_frame_time = property(__get_last_frame_time, __set_last_frame_time)
 
-    def __calc_smoothness(self):
-        time_range = self.__time_interval[1] - self.__time_interval[0]
-        self.__smoothness = int((time_range / pat_model.max_time) * self.MAX_SMOOTHNESS * self.__smoothness_factor)
-        if self.__smoothness < 1:
-            self.__smoothness = 1

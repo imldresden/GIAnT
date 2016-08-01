@@ -13,14 +13,15 @@ player.loadPlugin("vwline")
 class MovementPanel(avg.DivNode):
 
     PIXELS_PER_SAMPLE = 4
+    MAX_SMOOTHNESS = 500
 
-    def __init__(self, parent, users, vis_params, **kwargs):
+    def __init__(self, parent, session, vis_params, **kwargs):
         super(MovementPanel, self).__init__(**kwargs)
         self.registerInstance(self, parent)
         self.crop = False
 
         self.__time_min = 0
-        self.__time_max = pat_model.max_time
+        self.__time_max = session.duration
 
         # rect for coloured border and background
         self.background_rect = avg.RectNode(pos=(axis.THICKNESS, 0),
@@ -33,11 +34,11 @@ class MovementPanel(avg.DivNode):
         self.data_div = avg.DivNode(pos=(axis.THICKNESS, 0),
                                        size=(self.width - axis.THICKNESS, self.height - axis.THICKNESS),
                                        crop=True)
-        self.__users = users
+        self.__users = session.users
         self.__user_lines = []
         self.__touch_nodes = []
         max_width = (min(self.width, self.height) / 12)
-        for userid in range(len(users)):
+        for userid in range(session.num_users):
             color = util.get_user_color_as_hex(userid, 1)
             self.__user_lines.append(vwline.VWLineNode(color=color, maxwidth=max_width, parent=self.data_div))
 
@@ -49,7 +50,7 @@ class MovementPanel(avg.DivNode):
 
         x_axis_pos = (axis.THICKNESS, self.data_div.height)
         self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, vis_params=vis_params, parent=self, unit="s",
-                data_range=[0, pat_model.max_time], size=(self.data_div.width, axis.THICKNESS), inverted=False)
+                data_range=[0, session.duration], size=(self.data_div.width, axis.THICKNESS), inverted=False)
 
         self.appendChild(self.data_div)
 
@@ -97,6 +98,7 @@ class MovementPanel(avg.DivNode):
     def __create_lines(self, vis_params):
         time_start = self.__xpos_to_time(0)
         time_end = self.__xpos_to_time(self.data_div.width)
+        smoothness = self.__calc_smoothness(vis_params.get_smoothness_factor(), time_end-time_start)
 
         for i, user in enumerate(self.__users):
             if vis_params.get_user_visible(i):
@@ -105,7 +107,7 @@ class MovementPanel(avg.DivNode):
                 for cur_sample_x in range(0, int(self.data_div.width), self.PIXELS_PER_SAMPLE):
                     cur_time = self.__xpos_to_time(cur_sample_x)
 
-                    head_position_averaged = user.get_head_position_averaged(cur_time, vis_params.get_smoothness())
+                    head_position_averaged = user.get_head_position_averaged(cur_time, smoothness)
 
                     pos_range = pat_model.pos_range
                     norm_x = 1 - (head_position_averaged[0] - pos_range[0][0]) / float(pos_range[1][0] - pos_range[0][0])
@@ -120,7 +122,6 @@ class MovementPanel(avg.DivNode):
                 userline.setValues(points, dists)
                 touches = user.get_touches(time_start, time_end)
                 touches_x = [self.__time_to_xpos(touch.timestamp) for touch in touches]
-                touches_width = [2 for touch in touches]
                 touches_width = [touch.duration*self.__time_factor for touch in touches]
                 userline.setHighlights(touches_x, touches_width)
 
@@ -137,3 +138,9 @@ class MovementPanel(avg.DivNode):
 
     def __time_to_xpos(self, t):
         return (float(t)-self.__time_min) * self.__time_factor
+
+    def __calc_smoothness(self, smoothness_factor, time_range):
+        smoothness = int((time_range / self.__time_max) * self.MAX_SMOOTHNESS * smoothness_factor)
+        if smoothness < 1:
+            smoothness = 1
+        return smoothness
