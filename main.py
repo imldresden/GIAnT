@@ -31,7 +31,7 @@ class MainDiv(app.MainDiv):
         pat_model.init_globals()
         self.__users = []
         for userid in range(0, 4):
-            self.__users.append(pat_model.User(userid))
+            self.__users.append(pat_model.User(self.session, userid))
 
         # position and scale main div
         self.pos = (margin, margin)

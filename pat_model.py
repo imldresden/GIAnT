@@ -118,17 +118,17 @@ class Touch(object):
 
 
     @classmethod
-    def from_list(cls, touch_list):
+    def from_list(cls, session, touch_list):
         touch = Touch()
         touch.userid = touch_list[0]
         touch.pos = avg.Point2D(touch_list[1], touch_list[2])
-        touch.timestamp = touch_list[3] - time_offset
+        touch.timestamp = touch_list[3] - session.session_start_time
         touch.duration = touch_list[4]
         return touch
 
 
 class User(object):
-    def __init__(self, userid):
+    def __init__(self, session, userid):
         self.userid = userid
 
         head_data_list = execute_qry("SELECT user, x, y, z, pitch, yaw, roll, time, x_sum, y_sum, z_sum "
@@ -140,7 +140,7 @@ class User(object):
         touch_data_list = execute_qry("SELECT user, x, y, time, duration "
                                      "FROM touch WHERE user = " + str(userid) +
                                      " GROUP BY time ORDER BY time;", True)
-        self.__touches = [Touch.from_list(touch_list) for touch_list in touch_data_list]
+        self.__touches = [Touch.from_list(session, touch_list) for touch_list in touch_data_list]
 
     def get_num_states(self):
         return len(self.__head_data)
@@ -183,14 +183,14 @@ class User(object):
 
 class Session(object):
     def __init__(self, data_dir, optitrack_filename, touch_filename, video_filename, date, video_start_time,
-            session_start_time, number_of_users):
+            number_of_users):
         self.data_dir = data_dir
         self.optitrack_filename = optitrack_filename
         self.touch_filename = touch_filename
         self.video_filename = video_filename
         self.date = date
         self.video_start_time = video_start_time
-        self.session_start_time = session_start_time
+        self.session_start_time = execute_qry("SELECT min(time) FROM head;", True)[0][0]
         self.number_of_users = number_of_users
 
 
@@ -202,7 +202,6 @@ def create_session():
         video_filename="2016.03.17-151215.avi",
         date="2016-03-17",
         video_start_time="15:12:15",
-        session_start_time="15:24:36.685",
         number_of_users=4
     )
 
@@ -211,8 +210,6 @@ def init_globals():
     global max_time
     max_time = (execute_qry("SELECT max(time) FROM head;", True)[0][0] -
             execute_qry("SELECT min(time) FROM head;", True)[0][0])
-    global time_offset
-    time_offset = execute_qry("SELECT min(time) FROM head;", True)[0][0]
 
     min_x = execute_qry("SELECT min(x) FROM head;", True)[0][0] - 0.5
     max_x = execute_qry("SELECT max(x) FROM head;", True)[0][0] + 0.5
