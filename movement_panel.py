@@ -1,71 +1,45 @@
 # -*- coding: utf-8 -*-
-import libavg
 
 import pat_model
 import global_values
 import axis
-from libavg import avg
-from libavg import player
+import vis_panel
+from libavg import avg, player
 
 player.loadPlugin("vwline")
 
 
-class MovementPanel(avg.DivNode):
+class MovementPanel(vis_panel.VisPanel):
 
     PIXELS_PER_SAMPLE = 4
     MAX_SMOOTHNESS = 500
 
-    def __init__(self, parent, session, vis_params, **kwargs):
-        super(MovementPanel, self).__init__(**kwargs)
-        self.registerInstance(self, parent)
+    def __init__(self, session, vis_params, parent, **kwargs):
+        super(MovementPanel, self).__init__("Timeline", session, vis_params, (60, 25), parent, **kwargs)
 
         self.__users = session.users
         self.__time_min = 0
         self.__time_max = session.duration
 
-        axis_width = 60
-        axis_height = 25
-
-        # rect for coloured border and background
-        self.background_rect = avg.RectNode(pos=(axis_width, 0), size=self.size - (axis_width, axis_height),
-                strokewidth=1, fillopacity=1,
-                color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_BLACK,
-                parent=self)
-
-        # div for visualization data
-        self.data_div = avg.DivNode(pos=(axis_width, 0), size=self.size - (axis_width, axis_height), crop=True)
         self.__user_lines = []
-        self.__touch_nodes = []
         max_width = (min(self.width, self.height) / 12)
         for userid in range(session.num_users):
             color = vis_params.get_user_color(userid)
             self.__user_lines.append(vwline.VWLineNode(color=color, maxwidth=max_width,
-                    blendmode="add", parent=self.data_div))
+                    blendmode="add", parent=self._data_div))
 
         x_range = pat_model.pos_range[0][0], pat_model.pos_range[1][0]
-        self.y_axis = axis.AxisNode(pos=(0, 0), panel_height=self.data_div.height,
-                size=(axis_width, self.data_div.height), parent=self,
-                sensitive=True, data_range=x_range, unit="m", hide_rims=True,
-                inverted=True, label_offset=15)
-
-        x_axis_pos = (axis_width, self.data_div.height)
-        self.x_axis = axis.AxisNode(pos=x_axis_pos, panel_height=self.data_div.height,
-                parent=self, unit="s", data_range=[0, session.duration], size=(self.data_div.width, axis_height),
-                inverted=False)
+        self._create_y_axis(data_range=x_range, unit="m", hide_rims=True, label_offset=15, inverted=True)
+        self._create_x_axis(data_range=[0, session.duration], unit="s")
         self.__create_wall_rect()
+        self._create_data_div()
 
-        self.appendChild(self.data_div)
-
-        self.__time_factor = self.data_div.width / (self.__time_max - self.__time_min)
+        self.__time_factor = self._data_div.width / (self.__time_max - self.__time_min)
         self.__create_lines(vis_params)
 
         self.__highlight_line = avg.LineNode(color=global_values.COLOR_SECONDARY,
-                pos1=(0, 0), pos2=(0, self.data_div.height), opacity=1, parent=self.data_div)
-        self.__hover_id = self.data_div.subscribe(avg.Node.CURSOR_MOTION, self.__on_hover)
-
-        # name
-        name_pos = self.background_rect.pos + (10,10)
-        avg.WordsNode(pos=name_pos, color=global_values.COLOR_FOREGROUND, text="Timeline", sensitive=False, parent=self)
+                pos1=(0, 0), pos2=(0, self._data_div.height), opacity=1, parent=self._data_div)
+        self.__hover_id = self._data_div.subscribe(avg.Node.CURSOR_MOTION, self.__on_hover)
 
 #        self.legend = Legend(size=(250, 100), maxwidth=max_width, color=vis_params.get_user_color(-1), parent=self)
 #        self.legend.pos = (self.width - self.legend.width - 10, 10)
@@ -75,13 +49,13 @@ class MovementPanel(avg.DivNode):
         vis_params.subscribe(vis_params.IS_PLAYING, self.__on_play_pause)
 
         self.__vis_params = vis_params
-        self.data_div.subscribe(avg.Node.MOUSE_WHEEL, self.__on_mouse_wheel)
+        self._data_div.subscribe(avg.Node.MOUSE_WHEEL, self.__on_mouse_wheel)
 
     def update_time(self, vis_params):
         interval = vis_params.get_time_interval()
         self.__time_min = interval[0]
         self.__time_max = interval[1]
-        self.__time_factor = self.data_div.width / (self.__time_max - self.__time_min)
+        self.__time_factor = self._data_div.width / (self.__time_max - self.__time_min)
         self.__create_lines(vis_params)
         # update position of pinned highlight line and highlight line marker
         highlight_xpos = self.__time_to_xpos(self.__vis_params.highlight_time)
@@ -96,15 +70,15 @@ class MovementPanel(avg.DivNode):
             user_line.active = vis_params.get_user_visible(i)
 
         interval = vis_params.get_time_interval()
-        self.x_axis.update(interval[0], interval[1])
+        self._x_axis.update(interval[0], interval[1])
 
     def __on_play_pause(self, playing):
         self.__enable_time = not playing
 
     def __on_mouse_wheel(self, event):
         if self.__enable_time:
-            rel_pos = self.data_div.getRelPos(event.pos)
-            pos_fraction = rel_pos[0]/self.data_div.width
+            rel_pos = self._data_div.getRelPos(event.pos)
+            pos_fraction = rel_pos[0]/self._data_div.width
             if event.motion.y > 0:
                 self.__vis_params.zoom_in_at(pos_fraction)
             else:
@@ -112,14 +86,14 @@ class MovementPanel(avg.DivNode):
 
     def __create_lines(self, vis_params):
         time_start = self.__xpos_to_time(0)
-        time_end = self.__xpos_to_time(self.data_div.width)
+        time_end = self.__xpos_to_time(self._data_div.width)
         smoothness = self.__calc_smoothness(vis_params.get_smoothness_factor(), time_end-time_start)
 
         for i, user in enumerate(self.__users):
             if vis_params.get_user_visible(i):
                 points = []
                 dists = []
-                for cur_sample_x in range(0, int(self.data_div.width), self.PIXELS_PER_SAMPLE):
+                for cur_sample_x in range(0, int(self._data_div.width), self.PIXELS_PER_SAMPLE):
                     cur_time = self.__xpos_to_time(cur_sample_x)
 
                     head_position_averaged = user.get_head_position_averaged(cur_time, smoothness)
@@ -128,7 +102,7 @@ class MovementPanel(avg.DivNode):
                     norm_x = 1 - (head_position_averaged[0] - pos_range[0][0]) / float(pos_range[1][0] - pos_range[0][0])
                     norm_z = (head_position_averaged[2] - pos_range[0][2]) / float(pos_range[1][2] - pos_range[0][2])
 
-                    vis_y = norm_x * self.data_div.height
+                    vis_y = norm_x * self._data_div.height
 
                     points.append(avg.Point2D(cur_sample_x, vis_y))
                     dists.append(norm_z)
@@ -152,7 +126,7 @@ class MovementPanel(avg.DivNode):
         Moves the highlight line along the vertical mouse position.
         """
         if self.__enable_time:
-            rel_pos = self.data_div.getRelPos(event.pos)
+            rel_pos = self._data_div.getRelPos(event.pos)
             self.__vis_params.highlight_time = self.__xpos_to_time(rel_pos.x)
             self.__vis_params.notify()
 
@@ -169,7 +143,7 @@ class MovementPanel(avg.DivNode):
         return smoothness
 
 
-class Legend(libavg.DivNode):
+class Legend(avg.DivNode):
     def __init__(self, color, maxwidth, parent, **kwargs):
         super(Legend, self).__init__(**kwargs)
         self.registerInstance(self, parent)

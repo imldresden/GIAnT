@@ -128,7 +128,7 @@ class AxisNode(avg.DivNode):
                 v_center = self.__label_nodes[i].fontsize / 2
             if self.__vertical:
                 self.__grid[i].pos1 = (self.__axis_line.pos1[0], pos)
-                self.__grid[i].pos2 = (self.__axis_line.pos1[0] + self.parent.data_div.width, pos)
+                self.__grid[i].pos2 = (self.__axis_line.pos1[0] + self.parent._data_div.width, pos)
                 self.__ticks[i].pos1 = (self.__axis_line.pos1[0], pos)
                 self.__ticks[i].pos2 = (self.__axis_line.pos1[0] + self.__tick_length, pos)
                 if not self.__top_axis:
