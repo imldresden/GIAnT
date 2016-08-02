@@ -2,11 +2,12 @@
 
 import math
 from libavg import widget, avg, gesture
+import global_values
 
 
 class IntervalSliderBase(avg.DivNode):
     """
-    Curstom SliderBase to modify slider track (don't even create one).
+    Curstom SliderBase to modify slider track.
     """
 
     THUMB_POS_CHANGED = avg.Publisher.genMessageID()
@@ -16,6 +17,10 @@ class IntervalSliderBase(avg.DivNode):
     def __init__(self, cfg, width=0, range=(0., 1.), thumbPos=0.0, parent=None, **kwargs):
         super(IntervalSliderBase, self).__init__(**kwargs)
         self.registerInstance(self, parent)
+
+        self.__i_line = avg.LineNode(strokewidth=1, color=global_values.COLOR_SECONDARY, parent=self,
+                                        pos1=(0, 0),
+                                        pos2=(width, 0))
 
         self.publish(IntervalSliderBase.THUMB_POS_CHANGED)
         self.publish(IntervalSliderBase.PRESSED)

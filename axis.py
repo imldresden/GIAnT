@@ -253,32 +253,7 @@ class TimeAxisNode(AxisNode):
         self.label_offset = 0                                                    # smaller label offset for time axis
         self.vertical = False                                                    # TimeAxisNode can only be horizontal
 
-        """setup Nodes"""
-        # interval lines and rectangle
-        self.__i_line = libavg.LineNode(strokewidth=1, color=global_values.COLOR_SECONDARY, parent=self,
-                                        pos1=(0, 2.5 * self.tick_length),
-                                        pos2=(self.width, 2.5 * self.tick_length))
-        self.__i_rect = libavg.RectNode(strokewidth=0, fillopacity=1, parent=self,
-                                        color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_FOREGROUND,
-                                        pos=(self.__i_start, 2.5 * self.tick_length),
-                                        size=(self.__i_end - self.__i_start, 5))
-
-        # interactive interval scrollbar
-        self.__i_scrollbar = custom_slider.IntervalScrollBar(pos=(0, self.__i_rect.pos[1]), width=self.width, opacity=0,
-                                                             range=self.data_range, parent=self)
-
-        """subscriptions"""
-        # change of thumb pos of interval slider
-        self.__i_scrollbar.subscribe(custom_slider.IntervalScrollBar.THUMB_POS_CHANGED,
-                                     lambda pos: self.__change_interval(self.__i_scrollbar.getThumbPos(),
-                                                                        self.end + pos - self.start))
-
-        # more/less details of interval slider
-        self.subscribe(avg.Node.CURSOR_OVER, self.__show_interval_slider)
-        self.subscribe(avg.Node.CURSOR_OUT, self.__hide_interval_slider)
-
         self.__vis_params.subscribe(self.__vis_params.CHANGED, self.update_time)
-        self.__vis_params.subscribe(vis_params.IS_PLAYING, self.__on_play_pause)
 
         """initial update"""
         self.update(self.start, self.end)
@@ -287,54 +262,20 @@ class TimeAxisNode(AxisNode):
         interval = vis_params.get_time_interval()
         self.update(interval[0], interval[1])
 
-    def __on_play_pause(self, playing):
-        self.__i_scrollbar.sensitive = not playing
-
-    def __change_interval(self, start, end):
-        self.update(start, end)
-
-        # update global time interval
-        delta = start - self.__vis_params.get_time_interval()[0]
-        self.__vis_params.highlight_time += delta
-        self.__vis_params.set_time_interval((start, end))
-
     def update(self, i_start, i_end):
         # set new interval start and end
         time_range = self.data_range
         self.__i_start = self.value_to_pixel(i_start, time_range[0], time_range[1])
         self.__i_end = self.value_to_pixel(i_end, time_range[0], time_range[1])
 
-        # update positions of interval lines
-        self.__i_rect.pos = (self.__i_start, self.__i_rect.pos[1])
-        self.__i_rect.size = (self.__i_end - self.__i_start, self.__i_rect.size[1])
-
         # call update from AxisNode (updates self.end and self.start)
         super(TimeAxisNode, self).update(i_start, i_end)
-
-        # update scrollbar
-        self.__i_scrollbar.setThumbPos(self.start)
-        self.__i_scrollbar.setThumbExtent(self.end - self.start)
 
     def calculate_time_from_pixel(self, pixel):
         time_i_range = self.end - self.start            # time
         ratio = pixel / self.width                      # %
         time = ratio * time_i_range + self.start        # time
         return time
-
-    def __show_interval_slider(self, event=None):
-        """
-        Called when mouse hovers over TimeAxisNodeDiv. Shows Details on demand of interval.
-        """
-        # make interval rect bigger
-        self.__i_rect.size = (self.__i_rect.size[0], 13)
-        self.__i_scrollbar.opacity = 1
-
-    def __hide_interval_slider(self, event=None):
-        """
-        Hide Details on Demand of interval when mouse hovers out of TimeAxisNodeDiv area.
-        """
-        self.__i_rect.size = (self.__i_rect.size[0], 5)
-        self.__i_scrollbar.opacity = 0
 
 
 def r_pretty(dmin, dmax, n, time=False):

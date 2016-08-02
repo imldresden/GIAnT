@@ -2,7 +2,7 @@
 
 from libavg import avg
 
-# In CIE Lch color space.
+# User colors are specified in CIE Lch color space.
 # This allows us to easily pick four colors that have the same perceptual brightness and saturation, but differing hue.
 user_colors = [(60,90,40), (60,90,130), (60,90,220), (60,90,310)]
 user_grey = (60,0,0)

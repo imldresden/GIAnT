@@ -28,15 +28,7 @@ def get_look_direction(pitch, yaw):
 
 
 def format_label_value(unit, value):
-    """
-    Format label values depending on units of measurement.
-    :param unit: unit of measurement ('s', 'm')
-    :param value: label value
-    """
-
-    # length units in centimeters
-    if unit is "m":
-
+    if unit is "m":  # meters
         # cut zeros if value is integer
         if value % 1 in (0, 0.0):
             value = int(value)
@@ -45,9 +37,7 @@ def format_label_value(unit, value):
 
         return "{} m".format(value)
 
-    # time units in seconds
-    elif unit is "s":
-        # calculate seconds and minutes from milliseconds
+    elif unit is "s": # seconds
         ms = int((value - int(value)) * 1000+0.5)
         m, s = divmod(value, 60)
         label = "{:02d}:{:02d}".format(int(m), int(s))

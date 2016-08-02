@@ -12,6 +12,7 @@ import options_panel
 import global_values
 import video_panel
 import pat_model
+import custom_slider
 
 
 class MainDiv(app.MainDiv):
@@ -58,6 +59,16 @@ class MainDiv(app.MainDiv):
                                                  pos=(0, self.main_visualization.height),
                                                  size=(self.main_visualization.width, menu_height))
 
+        # interval scrollbar
+        bar_pos = (48, self.main_visualization.size.y-25)
+        bar_range = (0, self.session.duration)
+        self.__time_bar = custom_slider.IntervalScrollBar(pos=bar_pos, width=self.main_visualization.size.x-48,
+                range=bar_range, thumbExtent=bar_range[1], parent=self)
+        self.__time_bar.subscribe(custom_slider.IntervalScrollBar.THUMB_POS_CHANGED, self.__on_scroll)
+
+        self.__vis_params.subscribe(self.__vis_params.CHANGED, self.__on_update_time)
+        self.__vis_params.subscribe(self.__vis_params.IS_PLAYING, self.__on_play_pause)
+
         app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward)
         app.keyboardmanager.bindKeyDown(keyname='Left', handler=self.shift_back)
         app.keyboardmanager.bindKeyDown(keyname='Up', handler=self.zoom_in)
@@ -78,6 +89,21 @@ class MainDiv(app.MainDiv):
 
     def play_pause(self):
         self.__vis_params.is_playing = not self.__vis_params.is_playing
+
+    def __on_scroll(self, pos):
+        # update global time interval
+        delta = pos - self.__vis_params.get_time_interval()[0]
+        self.__vis_params.highlight_time += delta
+        interval = pos, pos + self.__time_bar.thumbExtent
+        self.__vis_params.set_time_interval(interval)
+
+    def __on_play_pause(self, playing):
+        self.__time_bar.sensitive = not playing
+
+    def __on_update_time(self, vis_params):
+        interval = vis_params.get_time_interval()
+        self.__time_bar.setThumbPos(interval[0])
+        self.__time_bar.setThumbExtent(interval[1] - interval[0])
 
 
 def value_to_pixel(value, max_px, interval):
