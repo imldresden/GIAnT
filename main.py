@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from global_values import resolution
-
 from libavg import app, avg
 import libavg
 import vis_params
 import movement_panel
-import axis
 import options_panel
 import global_values
 import video_panel

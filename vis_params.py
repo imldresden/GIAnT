@@ -31,6 +31,9 @@ class VisParams(avg.Publisher):
     def get_time_interval(self):
         return self.__time_interval
 
+    def get_time_duration(self):
+        return self.__time_interval[1] - self.__time_interval[0]
+
     def zoom_in_at(self, fraction_in_timeframe):
         point = self.__time_interval[0] + fraction_in_timeframe * (self.__time_interval[1] - self.__time_interval[0])
         self.__time_interval[0] = point - (point - self.__time_interval[0]) * (1 - self.__zoom_strength)

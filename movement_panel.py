@@ -2,7 +2,6 @@
 
 import pat_model
 import global_values
-import axis
 import vis_panel
 from libavg import avg, player
 
@@ -15,11 +14,9 @@ class MovementPanel(vis_panel.VisPanel):
     MAX_SMOOTHNESS = 500
 
     def __init__(self, session, vis_params, parent, **kwargs):
-        super(MovementPanel, self).__init__("Timeline", session, vis_params, (60, 25), parent, **kwargs)
+        super(MovementPanel, self).__init__("Timeline", vis_params, (60, 25), parent, **kwargs)
 
         self.__users = session.users
-        self.__time_min = 0
-        self.__time_max = session.duration
 
         self.__user_lines = []
         max_width = (min(self.width, self.height) / 12)
@@ -34,7 +31,7 @@ class MovementPanel(vis_panel.VisPanel):
         self.__create_wall_rect()
         self._create_data_div()
 
-        self.__time_factor = self._data_div.width / (self.__time_max - self.__time_min)
+        self.__time_factor = self._data_div.width / vis_params.get_time_duration()
         self.__create_lines(vis_params)
 
         self.__highlight_line = avg.LineNode(color=global_values.COLOR_SECONDARY,
@@ -45,20 +42,17 @@ class MovementPanel(vis_panel.VisPanel):
 #        self.legend.pos = (self.width - self.legend.width - 10, 10)
 
         self.__enable_time = True
-        vis_params.subscribe(vis_params.CHANGED, self.update_time)
         vis_params.subscribe(vis_params.IS_PLAYING, self.__on_play_pause)
 
-        self.__vis_params = vis_params
         self._data_div.subscribe(avg.Node.MOUSE_WHEEL, self.__on_mouse_wheel)
 
-    def update_time(self, vis_params):
+    def _update_time(self, vis_params):
         interval = vis_params.get_time_interval()
         self.__time_min = interval[0]
-        self.__time_max = interval[1]
-        self.__time_factor = self._data_div.width / (self.__time_max - self.__time_min)
+        self.__time_factor = self._data_div.width / vis_params.get_time_duration()
         self.__create_lines(vis_params)
         # update position of pinned highlight line and highlight line marker
-        highlight_xpos = self.__time_to_xpos(self.__vis_params.highlight_time)
+        highlight_xpos = self.__time_to_xpos(self._vis_params.highlight_time)
         if highlight_xpos > self.width or highlight_xpos < 0:
             self.__highlight_line.opacity = 0
         else:
@@ -69,7 +63,6 @@ class MovementPanel(vis_panel.VisPanel):
         for i, user_line in enumerate(self.__user_lines):
             user_line.active = vis_params.get_user_visible(i)
 
-        interval = vis_params.get_time_interval()
         self._x_axis.update(interval[0], interval[1])
 
     def __on_play_pause(self, playing):
@@ -80,9 +73,9 @@ class MovementPanel(vis_panel.VisPanel):
             rel_pos = self._data_div.getRelPos(event.pos)
             pos_fraction = rel_pos[0]/self._data_div.width
             if event.motion.y > 0:
-                self.__vis_params.zoom_in_at(pos_fraction)
+                self._vis_params.zoom_in_at(pos_fraction)
             else:
-                self.__vis_params.zoom_out_at(pos_fraction)
+                self._vis_params.zoom_out_at(pos_fraction)
 
     def __create_lines(self, vis_params):
         time_start = self.__xpos_to_time(0)
@@ -127,17 +120,17 @@ class MovementPanel(vis_panel.VisPanel):
         """
         if self.__enable_time:
             rel_pos = self._data_div.getRelPos(event.pos)
-            self.__vis_params.highlight_time = self.__xpos_to_time(rel_pos.x)
-            self.__vis_params.notify()
+            self._vis_params.highlight_time = self.__xpos_to_time(rel_pos.x)
+            self._vis_params.notify()
 
     def __xpos_to_time(self, x):
-        return x / self.__time_factor + self.__time_min
+        return x / self.__time_factor + self._vis_params.get_time_interval()[0]
 
     def __time_to_xpos(self, t):
-        return (float(t)-self.__time_min) * self.__time_factor
+        return (float(t)-self._vis_params.get_time_interval()[0]) * self.__time_factor
 
     def __calc_smoothness(self, smoothness_factor, time_range):
-        smoothness = int((time_range / self.__time_max) * self.MAX_SMOOTHNESS * smoothness_factor)
+        smoothness = int((time_range / self._vis_params.get_time_interval()[1]) * self.MAX_SMOOTHNESS * smoothness_factor)
         if smoothness < 1:
             smoothness = 1
         return smoothness
