@@ -21,7 +21,7 @@ class MainDiv(app.MainDiv):
     def onInit(self):
         self.session = pat_model.create_session()
         self.__vis_params = vis_params.VisParams(self.session)
-        self.elementoutlinecolor="FF0000"
+#        self.elementoutlinecolor="FF0000"
 
         padding = global_values.APP_PADDING  # and padding inbetween elements of visualization
         menu_height = 50
@@ -91,5 +91,4 @@ def value_to_pixel(value, max_px, interval):
     return (value - interval[0]) / a
 
 
-# minimum recommended resolution: 1040x331 px!
-app.App().run(MainDiv(), app_resolution=resolution["1500x800"])
+app.App().run(MainDiv(), app_resolution="1500x1000")

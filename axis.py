@@ -7,9 +7,6 @@ import util
 import global_values
 from libavg import avg
 
-THICKNESS = 50     # space needed for axis display (means height if axis is horizontal, width otherwise)
-
-
 class AxisNode(avg.DivNode):
     def __init__(self, data_range, panel_height, unit="m", hide_rims=False, top_axis=False, inverted=False, parent=None,
                  label_offset=0, **kwargs):
@@ -53,9 +50,6 @@ class AxisNode(avg.DivNode):
         # axis is displayed vertical if width smaller than height
         if self.height > self.width:
             self.__vertical = True
-            self.width = THICKNESS
-        else:
-            self.height = THICKNESS
 
         # create main axis line (horizontal or vertical)
         self.__axis_line = libavg.LineNode(strokewidth=1, parent=self)
@@ -232,49 +226,6 @@ class AxisNode(avg.DivNode):
     unit = property(__get_unit)
 
     __update = update               # private copy of original update() method
-
-
-class TimeAxisNode(AxisNode):
-    """
-    Custom TimeAxisNode with axis lines, labeling and an interval line and slider.
-    """
-
-    def __init__(self, vis_params, parent=None, **kwargs):
-        super(TimeAxisNode, self).__init__(**kwargs)
-        self.registerInstance(self, parent)
-
-        self.__vis_params = vis_params
-        self.__i_start = self.value_to_pixel(self.start)  # interval start
-        self.__i_end = self.value_to_pixel(self.end)      # interval end
-        self.__i_label_offset = 5                                                # offset for interval duration label
-        self.__pinned = False                                                    # if highlight line is pinned
-        self.__highlight_pixel = 0                                               # pixel position on axis of highlight
-        self.label_offset = 0                                                    # smaller label offset for time axis
-        self.vertical = False                                                    # TimeAxisNode can only be horizontal
-
-        self.__vis_params.subscribe(self.__vis_params.CHANGED, self.update_time)
-
-        """initial update"""
-        self.update(self.start, self.end)
-
-    def update_time(self, vis_params):
-        interval = vis_params.get_time_interval()
-        self.update(interval[0], interval[1])
-
-    def update(self, i_start, i_end):
-        # set new interval start and end
-        time_range = self.data_range
-        self.__i_start = self.value_to_pixel(i_start, time_range[0], time_range[1])
-        self.__i_end = self.value_to_pixel(i_end, time_range[0], time_range[1])
-
-        # call update from AxisNode (updates self.end and self.start)
-        super(TimeAxisNode, self).update(i_start, i_end)
-
-    def calculate_time_from_pixel(self, pixel):
-        time_i_range = self.end - self.start            # time
-        ratio = pixel / self.width                      # %
-        time = ratio * time_i_range + self.start        # time
-        return time
 
 
 def r_pretty(dmin, dmax, n, time=False):

@@ -18,23 +18,22 @@ class MovementPanel(avg.DivNode):
     def __init__(self, parent, session, vis_params, **kwargs):
         super(MovementPanel, self).__init__(**kwargs)
         self.registerInstance(self, parent)
-        self.crop = False
 
+        self.__users = session.users
         self.__time_min = 0
         self.__time_max = session.duration
 
+        axis_width = 60
+        axis_height = 25
+
         # rect for coloured border and background
-        self.background_rect = avg.RectNode(pos=(axis.THICKNESS, 0),
-                                               size=(self.width - axis.THICKNESS, self.height - axis.THICKNESS),
-                                               parent=self, strokewidth=1, fillopacity=1,
-                                               color=global_values.COLOR_FOREGROUND,
-                                               fillcolor=global_values.COLOR_BLACK)
+        self.background_rect = avg.RectNode(pos=(axis_width, 0), size=self.size - (axis_width, axis_height),
+                strokewidth=1, fillopacity=1,
+                color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_BLACK,
+                parent=self)
 
         # div for visualization data
-        self.data_div = avg.DivNode(pos=(axis.THICKNESS, 0),
-                                       size=(self.width - axis.THICKNESS, self.height - axis.THICKNESS),
-                                       crop=True)
-        self.__users = session.users
+        self.data_div = avg.DivNode(pos=(axis_width, 0), size=self.size - (axis_width, axis_height), crop=True)
         self.__user_lines = []
         self.__touch_nodes = []
         max_width = (min(self.width, self.height) / 12)
@@ -43,16 +42,15 @@ class MovementPanel(avg.DivNode):
             self.__user_lines.append(vwline.VWLineNode(color=color, maxwidth=max_width,
                     blendmode="add", parent=self.data_div))
 
-        custom_label_offset = 23  # to make space for cosmetic schematic wall
         x_range = pat_model.pos_range[0][0], pat_model.pos_range[1][0]
         self.y_axis = axis.AxisNode(pos=(0, 0), panel_height=self.data_div.height,
-                size=(axis.THICKNESS, self.data_div.height), parent=self,
+                size=(axis_width, self.data_div.height), parent=self,
                 sensitive=True, data_range=x_range, unit="m", hide_rims=True,
-                inverted=True, label_offset=custom_label_offset)
+                inverted=True, label_offset=15)
 
-        x_axis_pos = (axis.THICKNESS, self.data_div.height)
-        self.x_axis = axis.TimeAxisNode(pos=x_axis_pos, panel_height=self.data_div.height, vis_params=vis_params,
-                parent=self, unit="s", data_range=[0, session.duration], size=(self.data_div.width, axis.THICKNESS),
+        x_axis_pos = (axis_width, self.data_div.height)
+        self.x_axis = axis.AxisNode(pos=x_axis_pos, panel_height=self.data_div.height,
+                parent=self, unit="s", data_range=[0, session.duration], size=(self.data_div.width, axis_height),
                 inverted=False)
         self.__create_wall_rect()
 
@@ -66,11 +64,11 @@ class MovementPanel(avg.DivNode):
         self.__hover_id = self.data_div.subscribe(avg.Node.CURSOR_MOTION, self.__on_hover)
 
         # name
-        avg.WordsNode(pos=(axis.THICKNESS + global_values.APP_PADDING, global_values.APP_PADDING), parent=self,
-                color=global_values.COLOR_FOREGROUND, text="Timeline", sensitive=False, alignment="left")
+        name_pos = self.background_rect.pos + (10,10)
+        avg.WordsNode(pos=name_pos, color=global_values.COLOR_FOREGROUND, text="Timeline", sensitive=False, parent=self)
 
-        self.legend = Legend(size=(250, 150), maxwidth=max_width, color=vis_params.get_user_color(-1), parent=self)
-        self.legend.pos = (self.width - self.legend.width - 10, 10)
+#        self.legend = Legend(size=(250, 100), maxwidth=max_width, color=vis_params.get_user_color(-1), parent=self)
+#        self.legend.pos = (self.width - self.legend.width - 10, 10)
 
         self.__enable_time = True
         vis_params.subscribe(vis_params.CHANGED, self.update_time)
@@ -96,6 +94,9 @@ class MovementPanel(avg.DivNode):
 
         for i, user_line in enumerate(self.__user_lines):
             user_line.active = vis_params.get_user_visible(i)
+
+        interval = vis_params.get_time_interval()
+        self.x_axis.update(interval[0], interval[1])
 
     def __on_play_pause(self, playing):
         self.__enable_time = not playing
@@ -143,7 +144,7 @@ class MovementPanel(avg.DivNode):
         y_min = self.y_axis.value_to_pixel(0)
         y_max = self.y_axis.value_to_pixel(pat_model.wall_width)
 
-        avg.RectNode(pos=(axis.THICKNESS-20, y_min), size=(16, y_max-y_min), fillcolor=global_values.COLOR_DARK_GREY,
+        avg.RectNode(pos=(40, y_min), size=(16, y_max-y_min), fillcolor=global_values.COLOR_DARK_GREY,
                 fillopacity=1, parent=self)
 
     def __on_hover(self, event=None):
@@ -152,7 +153,7 @@ class MovementPanel(avg.DivNode):
         """
         if self.__enable_time:
             rel_pos = self.data_div.getRelPos(event.pos)
-            self.__vis_params.highlight_time = self.x_axis.calculate_time_from_pixel(rel_pos.x)
+            self.__vis_params.highlight_time = self.__xpos_to_time(rel_pos.x)
             self.__vis_params.notify()
 
     def __xpos_to_time(self, x):
