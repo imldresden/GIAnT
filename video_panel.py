@@ -3,7 +3,6 @@
 import libavg
 from libavg import avg, player
 import global_values
-import util
 
 
 class VideoPanel(avg.DivNode):

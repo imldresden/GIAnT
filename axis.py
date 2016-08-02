@@ -78,7 +78,7 @@ class AxisNode(avg.DivNode):
             self.__label_values = r_pretty(dmin=self.__start, dmax=self.__end, n=5, time=True)
         else:
             self.__label_values = r_pretty(dmin=self.__start, dmax=self.__end, n=5)
-        self.__labels = [util.format_label_value(self.__unit, v) for v in self.__label_values]
+        self.__labels = [self.__format_label(v) for v in self.__label_values]
 
         # calculate positions of ticks within AxisNode
         if self.__inverted:
@@ -214,6 +214,26 @@ class AxisNode(avg.DivNode):
 
     def __get_unit(self):
         return self.__unit
+
+    def __format_label(self, value):
+        if self.__unit is "m":  # meters
+            # cut zeros if value is integer
+            if value % 1 in (0, 0.0):
+                value = int(value)
+            else:
+                value = round(value, 4)
+
+            return "{} m".format(value)
+
+        elif self.__unit is "s":  # seconds
+            ms = int((value - int(value)) * 1000 + 0.5)
+            m, s = divmod(value, 60)
+            label = "{:02d}:{:02d}".format(int(m), int(s))
+            if ms != 0:
+                label += ".{:03d}".format(ms)
+            return label
+
+        assert False
 
     vertical = property(__get_vertical, __set_vertical)
     label_values = property(__get_label_values)

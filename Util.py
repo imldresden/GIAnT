@@ -25,24 +25,3 @@ def get_look_direction(pitch, yaw):
     z = new_z
 
     return -x, y, z
-
-
-def format_label_value(unit, value):
-    if unit is "m":  # meters
-        # cut zeros if value is integer
-        if value % 1 in (0, 0.0):
-            value = int(value)
-        else:
-            value = round(value, 4)
-
-        return "{} m".format(value)
-
-    elif unit is "s": # seconds
-        ms = int((value - int(value)) * 1000+0.5)
-        m, s = divmod(value, 60)
-        label = "{:02d}:{:02d}".format(int(m), int(s))
-        if ms != 0:
-            label += ".{:03d}".format(ms)
-        return label
-
-    assert False
