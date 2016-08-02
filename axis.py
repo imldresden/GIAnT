@@ -3,7 +3,6 @@
 import math
 import libavg
 
-import util
 import global_values
 from libavg import avg
 
