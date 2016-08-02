@@ -22,17 +22,13 @@ class VideoPanel(avg.DivNode):
 
         self.__vis_params = vis_params
         self.is_playing = False
-        self.videoNode = avg.VideoNode(href=self.path, pos=vid_pos,
-                                       parent=self, size=vid_size, loop=True,
-                                       mipmap=True,
-                                       threaded=False,
-                                       enablesound=False)
+        self.videoNode = avg.VideoNode(href=self.path, pos=vid_pos, size=vid_size,
+                                       mipmap=True, threaded=False, enablesound=False,
+                                       parent=self)
         player.setTimeout(0, lambda: self.videoNode.setMirror(self.videoNode.HORIZONTAL))
 
         # rectangle for border
         libavg.RectNode(parent=self, pos=vid_pos, size=vid_size, strokewidth=1, color=global_values.COLOR_FOREGROUND)
-        self.__cur_time_text = libavg.WordsNode(color=global_values.COLOR_FOREGROUND, parent=self,
-                                                pos=vid_pos + (0, vid_size[1]))
 
         self.videoNode.volume = 0
 
@@ -46,7 +42,6 @@ class VideoPanel(avg.DivNode):
     def update_time(self, vis_params):
         if not self.is_playing:
             self.videoNode.seekToTime(int((vis_params.highlight_time + self.__time_offset)*1000))
-            self.__update_time_label()
 
     def __play_pause(self, play=True):
         self.is_playing = play
@@ -62,8 +57,4 @@ class VideoPanel(avg.DivNode):
             time_change = cur_time - self.__last_frame_time
             self.__vis_params.shift_time(True, time_change)
             self.__last_frame_time = cur_time
-            self.__update_time_label()
 
-    def __update_time_label(self):
-        self.__cur_time_text.text = "Current time: {}".format(
-                util.format_label_value(unit="s", value=self.__vis_params.highlight_time))
