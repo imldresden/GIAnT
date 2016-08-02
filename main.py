@@ -69,13 +69,15 @@ class MainDiv(app.MainDiv):
         self.__vis_params.subscribe(self.__vis_params.CHANGED, self.__on_update_time)
         self.__vis_params.subscribe(self.__vis_params.IS_PLAYING, self.__on_play_pause)
 
-        app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward)
-        app.keyboardmanager.bindKeyDown(keyname='Left', handler=self.shift_back)
-        app.keyboardmanager.bindKeyDown(keyname='Up', handler=self.zoom_in)
-        app.keyboardmanager.bindKeyDown(keyname='Down', handler=self.zoom_out)
-        app.keyboardmanager.bindKeyDown(keyname='Space', handler=self.play_pause)
+        app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward, help="Step forward")
+        app.keyboardmanager.bindKeyDown(keyname='Left', handler=self.shift_back, help="Step back")
+        app.keyboardmanager.bindKeyDown(keyname='Up', handler=self.zoom_in, help="Zoom in")
+        app.keyboardmanager.bindKeyDown(keyname='Down', handler=self.zoom_out, help="Zoom out")
+        app.keyboardmanager.bindKeyDown(keyname='Space', handler=self.play_pause, help="Play/pause")
         for i in range(0,4):
-            app.keyboardmanager.bindKeyDown(keyname=str(i+1), handler=lambda userid=i: self.toggle_user_visible(userid))
+            app.keyboardmanager.bindKeyDown(keyname=str(i+1),
+                    handler=lambda userid=i: self.toggle_user_visible(userid),
+                    help = "Toggle user "+str(i+1))
 
     def zoom_in(self):
         self.__vis_params.zoom_in_at(0.5)
