@@ -18,9 +18,9 @@ class IntervalSliderBase(avg.DivNode):
         super(IntervalSliderBase, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
-        self.__i_line = avg.LineNode(strokewidth=1, color=global_values.COLOR_SECONDARY, parent=self,
-                                        pos1=(0, 0),
-                                        pos2=(width, 0))
+        self.__i_line = avg.LineNode(strokewidth=3, color=global_values.COLOR_SECONDARY, parent=self,
+                                        pos1=(0, 16),
+                                        pos2=(width, 16))
 
         self.publish(IntervalSliderBase.THUMB_POS_CHANGED)
         self.publish(IntervalSliderBase.PRESSED)

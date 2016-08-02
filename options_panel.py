@@ -2,12 +2,12 @@
 
 import libavg
 from libavg import widget, avg
-
+import custom_slider
 import global_values
 
 
 class OptionsPanel(libavg.DivNode):
-    def __init__(self, users, vis_params, parent, **kwargs):
+    def __init__(self, vis_params, duration, parent, **kwargs):
         super(OptionsPanel, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
@@ -23,7 +23,7 @@ class OptionsPanel(libavg.DivNode):
         icon_size = (15, 15)
         button_size = (30, 30)
         # rect for play button border
-        self.play_rect = libavg.RectNode(pos=(0, 0), size=button_size, parent=self,
+        self.play_rect = libavg.RectNode(pos=(0, 7), size=button_size, parent=self,
                                          strokewidth=1, fillopacity=0, color=global_values.COLOR_FOREGROUND,
                                          sensitive=False)
         # play button
@@ -39,33 +39,51 @@ class OptionsPanel(libavg.DivNode):
                                                pos=(0, self.play_rect.pos[1]), size=button_size, parent=self)
         self.play_button.subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__play_pause(checked))
 
-        """smoothness slider"""
-        # smoothness text
-        self.smoothness_text = avg.WordsNode(pos=(500, 0), color=global_values.COLOR_FOREGROUND,
-                                             parent=self)
-        self.__update_smoothness_text()
+        self.__init_time_bar(duration)
+        self.__init_smoothness_slider()
 
-        # smoothness slider
-        smoothness_range = vis_params.MIN_SMOOTHNESS_FACTOR, vis_params.MAX_SMOOTHNESS_FACTOR
-        self.smoothness_slider = widget.Slider(pos=(495, 20), width=180, range=smoothness_range, parent=self)
+        self.__vis_params.subscribe(self.__vis_params.CHANGED, self.__update_time)
+        self.__vis_params.subscribe(self.__vis_params.IS_PLAYING, self.__on_play_pause)
+
+    def __init_time_bar(self, duration):
+        pos = avg.Point2D(48, 0)
+        avg.WordsNode(pos=pos, color=global_values.COLOR_FOREGROUND, text="Time range", parent=self)
+
+        width = self.width - pos.x - 190
+        self.__time_bar = custom_slider.IntervalScrollBar(pos=pos+(0,23), width=width,
+                range=(0, duration), thumbExtent=duration, parent=self)
+        self.__time_bar.subscribe(custom_slider.IntervalScrollBar.THUMB_POS_CHANGED, self.__on_scroll)
+
+    def __init_smoothness_slider(self):
+        pos = avg.Point2D(self.width - 180, 0)
+
+        avg.WordsNode(pos=pos+(4,0), color=global_values.COLOR_FOREGROUND, text="Smoothness", parent=self)
+
+        smoothness_range = self.__vis_params.MIN_SMOOTHNESS_FACTOR, self.__vis_params.MAX_SMOOTHNESS_FACTOR
+        self.smoothness_slider = widget.Slider(pos=pos+(0,33), width=180, range=smoothness_range, parent=self)
         self.smoothness_slider.thumbPos = self.__vis_params.get_smoothness_factor()
-        # subscription to change curve smoothness
         self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, self.__on_smoothness_change)
-
-        self.__vis_params.subscribe(self.__vis_params.CHANGED, self.update_time)
 
     def __on_smoothness_change(self, pos):
         self.__vis_params.set_smoothness_factor(pos)
         self.__vis_params.notify()
 
+    def __on_scroll(self, pos):
+        # update global time interval
+        delta = pos - self.__vis_params.get_time_interval()[0]
+        self.__vis_params.highlight_time += delta
+        interval = pos, pos + self.__time_bar.thumbExtent
+        self.__vis_params.set_time_interval(interval)
+
     def __play_pause(self, checked):
-        self.parent_div.play_pause()
+        self.__vis_params.is_playing = not self.__vis_params.is_playing
 
-    def update_time(self, vis_params):
-        if self.play_button.checked is not vis_params.is_playing:
-            self.play_button.checked = vis_params.is_playing
-        self.__update_smoothness_text()
+    def __update_time(self, vis_params):
+        interval = vis_params.get_time_interval()
+        self.__time_bar.setThumbPos(interval[0])
+        self.__time_bar.setThumbExtent(interval[1] - interval[0])
 
-    def __update_smoothness_text(self):
-        self.smoothness_text.text = "Smoothness: {:1.2f}".format(
-                self.__vis_params.get_smoothness_factor())
+    def __on_play_pause(self, playing):
+        self.__time_bar.sensitive = not playing
+        self.play_button.checked = self.__vis_params.is_playing
+

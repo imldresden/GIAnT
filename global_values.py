@@ -10,7 +10,7 @@ COLOR_DARK_GREY = "636363"                          # used for cosmetics
 
 """display values"""
 APP_MARGIN = 15                                     # space of content to application window in px
-APP_PADDING = 10                                    # space between content of application in px
+APP_PADDING = 20                                    # space between content of application in px
 
 """screen resolutions"""                            # common resolutions taken from
 resolution = {                                      # http://www.w3schools.com/browsers/browsers_display.asp

@@ -4,7 +4,6 @@ import math
 import libavg
 
 import util
-import custom_slider
 import global_values
 from libavg import avg
 

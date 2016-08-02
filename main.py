@@ -12,7 +12,6 @@ import options_panel
 import global_values
 import video_panel
 import pat_model
-import custom_slider
 
 
 class MainDiv(app.MainDiv):
@@ -20,54 +19,41 @@ class MainDiv(app.MainDiv):
     viewport_change_duration = 0.3
 
     def onInit(self):
-        # main_drawer Div has margin to all sides of application window
-        margin = global_values.APP_MARGIN
-        # and padding inbetween elements of visualization
-        padding = global_values.APP_PADDING
-
         self.session = pat_model.create_session()
-
-        # position and scale main div
-        self.pos = (margin, margin)
-        res_x = self.size[0] - 2 * margin
-        res_y = self.size[1] - 2 * margin
-
-        # set aspect ratio for main visualization and elements on the right side
-        main_vis_width = 2.0 / 3.0 * res_x
-        menu_height = 50
-        side_vis_height = 1.0 / 3.0 * res_y
         self.__vis_params = vis_params.VisParams(self.session)
+        self.elementoutlinecolor="FF0000"
+
+        padding = global_values.APP_PADDING  # and padding inbetween elements of visualization
+        menu_height = 50
+
+        margin = global_values.APP_MARGIN    # distance to all sides of application window
+        self.pos = (margin, margin)
+        self.size -= 2*avg.Point2D(margin, margin)
 
         # rectangle to color background
         libavg.RectNode(parent=self, pos=(-1000, -1000), size=(10000, 10000),
                         strokewidth=0, fillcolor=global_values.COLOR_BACKGROUND, fillopacity=1)
 
-        self.main_visualization = movement_panel.MovementPanel(
-                parent=self, session=self.session, vis_params=self.__vis_params, pos=(0, 0),
-                size=(main_vis_width, res_y - menu_height))
+        # Visualization panels
+        vis_area_size = avg.Point2D(self.width, self.height - menu_height - padding)
+        panel_size = avg.Point2D(vis_area_size - (padding, padding)) / 2
+        panel00_pos = (0,0)
+        panel01_pos = (0, panel_size.y + padding)
+        panel10_pos = (panel_size.x + padding, 0)
+        panel11_pos = panel_size + (padding, padding)
 
-        self.video = video_panel.VideoPanel(
+        self.timeline_panel = movement_panel.MovementPanel(pos=panel00_pos, size=panel_size,
+                session=self.session, vis_params=self.__vis_params, parent=self)
+
+        self.video = video_panel.VideoPanel(pos=panel01_pos, size=panel_size,
                 filename=self.session.data_dir + "/" + self.session.video_filename,
-                pos=(main_vis_width + padding + axis.THICKNESS, 2 * side_vis_height - 1.5 * axis.THICKNESS + padding),
-                size=(res_x - main_vis_width - padding - axis.THICKNESS,
-                        side_vis_height + 1.5 * axis.THICKNESS - padding),
                 time_offset=self.session.get_video_time_offset(),
-                vis_params=self.__vis_params,
-                parent=self)
+                vis_params=self.__vis_params, parent=self)
 
-        self.options = options_panel.OptionsPanel(users=self.session.users, vis_params=self.__vis_params, parent=self,
-                                                 pos=(0, self.main_visualization.height),
-                                                 size=(self.main_visualization.width, menu_height))
-
-        # interval scrollbar
-        bar_pos = (48, self.main_visualization.size.y-25)
-        bar_range = (0, self.session.duration)
-        self.__time_bar = custom_slider.IntervalScrollBar(pos=bar_pos, width=self.main_visualization.size.x-48,
-                range=bar_range, thumbExtent=bar_range[1], parent=self)
-        self.__time_bar.subscribe(custom_slider.IntervalScrollBar.THUMB_POS_CHANGED, self.__on_scroll)
-
-        self.__vis_params.subscribe(self.__vis_params.CHANGED, self.__on_update_time)
-        self.__vis_params.subscribe(self.__vis_params.IS_PLAYING, self.__on_play_pause)
+        options_pos = (0, self.height-menu_height)
+        options_size = (self.width, menu_height)
+        self.options = options_panel.OptionsPanel(pos=options_pos, size=options_size,
+            vis_params=self.__vis_params, duration=self.session.duration, parent=self)
 
         app.keyboardmanager.bindKeyDown(keyname='Right', handler=self.shift_forward, help="Step forward")
         app.keyboardmanager.bindKeyDown(keyname='Left', handler=self.shift_back, help="Step back")
@@ -98,21 +84,6 @@ class MainDiv(app.MainDiv):
     def toggle_user_visible(self, userid):
         is_visible = self.__vis_params.get_user_visible(userid)
         self.__vis_params.set_user_visible(userid, not is_visible)
-
-    def __on_scroll(self, pos):
-        # update global time interval
-        delta = pos - self.__vis_params.get_time_interval()[0]
-        self.__vis_params.highlight_time += delta
-        interval = pos, pos + self.__time_bar.thumbExtent
-        self.__vis_params.set_time_interval(interval)
-
-    def __on_play_pause(self, playing):
-        self.__time_bar.sensitive = not playing
-
-    def __on_update_time(self, vis_params):
-        interval = vis_params.get_time_interval()
-        self.__time_bar.setThumbPos(interval[0])
-        self.__time_bar.setThumbExtent(interval[1] - interval[0])
 
 
 def value_to_pixel(value, max_px, interval):
