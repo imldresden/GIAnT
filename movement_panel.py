@@ -5,7 +5,6 @@ import global_values
 import axis
 from libavg import avg
 from libavg import player
-import util
 
 player.loadPlugin("vwline")
 
@@ -39,7 +38,7 @@ class MovementPanel(avg.DivNode):
         self.__touch_nodes = []
         max_width = (min(self.width, self.height) / 12)
         for userid in range(session.num_users):
-            color = util.get_user_color_as_hex(userid, 1)
+            color = vis_params.get_user_color(userid)
             self.__user_lines.append(vwline.VWLineNode(color=color, maxwidth=max_width,
                     blendmode="add", parent=self.data_div))
 

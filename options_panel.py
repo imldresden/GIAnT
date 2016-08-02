@@ -4,9 +4,6 @@ import libavg
 from libavg import widget, avg
 import global_values
 import pat_model
-import util
-
-COLOR_SCHEME = 0            # user color scheme (see global_values.py for color schemes)
 
 
 class OptionsPanel(libavg.DivNode):
@@ -47,7 +44,7 @@ class OptionsPanel(libavg.DivNode):
         self.user_buttons = []
         self.user_texts = []
         for i in range(len(users)):
-            user_color = util.get_user_color_as_hex(i, 1)
+            user_color = vis_params.get_user_color(i)
             size = (70, 30)
             self.user_buttons.append(
                 widget.ToggleButton(uncheckedUpNode=
@@ -82,7 +79,7 @@ class OptionsPanel(libavg.DivNode):
         self.smoothness_slider.subscribe(widget.Slider.THUMB_POS_CHANGED, self.__on_smoothness_change)
 
         # legend
-        self.legend = Legend(parent=self, size=(210, 200))
+        self.legend = Legend(parent=self, size=(210, 200), color=vis_params.get_user_color(-1))
         self.legend.pos = (self.width - self.legend.width, self.height - self.legend.height)
 
         self.__vis_params.subscribe(self.__vis_params.CHANGED, self.update_time)
@@ -108,7 +105,7 @@ class OptionsPanel(libavg.DivNode):
 
 
 class Legend(libavg.DivNode):
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, color, **kwargs):
         super(Legend, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
@@ -125,7 +122,7 @@ class Legend(libavg.DivNode):
         data_div = parent.getParent().main_visualization.data_div
         var_line_div = libavg.DivNode(pos=(0, 0), size=(self.width, self.height), crop=True, parent=self)
         max_width = (min(data_div.width, data_div.height) / 12)
-        line = vwline.VWLineNode(color=util.get_user_color_as_hex(-1, 1), maxwidth=max_width, parent=var_line_div)
+        line = vwline.VWLineNode(color=color, maxwidth=max_width, parent=var_line_div)
         line.setValues(points, dists)
 
         # texts

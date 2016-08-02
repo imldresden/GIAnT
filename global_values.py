@@ -1,17 +1,5 @@
 # -*- coding: utf-8 -*-
 
-"""color values"""
-user_color_schemes = [                              # different user color schemes
-    [[ 35 / float(360), 0.409, 1],                  # Yellow
-    [  0 / float(360), 0.500, 1],                   # Red
-    [286 / float(360), 0.567, 1],                   # Purple
-    [152 / float(360), 0.568, 1]],                  # Green
-
-    [[  0 / float(360), 0.29, 1],                   # Red
-    [ 27 / float(360), 0.29, 1],                    # Brownish
-    [180 / float(360), 0.18, 1],                    # Blue
-    [120 / float(360), 0.23, 1]]                    # Green
-]
 COLOR_FOREGROUND = "BBBBBB"                         # foreground color used for axis and text
 COLOR_SECONDARY = "888888"                          # second more faint foreground color
 COLOR_BACKGROUND = "222222"                         # background color
