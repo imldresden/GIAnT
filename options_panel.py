@@ -39,32 +39,6 @@ class OptionsPanel(libavg.DivNode):
                                                pos=(0, self.play_rect.pos[1]), size=button_size, parent=self)
         self.play_button.subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__play_pause(checked))
 
-        """user toggle buttons"""
-        # user buttons
-        self.user_buttons = []
-        self.user_texts = []
-        for i in range(len(users)):
-            user_color = vis_params.get_user_color(i)
-            size = (70, 30)
-            self.user_buttons.append(
-                widget.ToggleButton(uncheckedUpNode=
-                                    avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=user_color),
-                                    uncheckedDownNode=
-                                    avg.RectNode(size=size, fillopacity=0, strokewidth=1, color=user_color),
-                                    checkedUpNode=
-                                    avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=user_color, fillcolor=user_color),
-                                    checkedDownNode=
-                                    avg.RectNode(size=size, fillopacity=1, strokewidth=1, color=user_color, fillcolor=user_color),
-                                    pos=(i * 80 + 50, 0), size=size, parent=self))
-            self.user_buttons[i].checked = True
-            self.user_texts.append(avg.WordsNode(color=global_values.COLOR_BACKGROUND,
-                                                 parent=self, sensitive=False, text="User {}".format(i + 1),
-                                                 alignment="center"))
-            self.user_texts[i].pos = (self.user_buttons[i].pos[0] + self.user_buttons[i].width/2,
-                                      self.user_buttons[i].pos[1] + 6)
-            self.user_buttons[i].subscribe(widget.CheckBox.TOGGLED,
-                    lambda checked, user_id=i: self.__toggle_user(checked, user_id=user_id))
-
         """smoothness slider"""
         # smoothness text
         self.smoothness_text = avg.WordsNode(pos=(500, 0), color=global_values.COLOR_FOREGROUND,
@@ -87,9 +61,6 @@ class OptionsPanel(libavg.DivNode):
     def __on_smoothness_change(self, pos):
         self.__vis_params.set_smoothness_factor(pos)
         self.__vis_params.notify()
-
-    def __toggle_user(self, checked, user_id):
-        self.__vis_params.set_user_visible(user_id, checked)
 
     def __play_pause(self, checked):
         self.parent_div.play_pause()

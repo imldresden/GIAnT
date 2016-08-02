@@ -54,7 +54,7 @@ class VisParams(avg.Publisher):
 
     def shift_time(self, forwards, amount=-1):
         if amount == -1:
-            amount = (self.__time_interval[1] - self.__time_interval[0]) * self.__zoom_strength
+            amount = (self.__time_interval[1] - self.__time_interval[0]) * self.__zoom_strength / 2
         if forwards:
             shift_amount = amount
         else:

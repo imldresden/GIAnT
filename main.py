@@ -74,6 +74,8 @@ class MainDiv(app.MainDiv):
         app.keyboardmanager.bindKeyDown(keyname='Up', handler=self.zoom_in)
         app.keyboardmanager.bindKeyDown(keyname='Down', handler=self.zoom_out)
         app.keyboardmanager.bindKeyDown(keyname='Space', handler=self.play_pause)
+        for i in range(0,4):
+            app.keyboardmanager.bindKeyDown(keyname=str(i+1), handler=lambda userid=i: self.toggle_user_visible(userid))
 
     def zoom_in(self):
         self.__vis_params.zoom_in_at(0.5)
@@ -89,6 +91,10 @@ class MainDiv(app.MainDiv):
 
     def play_pause(self):
         self.__vis_params.is_playing = not self.__vis_params.is_playing
+
+    def toggle_user_visible(self, userid):
+        is_visible = self.__vis_params.get_user_visible(userid)
+        self.__vis_params.set_user_visible(userid, not is_visible)
 
     def __on_scroll(self, pos):
         # update global time interval
