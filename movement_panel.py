@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import libavg
 
 import pat_model
 import global_values
@@ -66,7 +67,10 @@ class MovementPanel(avg.DivNode):
 
         # name
         avg.WordsNode(pos=(axis.THICKNESS + global_values.APP_PADDING, global_values.APP_PADDING), parent=self,
-                         color=global_values.COLOR_FOREGROUND, text="Movement over Time", sensitive=False, alignment="left")
+                color=global_values.COLOR_FOREGROUND, text="Timeline", sensitive=False, alignment="left")
+
+        self.legend = Legend(size=(250, 150), maxwidth=max_width, color=vis_params.get_user_color(-1), parent=self)
+        self.legend.pos = (self.width - self.legend.width - 10, 10)
 
         self.__enable_time = True
         vis_params.subscribe(vis_params.CHANGED, self.update_time)
@@ -162,3 +166,39 @@ class MovementPanel(avg.DivNode):
         if smoothness < 1:
             smoothness = 1
         return smoothness
+
+
+class Legend(libavg.DivNode):
+    def __init__(self, color, maxwidth, parent, **kwargs):
+        super(Legend, self).__init__(**kwargs)
+        self.registerInstance(self, parent)
+
+        self.sensitive = False
+
+        # Background
+        avg.RectNode(size=self.size, color=global_values.COLOR_FOREGROUND, fillopacity=1,
+                fillcolor=global_values.COLOR_BLACK, parent=self)
+
+        points = []
+        dists = []
+
+        line_div = avg.DivNode(pos=(20,10), size=self.size - (40, 20), parent=self)
+
+        line = vwline.VWLineNode(color=color, maxwidth=maxwidth, parent=line_div)
+        for i in range(0, 101):
+            value = i / 100.0
+            points.append(libavg.Point2D(line_div.width * value, line_div.height/2))
+            dists.append(value)
+
+        line.setValues(points, dists)
+
+        # texts
+        libavg.WordsNode(pos=(5,5), text="Distance from wall", parent=self,
+                         color=global_values.COLOR_FOREGROUND)
+        pos_range = pat_model.pos_range
+        self.__create_label(pos=(30, self.height - 25), val=pos_range[0][2])
+        self.__create_label(pos=(self.width -30, self.height - 25), val=pos_range[1][2])
+
+    def __create_label(self, pos, val):
+        val_str = "{:1.2f}m".format(val)
+        libavg.WordsNode(pos=pos, text=val_str, color=global_values.COLOR_FOREGROUND, alignment="center", parent=self)
