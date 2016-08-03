@@ -21,7 +21,7 @@ class WallPanel(vis_panel.VisPanel):
 
         self.__plot_nodes = []
         for user in self.__users:
-            color = vis_params.get_user_color(user.userid)
+            color = vis_params.get_user_color(user.userid, True)
             node = plots.ScatterPlotNode(size=self._data_div.size, viewportrangemax=pat_model.touch_range,
                     color=color, parent=self._data_div)
             self.__plot_nodes.append(node)

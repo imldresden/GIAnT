@@ -2,10 +2,6 @@
 
 from libavg import avg
 
-# User colors are specified in CIE Lch color space.
-# This allows us to easily pick four colors that have the same perceptual brightness and saturation, but differing hue.
-user_colors = [(60,90,40), (60,90,130), (60,90,220), (60,90,310)]
-user_grey = (60,0,0)
 
 class VisParams(avg.Publisher):
     CHANGED = avg.Publisher.genMessageID()
@@ -94,11 +90,21 @@ class VisParams(avg.Publisher):
         return self.__smoothness_factor
 
     @classmethod
-    def get_user_color(cls, userid):
+    def get_user_color(cls, userid, highlight):
+        # User colors are specified in CIE Lch color space.
+        # This allows us to easily pick four colors that have the same perceptual brightness and saturation,
+        # but differing hue.
+        user_grey = (60, 0, 0)
+        user_hues = (40, 130, 220, 310)
         if userid == -1:
             l, c, h = user_grey
         else:
-            l, c, h = user_colors[userid]
+            if highlight:
+                l = 80
+            else:
+                l = 60
+            c = 90
+            h = user_hues[userid]
         return avg.Color.fromLch(l, c, h)
 
     def __set_highlight_time(self, time):
