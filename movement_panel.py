@@ -64,6 +64,7 @@ class MovementPanel(vis_panel.VisPanel):
             user_line.active = vis_params.get_user_visible(i)
 
         self._x_axis.update(interval[0], interval[1])
+        self._update_grid()
 
     def __on_play_pause(self, playing):
         self.__enable_time = not playing
@@ -108,8 +109,8 @@ class MovementPanel(vis_panel.VisPanel):
                 userline.setHighlights(touches_x, touches_width)
 
     def __create_wall_rect(self):
-        y_min = self.y_axis.value_to_pixel(0)
-        y_max = self.y_axis.value_to_pixel(pat_model.wall_width)
+        y_min = self._y_axis.value_to_pixel(0)
+        y_max = self._y_axis.value_to_pixel(pat_model.wall_width)
 
         avg.RectNode(pos=(40, y_min), size=(16, y_max-y_min), fillcolor=global_values.COLOR_DARK_GREY,
                 fillopacity=1, parent=self)

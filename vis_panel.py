@@ -15,38 +15,68 @@ class VisPanel(avg.DivNode):
 
         self.__axis_size = avg.Point2D(axis_size)
 
-        # rect for coloured border and background
+        # rect for background
         avg.RectNode(pos=(self.__axis_size.x, 0), size=self.size - self.__axis_size,
-                strokewidth=1, fillopacity=1,
-                color=global_values.COLOR_FOREGROUND, fillcolor=global_values.COLOR_BLACK,
-                parent=self)
+                strokewidth=0, fillopacity=1, fillcolor=global_values.COLOR_BLACK, parent=self)
+        self.__grid_div = avg.DivNode(pos=(self.__axis_size.x, 0), size=self.size - self.__axis_size, parent=self)
+        # rect for border
+        avg.RectNode(pos=(self.__axis_size.x, 0), size=self.size - self.__axis_size,
+                strokewidth=1, color=global_values.COLOR_FOREGROUND, parent=self)
 
         self._data_div = avg.DivNode(pos=(self.__axis_size.x, 0), size=self.size - self.__axis_size, crop=True)
 
         avg.WordsNode(pos=(10, 10), color=global_values.COLOR_FOREGROUND, text=label, sensitive=False,
-            parent=self._data_div)
+                parent=self._data_div)
 
         vis_params.subscribe(vis_params.CHANGED, self._update_time)
         self._vis_params = vis_params
 
-    def _create_x_axis(self, data_range, unit, hide_rims=False, top_axis=False, inverted=False):
+        self._x_grid = []
+        self._y_grid = []
+
+    def _create_x_axis(self, **kwargs):
         pos = (self.__axis_size.x, self._data_div.height)
         self._x_axis = AxisNode(pos=pos, size=(self._data_div.width, self.__axis_size.y),
-                panel_height=self._data_div.height, unit=unit, data_range=data_range,
-                hide_rims=hide_rims, top_axis=top_axis, inverted=inverted, parent=self)
+                parent=self, **kwargs)
 
-    def _create_y_axis(self, data_range, unit, hide_rims=False, label_offset=0, inverted=False):
-        self.y_axis = AxisNode(pos=(0, 0), size=(self.__axis_size.x, self._data_div.height),
-                panel_height=self._data_div.height, data_range=data_range, unit=unit,
-                hide_rims=hide_rims, inverted=inverted, label_offset=label_offset,
-                parent=self)
+    def _create_y_axis(self, **kwargs):
+        self._y_axis = AxisNode(pos=(0, 0), size=(self.__axis_size.x, self._data_div.height),
+                parent=self, **kwargs)
 
     def _create_data_div(self):
         self.appendChild(self._data_div)
+        self._update_grid()
+
+    def _update_grid(self):
+        # Horizontal
+        self.__unlink_node_list(self._x_grid)
+        self._x_grid = []
+
+        tick_posns = self._x_axis.get_tick_posns()
+        y_max = self._data_div.height
+        for x in tick_posns:
+            node = avg.LineNode(pos1=(x, 0), pos2=(x, y_max), color=global_values.COLOR_BACKGROUND,
+                    parent=self.__grid_div)
+            self._x_grid.append(node)
+
+        # Vertical
+        self.__unlink_node_list(self._y_grid)
+        self._y_grid = []
+
+        tick_posns = self._y_axis.get_tick_posns()
+        x_max = self._data_div.width
+        for y in tick_posns:
+            node = avg.LineNode(pos1=(0, y), pos2=(x_max, y), color=global_values.COLOR_BACKGROUND,
+                parent=self.__grid_div)
+            self._y_grid.append(node)
+
+    def __unlink_node_list(self, node_list):
+        for node in node_list:
+            node.unlink(True)
 
 
 class AxisNode(avg.DivNode):
-    def __init__(self, data_range, panel_height, unit="m", hide_rims=False, top_axis=False, inverted=False, parent=None,
+    def __init__(self, data_range, unit="m", hide_rims=False, top_axis=False, inverted=False, parent=None,
                  label_offset=0, **kwargs):
         """
         Custom AxisNode with axis lines, grid lines and labeling.
@@ -55,8 +85,6 @@ class AxisNode(avg.DivNode):
         :param hide_rims: Hides first and last ticks if True
         :param top_axis: Determines if a slimmed x-axis should be displayed at the top instead of the bottom
         :param inverted: If True, values on axis are displayed inverted
-        :param parent: The parent DivNode
-        :param kwargs: Other parameters needed for a DivNode
         """
         super(AxisNode, self).__init__(**kwargs)
         self.registerInstance(self, parent)
@@ -75,7 +103,6 @@ class AxisNode(avg.DivNode):
         self.__ticks = []                                    # separation lines (ticks) for axis
         self.__labels = []                                   # nice numbers for tick labels from __label_values
         self.__label_nodes = []                              # WordNodes for tick labels with values from _labels
-        self.__grid = []                                     # contains the grid lines covering the visualization
         self.__vertical = False                              # if True, axis is drawn vertically
         self.__data_range = data_range                       # data range of data set
         self.__start = data_range[0]                         # current minimal data value of visualization data
@@ -83,7 +110,6 @@ class AxisNode(avg.DivNode):
         self.__unit = unit                                   # unit of measurement (time: ms, length: cm)
         self.__hide_rims = hide_rims                         # determines if the first and last tick are shown
         self.__inverted = inverted                           # shows values on axis inverted if true
-        self.__panel_height = panel_height
 
         # axis is displayed vertical if width smaller than height
         if self.height > self.width:
@@ -141,16 +167,10 @@ class AxisNode(avg.DivNode):
             label.unlink()
         self.__label_nodes = [None] * len(self.__label_pos)
 
-        # delete old grid lines
-        for grid in self.__grid:
-            grid.unlink()
-        self.__grid = [None] * len(self.__label_pos)
-
         # for each tick create new tick-line, value label and grid line at position on axis line
         for i, pos in enumerate(self.__label_pos):
             if type(self.__ticks[i]) is not "libavg.avg.LineNode":
                 # create new axis tick, label and grid line
-                self.__grid[i] = libavg.LineNode(strokewidth=1, color=global_values.COLOR_BACKGROUND, parent=self)
                 self.__ticks[i] = libavg.LineNode(strokewidth=1, color=global_values.COLOR_FOREGROUND, parent=self)
                 if not self.__top_axis:
                     self.__label_nodes[i] = libavg.WordsNode(color=global_values.COLOR_FOREGROUND, parent=self)
@@ -166,8 +186,6 @@ class AxisNode(avg.DivNode):
                 center = self.__label_nodes[i].width / 2
                 v_center = self.__label_nodes[i].fontsize / 2
             if self.__vertical:
-                self.__grid[i].pos1 = (self.__axis_line.pos1[0], pos)
-                self.__grid[i].pos2 = (self.__axis_line.pos1[0] + self.parent._data_div.width, pos)
                 self.__ticks[i].pos1 = (self.__axis_line.pos1[0], pos)
                 self.__ticks[i].pos2 = (self.__axis_line.pos1[0] + self.__tick_length, pos)
                 if not self.__top_axis:
@@ -175,20 +193,11 @@ class AxisNode(avg.DivNode):
                     self.__label_nodes[i].pos = (self.__axis_line.pos1[0] - self.__tick_length - self.__label_offset,
                                                  pos - v_center - 1)
             else:
-                self.__grid[i].pos1 = (pos, self.__axis_line.pos1[0])
-                if self.__top_axis:
-                    self.__grid[i].pos2 = (pos, + self.__panel_height)
-                else:
-                    self.__grid[i].pos2 = (pos, - self.__panel_height)
                 self.__ticks[i].pos1 = (pos, self.__axis_line.pos1[0] - self.__tick_length)
                 self.__ticks[i].pos2 = (pos, self.__axis_line.pos1[0])
                 if not self.__top_axis:
                     self.__label_nodes[i].pos = (pos - center,
                                                  self.__axis_line.pos1[0] + self.__h_tick_length + self.__label_offset)
-
-        # delete first and last grid line (because it is not really needed and can overlap other axis lines)
-        self.__grid[0].unlink()
-        self.__grid[len(self.__label_values) - 1].unlink()
 
         # delete first and last tick except it is min or max of data range
         if self.__label_values[0] not in self.__data_range or self.__hide_rims:
@@ -199,6 +208,12 @@ class AxisNode(avg.DivNode):
             self.__ticks[len(self.__label_values) - 1].unlink()
             if not self.__top_axis:
                 self.__label_nodes[len(self.__label_values) - 1].unlink()
+
+    def get_tick_posns(self):
+        if self.__vertical:
+            return [tick.pos1.y for tick in self.__ticks]
+        else:
+            return [tick.pos1.x for tick in self.__ticks]
 
     def value_to_pixel(self, value, start=None, end=None):
         if start is None:
