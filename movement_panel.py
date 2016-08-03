@@ -83,6 +83,10 @@ class MovementPanel(vis_panel.VisPanel):
         time_end = self.__xpos_to_time(self._data_div.width)
         smoothness = self.__calc_smoothness(vis_params.get_smoothness_factor(), time_end-time_start)
 
+        pos_range = pat_model.pos_range
+        x_extent = float(pos_range[1][0] - pos_range[0][0])
+        y_extent = float(pos_range[1][2] - pos_range[0][2])
+        vis_height = self._data_div.height
         for i, user in enumerate(self.__users):
             if vis_params.get_user_visible(i):
                 points = []
@@ -92,13 +96,12 @@ class MovementPanel(vis_panel.VisPanel):
 
                     head_position_averaged = user.get_head_position_averaged(cur_time, smoothness)
 
-                    pos_range = pat_model.pos_range
-                    norm_x = 1 - (head_position_averaged[0] - pos_range[0][0]) / float(pos_range[1][0] - pos_range[0][0])
-                    norm_z = (head_position_averaged[2] - pos_range[0][2]) / float(pos_range[1][2] - pos_range[0][2])
+                    norm_x = 1 - (head_position_averaged[0] - pos_range[0][0]) / x_extent
+                    norm_z = (head_position_averaged[2] - pos_range[0][2]) / y_extent
 
-                    vis_y = norm_x * self._data_div.height
+                    vis_y = norm_x * vis_height
 
-                    points.append(avg.Point2D(cur_sample_x, vis_y))
+                    points.append((cur_sample_x, vis_y))
                     dists.append(norm_z)
 
                 userline = self.__user_lines[i]

@@ -3,7 +3,7 @@
 import pat_model
 import global_values
 import vis_panel
-from libavg import avg, player
+from libavg import avg
 
 
 class WallPanel(vis_panel.VisPanel):
