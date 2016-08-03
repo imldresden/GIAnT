@@ -90,7 +90,7 @@ class VisParams(avg.Publisher):
         return self.__smoothness_factor
 
     @classmethod
-    def get_user_color(cls, userid, highlight):
+    def get_user_color(cls, userid):
         # User colors are specified in CIE Lch color space.
         # This allows us to easily pick four colors that have the same perceptual brightness and saturation,
         # but differing hue.
@@ -99,10 +99,7 @@ class VisParams(avg.Publisher):
         if userid == -1:
             l, c, h = user_grey
         else:
-            if highlight:
-                l = 80
-            else:
-                l = 60
+            l = 60
             c = 90
             h = user_hues[userid]
         return avg.Color.fromLch(l, c, h)

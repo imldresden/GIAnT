@@ -21,7 +21,7 @@ class MovementPanel(vis_panel.VisPanel):
         self.__user_lines = []
         max_width = (min(self.width, self.height) / 12)
         for userid in range(session.num_users):
-            color = vis_params.get_user_color(userid, False)
+            color = vis_params.get_user_color(userid)
             self.__user_lines.append(plots.VWLineNode(color=color, maxwidth=max_width,
                     blendmode="add", parent=self._data_div))
 

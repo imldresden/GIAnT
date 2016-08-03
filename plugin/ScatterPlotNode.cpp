@@ -99,6 +99,9 @@ BitmapPtr ScatterPlotNode::createPlotBmp()
     for (auto pos: m_Posns) {
         glm::vec2 posInBmp = posToBmpPixel(pos);
         pBmp->setPixel(posInBmp, Pixel32(m_Color));
+        pBmp->setPixel(posInBmp + glm::vec2(1,0), Pixel32(m_Color));
+        pBmp->setPixel(posInBmp + glm::vec2(0,1), Pixel32(m_Color));
+        pBmp->setPixel(posInBmp + glm::vec2(1,1), Pixel32(m_Color));
     }
 
     return pBmp;
