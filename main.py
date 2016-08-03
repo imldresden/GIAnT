@@ -68,6 +68,7 @@ class MainDiv(app.MainDiv):
                     handler=lambda userid=i: self.toggle_user_visible(userid),
                     help = "Toggle user "+str(i+1))
 
+        self.__vis_params.set_time_interval((0, self.session.duration))
 
     def zoom_in(self):
         self.__vis_params.zoom_in_at(0.5)

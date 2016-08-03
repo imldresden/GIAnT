@@ -32,7 +32,6 @@ class MovementPanel(vis_panel.VisPanel):
         self._create_data_div()
 
         self.__time_factor = self._data_div.width / vis_params.get_time_duration()
-        self.__create_lines(vis_params)
 
         self.__highlight_line = avg.LineNode(color=global_values.COLOR_SECONDARY,
                 pos1=(0, 0), pos2=(0, self._data_div.height), opacity=1, parent=self._data_div)
