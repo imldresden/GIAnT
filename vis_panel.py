@@ -77,6 +77,9 @@ class VisPanel(avg.DivNode):
 
 
 class AxisNode(avg.DivNode):
+
+    TICK_LENGTH = 10
+
     def __init__(self, data_range, unit="m", hide_rims=False, top_axis=False, inverted=False, parent=None,
                  label_offset=0, **kwargs):
         """
@@ -93,11 +96,6 @@ class AxisNode(avg.DivNode):
         """attributes"""
         self.__parent = parent
         self.__top_axis = top_axis                           # determines if the x-axis should be displayed at the top
-        if self.__top_axis:
-            self.__h_tick_length = -5                        # half of the length of the tick marks on the axis
-        else:
-            self.__h_tick_length = 5
-        self.__tick_length = self.__h_tick_length * 2        # length of the tick marks on the axis
         self.__label_offset = label_offset                   # offset of tick labels from axis line
         self.__label_values = []                             # contains the data values of the tick labels of the axis
         self.__label_pos = []                                # contains the pos at axis for each label in __label_values
@@ -175,15 +173,17 @@ class AxisNode(avg.DivNode):
             if self.__vertical:
                 v_center = label.fontsize / 2
                 tick.pos1 = (self.width, pos)
-                tick.pos2 = (self.width + self.__tick_length, pos)
+                tick.pos2 = (self.width + self.TICK_LENGTH, pos)
                 if not self.__top_axis:
                     label.alignment = "right"
-                    label.pos = (self.width - self.__tick_length - self.__label_offset, pos - v_center - 1)
+                    label.pos = (self.width - self.TICK_LENGTH - self.__label_offset, pos - v_center - 1)
             else:
-                tick.pos1 = (pos, - self.__tick_length)
                 tick.pos2 = (pos, 0)
-                if not self.__top_axis:
-                    label.pos = (pos, self.__h_tick_length + self.__label_offset)
+                if self.__top_axis:
+                    tick.pos1 = (pos, self.TICK_LENGTH)
+                else:
+                    tick.pos1 = (pos, - self.TICK_LENGTH)
+                    label.pos = (pos, self.TICK_LENGTH/2 + self.__label_offset)
                     label.alignment = "center"
 
         # delete first and last tick except it is min or max of data range
