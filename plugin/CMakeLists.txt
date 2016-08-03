@@ -17,7 +17,7 @@ function(set_cxx_version)
     endif()
 endfunction(set_cxx_version)
 
-set(SOURCE_FILES plots_wrapper.cpp VWLineNode.cpp)
+set(SOURCE_FILES plots_wrapper.cpp VWLineNode.cpp ScatterPlotNode.cpp)
 set(CMAKE_SHARED_MODULE_PREFIX)
 add_library(plots MODULE ${SOURCE_FILES})
 
