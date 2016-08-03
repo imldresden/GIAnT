@@ -12,6 +12,7 @@ class VisPanel(avg.DivNode):
     def __init__(self, label, vis_params, axis_size, parent, **kwargs):
         super(VisPanel, self).__init__(**kwargs)
         self.registerInstance(self, parent)
+        self.crop = True
 
         self.__axis_size = avg.Point2D(axis_size)
 
@@ -115,15 +116,6 @@ class AxisNode(avg.DivNode):
         if self.height > self.width:
             self.__vertical = True
 
-        # create main axis line (horizontal or vertical)
-        self.__axis_line = libavg.LineNode(strokewidth=1, parent=self)
-        if self.__vertical:
-            self.__axis_line.pos1 = (self.width, 0)
-            self.__axis_line.pos2 = (self.width, self.height)
-        else:
-            self.__axis_line.pos1 = (0, 0)
-            self.__axis_line.pos2 = (self.width, 0)
-
         # initial update
         self.update(self.__start, self.__end)
 
@@ -169,41 +161,37 @@ class AxisNode(avg.DivNode):
 
         # for each tick create new tick-line, value label and grid line at position on axis line
         for i, pos in enumerate(self.__label_pos):
-            if type(self.__ticks[i]) is not "libavg.avg.LineNode":
-                # create new axis tick, label and grid line
-                self.__ticks[i] = libavg.LineNode(strokewidth=1, color=global_values.COLOR_FOREGROUND, parent=self)
-                if not self.__top_axis:
-                    self.__label_nodes[i] = libavg.WordsNode(color=global_values.COLOR_FOREGROUND, parent=self)
+            # create new axis tick, label and grid line
+            tick = libavg.LineNode(strokewidth=1, color=global_values.COLOR_FOREGROUND, parent=self)
+            self.__ticks[i] = tick
+            if not self.__top_axis:
+                self.__label_nodes[i] = libavg.WordsNode(color=global_values.COLOR_FOREGROUND, parent=self)
 
             # set label value
             if not self.__top_axis:
-                self.__label_nodes[i].text = "{}".format(self.__labels[i])
+                self.__label_nodes[i].text = self.__labels[i]
+            label = self.__label_nodes[i]
 
-            # set position of tick, label and grid on axis
-            center = 0
-            v_center = 0
-            if not self.__top_axis:
-                center = self.__label_nodes[i].width / 2
-                v_center = self.__label_nodes[i].fontsize / 2
             if self.__vertical:
-                self.__ticks[i].pos1 = (self.__axis_line.pos1[0], pos)
-                self.__ticks[i].pos2 = (self.__axis_line.pos1[0] + self.__tick_length, pos)
+                v_center = label.fontsize / 2
+                tick.pos1 = (self.width, pos)
+                tick.pos2 = (self.width + self.__tick_length, pos)
                 if not self.__top_axis:
-                    self.__label_nodes[i].alignment = "right"
-                    self.__label_nodes[i].pos = (self.__axis_line.pos1[0] - self.__tick_length - self.__label_offset,
-                                                 pos - v_center - 1)
+                    label.alignment = "right"
+                    label.pos = (self.width - self.__tick_length - self.__label_offset, pos - v_center - 1)
             else:
-                self.__ticks[i].pos1 = (pos, self.__axis_line.pos1[0] - self.__tick_length)
-                self.__ticks[i].pos2 = (pos, self.__axis_line.pos1[0])
+                tick.pos1 = (pos, - self.__tick_length)
+                tick.pos2 = (pos, 0)
                 if not self.__top_axis:
-                    self.__label_nodes[i].pos = (pos - center,
-                                                 self.__axis_line.pos1[0] + self.__h_tick_length + self.__label_offset)
+                    label.pos = (pos, self.__h_tick_length + self.__label_offset)
+                    label.alignment = "center"
 
         # delete first and last tick except it is min or max of data range
         if self.__label_values[0] not in self.__data_range or self.__hide_rims:
             self.__ticks[0].unlink()
             if not self.__top_axis:
                 self.__label_nodes[0].unlink()
+        self.__label_nodes[len(self.__label_nodes) - 1].alignment = "right"
         if self.__label_values[len(self.__label_values) - 1] not in self.__data_range or self.__hide_rims:
             self.__ticks[len(self.__label_values) - 1].unlink()
             if not self.__top_axis:
