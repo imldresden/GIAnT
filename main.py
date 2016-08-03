@@ -5,6 +5,7 @@ from libavg import app, avg
 import libavg
 import vis_params
 import movement_panel
+import wall_panel
 import options_panel
 import global_values
 import video_panel
@@ -40,6 +41,8 @@ class MainDiv(app.MainDiv):
         panel11_pos = panel_size + (padding, padding)
 
         self.timeline_panel = movement_panel.MovementPanel(pos=panel00_pos, size=panel_size,
+                session=self.session, vis_params=self.__vis_params, parent=self)
+        self.wall_panel = wall_panel.WallPanel(pos=panel10_pos, size=panel_size,
                 session=self.session, vis_params=self.__vis_params, parent=self)
 
         self.video = video_panel.VideoPanel(pos=panel01_pos, size=panel_size,

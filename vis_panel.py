@@ -99,7 +99,7 @@ class AxisNode(avg.DivNode):
             self.__axis_line.pos2 = (self.width, 0)
 
         # initial update
-        self.__update(self.__start, self.__end)
+        self.update(self.__start, self.__end)
 
     def update(self, start, end):
         """
@@ -219,40 +219,6 @@ class AxisNode(avg.DivNode):
         else:
             return pixel_pos
 
-    """python properties"""
-    def __get_vertical(self):
-        return self.__vertical
-
-    def __set_vertical(self, v):
-        self.__vertical = v
-
-    def __get_label_values(self):
-        return self.__label_values
-
-    def __get_start(self):
-        return self.__start
-
-    def __get_end(self):
-        return self.__end
-
-    def __get_h_tick_length(self):
-        return self.__h_tick_length
-
-    def __get_tick_length(self):
-        return self.__tick_length
-
-    def __get_label_offset(self):
-        return self.__label_offset
-
-    def __set_label_offset(self, offset):
-        self.__label_offset = offset
-
-    def __get_data_range(self):
-        return self.__data_range
-
-    def __get_unit(self):
-        return self.__unit
-
     def __format_label(self, value):
         if self.__unit is "m":  # meters
             # cut zeros if value is integer
@@ -271,19 +237,10 @@ class AxisNode(avg.DivNode):
                 label += ".{:03d}".format(ms)
             return label
 
+        elif self.__unit is "px": # pixels
+            return ""
+
         assert False
-
-    vertical = property(__get_vertical, __set_vertical)
-    label_values = property(__get_label_values)
-    start = property(__get_start)
-    end = property(__get_end)
-    h_tick_length = property(__get_h_tick_length)
-    tick_length = property(__get_tick_length)
-    label_offset = property(__get_label_offset, __set_label_offset)
-    data_range = property(__get_data_range)
-    unit = property(__get_unit)
-
-    __update = update               # private copy of original update() method
 
 
 def r_pretty(dmin, dmax, n, time=False):
