@@ -145,6 +145,14 @@ class User(object):
     def get_num_states(self):
         return len(self.__head_data)
 
+    def get_head_position(self, cur_time):
+        i = self.__time_to_index(cur_time)
+        return self.__head_data[i].pos
+
+    def get_head_orientation(self, cur_time):
+        i = self.__time_to_index(cur_time)
+        return self.__head_data[i].rotation
+
     def get_head_position_averaged(self, cur_time, smoothness):
 
         i = self.__time_to_index(cur_time)
@@ -154,11 +162,6 @@ class User(object):
                          (end_integral[1] - start_integral[1]) / smoothness,
                          (end_integral[2] - start_integral[2]) / smoothness]
         return head_position
-
-    def get_head_orientation(self, cur_time):
-        i = self.__time_to_index(cur_time)
-        head_orientation = self.__head_orientations[i]
-        return head_orientation
 
     def get_touches(self, start_time, end_time):
         touches = [touch for touch in self.__touches if start_time <= touch.timestamp < end_time]
