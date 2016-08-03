@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from libavg import avg, app, player
-player.loadPlugin("vwline")
+player.loadPlugin("plots")
 
 
 class MyMainDiv(app.MainDiv):
@@ -23,7 +23,7 @@ class MyMainDiv(app.MainDiv):
         self.__create_line(points)
 
     def __create_line(self, points):
-        line = vwline.VWLineNode(color="FFFFFF", parent=self)
+        line = plots.VWLineNode(color="FFFFFF", parent=self)
         line.setValues(points, self.widths, self.opacities)
         avg.PolyLineNode(pos=points, color="FF0000", parent=self)
 

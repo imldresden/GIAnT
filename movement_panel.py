@@ -5,7 +5,7 @@ import global_values
 import vis_panel
 from libavg import avg, player
 
-player.loadPlugin("vwline")
+player.loadPlugin("plots")
 
 
 class MovementPanel(vis_panel.VisPanel):
@@ -22,7 +22,7 @@ class MovementPanel(vis_panel.VisPanel):
         max_width = (min(self.width, self.height) / 12)
         for userid in range(session.num_users):
             color = vis_params.get_user_color(userid)
-            self.__user_lines.append(vwline.VWLineNode(color=color, maxwidth=max_width,
+            self.__user_lines.append(plots.VWLineNode(color=color, maxwidth=max_width,
                     blendmode="add", parent=self._data_div))
 
         x_range = pat_model.pos_range[0][0], pat_model.pos_range[1][0]
@@ -153,7 +153,7 @@ class Legend(avg.DivNode):
 
         line_div = avg.DivNode(pos=(20,10), size=self.size - (40, 20), parent=self)
 
-        line = vwline.VWLineNode(color=color, maxwidth=maxwidth, parent=line_div)
+        line = plots.VWLineNode(color=color, maxwidth=maxwidth, parent=line_div)
         for i in range(0, 101):
             value = i / 100.0
             points.append(libavg.Point2D(line_div.width * value, line_div.height/2))

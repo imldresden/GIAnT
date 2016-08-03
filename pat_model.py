@@ -9,8 +9,7 @@ wall_height = 2.06
 pos_range = [(-0.5,0,0.5), (5.5,2.5,2.5)]  # User head position minimum and maximum
 max_time = 0
 time_offset = 0
-x_touch_range = [0, 4*1920]
-y_touch_range = [0, 3*1080]
+touch_range = [4*1920, 3*1080]
 x_wall_range = [0, wall_width]
 y_wall_range = [40, 40+wall_height]
 

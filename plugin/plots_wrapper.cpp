@@ -13,7 +13,7 @@ using namespace avg;
 
 char VWLineNodeName[] = "vwlinenode";
 
-BOOST_PYTHON_MODULE(vwline)
+BOOST_PYTHON_MODULE(plots)
 {
     class_<VWLineNode, bases<avg::VectorNode>, boost::noncopyable>("VWLineNode", no_init)
         .def("__init__", raw_constructor(createNode<VWLineNodeName>))
@@ -25,8 +25,8 @@ BOOST_PYTHON_MODULE(vwline)
 AVG_PLUGIN_API PyObject* registerPlugin()
 {
     VWLineNode::registerType();
-    initvwline();
-    PyObject* pyVWLineModule = PyImport_ImportModule("vwline");
+    initplots();
+    PyObject* pyVWLineModule = PyImport_ImportModule("plots");
 
     return pyVWLineModule;
 }

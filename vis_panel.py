@@ -19,7 +19,7 @@ class VisPanel(avg.DivNode):
         # rect for background
         avg.RectNode(pos=(self.__axis_size.x, 0), size=self.size - self.__axis_size,
                 strokewidth=0, fillopacity=1, fillcolor=global_values.COLOR_BLACK, parent=self)
-        self.__grid_div = avg.DivNode(pos=(self.__axis_size.x, 0), size=self.size - self.__axis_size, parent=self)
+        self._grid_div = avg.DivNode(pos=(self.__axis_size.x, 0), size=self.size - self.__axis_size, parent=self)
         # rect for border
         avg.RectNode(pos=(self.__axis_size.x, 0), size=self.size - self.__axis_size,
                 strokewidth=1, color=global_values.COLOR_FOREGROUND, parent=self)
@@ -34,6 +34,9 @@ class VisPanel(avg.DivNode):
 
         self._x_grid = []
         self._y_grid = []
+
+        self._x_axis = None
+        self._y_axis = None
 
     def _create_x_axis(self, **kwargs):
         pos = (self.__axis_size.x, self._data_div.height)
@@ -50,28 +53,30 @@ class VisPanel(avg.DivNode):
 
     def _update_grid(self):
         # Horizontal
-        self.__unlink_node_list(self._x_grid)
+        self._unlink_node_list(self._x_grid)
         self._x_grid = []
 
-        tick_posns = self._x_axis.get_tick_posns()
-        y_max = self._data_div.height
-        for x in tick_posns:
-            node = avg.LineNode(pos1=(x, 0), pos2=(x, y_max), color=global_values.COLOR_BACKGROUND,
-                    parent=self.__grid_div)
-            self._x_grid.append(node)
+        if self._x_axis:
+            tick_posns = self._x_axis.get_tick_posns()
+            y_max = self._data_div.height
+            for x in tick_posns:
+                node = avg.LineNode(pos1=(x, 0), pos2=(x, y_max), color=global_values.COLOR_BACKGROUND,
+                        parent=self._grid_div)
+                self._x_grid.append(node)
 
         # Vertical
-        self.__unlink_node_list(self._y_grid)
+        self._unlink_node_list(self._y_grid)
         self._y_grid = []
 
-        tick_posns = self._y_axis.get_tick_posns()
-        x_max = self._data_div.width
-        for y in tick_posns:
-            node = avg.LineNode(pos1=(0, y), pos2=(x_max, y), color=global_values.COLOR_BACKGROUND,
-                parent=self.__grid_div)
-            self._y_grid.append(node)
+        if self._y_axis:
+            tick_posns = self._y_axis.get_tick_posns()
+            x_max = self._data_div.width
+            for y in tick_posns:
+                node = avg.LineNode(pos1=(0, y), pos2=(x_max, y), color=global_values.COLOR_BACKGROUND,
+                    parent=self._grid_div)
+                self._y_grid.append(node)
 
-    def __unlink_node_list(self, node_list):
+    def _unlink_node_list(self, node_list):
         for node in node_list:
             node.unlink(True)
 
