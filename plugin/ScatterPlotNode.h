@@ -6,7 +6,7 @@
 
 #include <base/GLMHelper.h>
 #include <base/UTF8String.h>
-#include <base/GLMHelper.h>
+#include <graphics/Color.h>
 #include <player/RasterNode.h>
 
 #include <boost/shared_ptr.hpp>
@@ -36,10 +36,14 @@ public:
 
 private:
     avg::BitmapPtr createPlotBmp();
+    glm::vec2 posToBmpPixel(const glm::vec2& pos);
+
     avg::MCTexturePtr m_pTex;
+    avg::Color m_Color;
 
     glm::vec2 m_ViewportRangeMin;
     glm::vec2 m_ViewportRangeMax;
+    glm::vec2 m_ViewportExtent;
     std::vector<glm::vec2> m_Posns;
 
     bool m_bDataChanged;

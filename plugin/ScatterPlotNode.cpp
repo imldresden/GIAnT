@@ -5,20 +5,11 @@
 #include <base/Exception.h>
 #include <base/StringHelper.h>
 #include <base/ScopeTimer.h>
-#include <base/TimeSource.h>
-#include <base/ThreadHelper.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/transform.hpp>
-#include <graphics/StandardShader.h>
 #include <graphics/MCTexture.h>
 #include <graphics/VertexArray.h>
+#include <graphics/FilterFill.h>
 #include <graphics/GLContextManager.h>
-#include <graphics/Filterfill.h>
 #include <graphics/Bitmap.h>
-#include <graphics/FilterResizeBilinear.h>
-#include <graphics/Color.h>
-#include <player/Player.h>
 #include <player/Arg.h>
 #include <player/TypeDefinition.h>
 #include <player/TypeRegistry.h>
@@ -36,8 +27,9 @@ void ScatterPlotNode::registerType()
 {
     vector<string> cm;
     TypeDefinition def = TypeDefinition("scatterplotnode", "rasternode",  ExportedObject::buildObject<ScatterPlotNode>)
-        .addArg( Arg<glm::vec2>("viewportrangemin", glm::vec2(0,0), false, offsetof(ScatterPlotNode, m_ViewportRangeMin)) )
-        .addArg( Arg<glm::vec2>("viewportrangemax", glm::vec2(0,0), false, offsetof(ScatterPlotNode, m_ViewportRangeMax)) )
+        .addArg(Arg<glm::vec2>("viewportrangemin", glm::vec2(0,0), false, offsetof(ScatterPlotNode, m_ViewportRangeMin)))
+        .addArg(Arg<glm::vec2>("viewportrangemax", glm::vec2(0,0), false, offsetof(ScatterPlotNode, m_ViewportRangeMax)))
+        .addArg(Arg<Color>("color", Color("FFFFFF"), false, offsetof(ScatterPlotNode, m_Color)))
         ;
 
     const char* allowedParentNodeNames[] = {"div", "canvas", "avg", 0};
@@ -47,6 +39,7 @@ void ScatterPlotNode::registerType()
 ScatterPlotNode::ScatterPlotNode(const ArgList& args, const string& sPublisherName) : RasterNode(sPublisherName)
 {
     args.setMembers(this);
+    m_ViewportExtent = m_ViewportRangeMax - m_ViewportRangeMin;
 }
 
 ScatterPlotNode::~ScatterPlotNode()
@@ -101,7 +94,18 @@ void ScatterPlotNode::setPosns(const std::vector<glm::vec2>& posns)
 BitmapPtr ScatterPlotNode::createPlotBmp()
 {
     BitmapPtr pBmp(new Bitmap(getSize(), R8G8B8A8));
+    FilterFill<Pixel32>(Pixel32(0,0,0,0)).applyInPlace(pBmp);
+
+    for (auto pos: m_Posns) {
+        glm::vec2 posInBmp = posToBmpPixel(pos);
+        pBmp->setPixel(posInBmp, Pixel32(m_Color));
+    }
 
     return pBmp;
 }
 
+glm::vec2 ScatterPlotNode::posToBmpPixel(const glm::vec2& pos)
+{
+    glm::vec2 normPos = (pos - m_ViewportRangeMin)/ m_ViewportExtent;
+    return normPos * getSize();
+}
