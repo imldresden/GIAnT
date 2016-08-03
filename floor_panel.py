@@ -9,11 +9,14 @@ from libavg import avg
 class FloorPanel(vis_panel.VisPanel):
 
     def __init__(self, session, vis_params, parent, **kwargs):
-        super(FloorPanel, self).__init__("Floor", vis_params, (60, 25), True, parent, **kwargs)
+
+        pos_range = pat_model.pos_range
+        view_extent = avg.Point2D(pos_range[1][0] - pos_range[0][0], 3.0)
+        aspect = view_extent.y/view_extent.x
+        super(FloorPanel, self).__init__("Floor", vis_params, (60, 25), True, aspect, parent=parent, **kwargs)
 
         self.__users = session.users
 
-        pos_range = pat_model.pos_range
         self._create_x_axis(data_range=(pos_range[0][0], pos_range[1][0]), unit="m", top_axis=True)
         self._create_y_axis(data_range=(-0.5,2.5), unit="m", hide_rims=True)
         self.__create_wall_rect()

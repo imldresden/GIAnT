@@ -39,12 +39,12 @@ class MainDiv(app.MainDiv):
         panel00_pos = (0,0)
         panel01_pos = (0, panel_size.y + padding)
         panel10_pos = (panel_size.x + padding, 0)
-        panel11_pos = panel_size + (padding, padding)
 
         self.timeline_panel = movement_panel.MovementPanel(pos=panel00_pos, size=panel_size,
                 session=self.session, vis_params=self.__vis_params, parent=self)
         self.wall_panel = wall_panel.WallPanel(pos=panel10_pos, size=panel_size,
                 session=self.session, vis_params=self.__vis_params, parent=self)
+        panel11_pos = (panel_size.x + padding, self.wall_panel.height + 5)
         self.floor_panel = floor_panel.FloorPanel(pos=panel11_pos, size=panel_size,
                 session=self.session, vis_params=self.__vis_params, parent=self)
 

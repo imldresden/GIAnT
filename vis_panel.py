@@ -9,22 +9,28 @@ from libavg import avg
 
 class VisPanel(avg.DivNode):
 
-    def __init__(self, label, vis_params, axis_size, show_grid, parent, **kwargs):
+    def __init__(self, label, vis_params, axis_size, show_grid, aspect=None, parent=None, **kwargs):
         super(VisPanel, self).__init__(**kwargs)
         self.registerInstance(self, parent)
         self.crop = True
 
         self.__axis_size = avg.Point2D(axis_size)
+        data_div_size = self.size - self.__axis_size
+        if aspect is not None:
+            data_div_size.y = data_div_size.x * aspect
+            self.size = data_div_size + self.__axis_size
+        print aspect
+        print data_div_size
 
         # rect for background
-        avg.RectNode(pos=(self.__axis_size.x, 0), size=self.size - self.__axis_size,
+        avg.RectNode(pos=(self.__axis_size.x, 0), size=data_div_size,
                 strokewidth=0, fillopacity=1, fillcolor=global_values.COLOR_BLACK, parent=self)
-        self._grid_div = avg.DivNode(pos=(self.__axis_size.x, 0), size=self.size - self.__axis_size, parent=self)
+        self._grid_div = avg.DivNode(pos=(self.__axis_size.x, 0), size=data_div_size, parent=self)
         # rect for border
-        avg.RectNode(pos=(self.__axis_size.x, 0), size=self.size - self.__axis_size,
+        avg.RectNode(pos=(self.__axis_size.x, 0), size=data_div_size,
                 strokewidth=1, color=global_values.COLOR_FOREGROUND, parent=self)
 
-        self._data_div = avg.DivNode(pos=(self.__axis_size.x, 0), size=self.size - self.__axis_size, crop=True)
+        self._data_div = avg.DivNode(pos=(self.__axis_size.x, 0), size=data_div_size, crop=True)
 
         avg.WordsNode(pos=(10, 10), color=global_values.COLOR_FOREGROUND, text=label, sensitive=False,
                 parent=self._data_div)
@@ -39,10 +45,13 @@ class VisPanel(avg.DivNode):
         self._x_axis = None
         self._y_axis = None
 
-    def _create_x_axis(self, **kwargs):
-        pos = (self.__axis_size.x, self._data_div.height)
+    def _create_x_axis(self, top_axis=False, **kwargs):
+        if top_axis:
+            pos = (self.__axis_size.x, 0)
+        else:
+            pos = (self.__axis_size.x, self._data_div.height)
         self._x_axis = AxisNode(pos=pos, size=(self._data_div.width, self.__axis_size.y),
-                parent=self, **kwargs)
+                top_axis=top_axis, parent=self, **kwargs)
 
     def _create_y_axis(self, **kwargs):
         self._y_axis = AxisNode(pos=(0, 0), size=(self.__axis_size.x, self._data_div.height),
