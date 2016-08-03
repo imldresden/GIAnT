@@ -9,7 +9,7 @@ from libavg import avg
 
 class VisPanel(avg.DivNode):
 
-    def __init__(self, label, vis_params, axis_size, parent, **kwargs):
+    def __init__(self, label, vis_params, axis_size, show_grid, parent, **kwargs):
         super(VisPanel, self).__init__(**kwargs)
         self.registerInstance(self, parent)
         self.crop = True
@@ -32,6 +32,7 @@ class VisPanel(avg.DivNode):
         vis_params.subscribe(vis_params.CHANGED, self._update_time)
         self._vis_params = vis_params
 
+        self.__show_grid = show_grid
         self._x_grid = []
         self._y_grid = []
 
@@ -49,7 +50,8 @@ class VisPanel(avg.DivNode):
 
     def _create_data_div(self):
         self.appendChild(self._data_div)
-        self._update_grid()
+        if self.__show_grid:
+            self._update_grid()
 
     def _update_grid(self):
         # Horizontal

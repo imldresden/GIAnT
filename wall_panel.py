@@ -12,11 +12,14 @@ class WallPanel(vis_panel.VisPanel):
     MAX_SMOOTHNESS = 500
 
     def __init__(self, session, vis_params, parent, **kwargs):
-        super(WallPanel, self).__init__("Wall", vis_params, (60, 25), parent, **kwargs)
+        super(WallPanel, self).__init__("Wall", vis_params, (60, 25), False, parent, **kwargs)
 
         self.__users = session.users
 
         self.__create_display_borders()
+        self._create_x_axis(data_range=pat_model.x_wall_range, unit="m")
+        self._create_y_axis(data_range=pat_model.y_wall_range, unit="m", hide_rims=True, label_offset=15, inverted=True)
+
         self._create_data_div()
 
         self.__plot_nodes = []

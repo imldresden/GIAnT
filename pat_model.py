@@ -11,7 +11,7 @@ max_time = 0
 time_offset = 0
 touch_range = [4*1920, 3*1080]
 x_wall_range = [0, wall_width]
-y_wall_range = [40, 40+wall_height]
+y_wall_range = [0.4, 0.4+wall_height]
 
 
 def execute_qry(qry, do_fetch=False):

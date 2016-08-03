@@ -14,7 +14,7 @@ class MovementPanel(vis_panel.VisPanel):
     MAX_SMOOTHNESS = 500
 
     def __init__(self, session, vis_params, parent, **kwargs):
-        super(MovementPanel, self).__init__("Timeline", vis_params, (60, 25), parent, **kwargs)
+        super(MovementPanel, self).__init__("Timeline", vis_params, (60, 25), True, parent, **kwargs)
 
         self.__users = session.users
 
