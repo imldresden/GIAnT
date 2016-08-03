@@ -169,8 +169,7 @@ class AxisNode(avg.DivNode):
             # create new axis tick, label and grid line
             tick = libavg.LineNode(strokewidth=1, color=global_values.COLOR_FOREGROUND, parent=self)
             self.__ticks[i] = tick
-            if not self.__top_axis:
-                self.__label_nodes[i] = libavg.WordsNode(color=global_values.COLOR_FOREGROUND, parent=self)
+            self.__label_nodes[i] = libavg.WordsNode(color=global_values.COLOR_FOREGROUND, parent=self)
 
             # set label value
             if not self.__top_axis:
@@ -181,28 +180,25 @@ class AxisNode(avg.DivNode):
                 v_center = label.fontsize / 2
                 tick.pos1 = (self.width, pos)
                 tick.pos2 = (self.width + self.TICK_LENGTH, pos)
-                if not self.__top_axis:
-                    label.alignment = "right"
-                    label.pos = (self.width - self.TICK_LENGTH - self.__label_offset, pos - v_center - 1)
+                label.alignment = "right"
+                label.pos = (self.width - self.TICK_LENGTH - self.__label_offset, pos - v_center - 1)
             else:
                 tick.pos2 = (pos, 0)
                 if self.__top_axis:
                     tick.pos1 = (pos, self.TICK_LENGTH)
                 else:
                     tick.pos1 = (pos, - self.TICK_LENGTH)
-                    label.pos = (pos, self.TICK_LENGTH/2 + self.__label_offset)
-                    label.alignment = "center"
+                label.pos = (pos, self.TICK_LENGTH/2 + self.__label_offset)
+                label.alignment = "center"
 
         # delete first and last tick except it is min or max of data range
         if self.__label_values[0] not in self.__data_range or self.__hide_rims:
             self.__ticks[0].unlink()
-            if not self.__top_axis:
-                self.__label_nodes[0].unlink()
+            self.__label_nodes[0].unlink()
         self.__label_nodes[len(self.__label_nodes) - 1].alignment = "right"
         if self.__label_values[len(self.__label_values) - 1] not in self.__data_range or self.__hide_rims:
             self.__ticks[len(self.__label_values) - 1].unlink()
-            if not self.__top_axis:
-                self.__label_nodes[len(self.__label_values) - 1].unlink()
+            self.__label_nodes[len(self.__label_values) - 1].unlink()
 
     def get_tick_posns(self):
         if self.__vertical:

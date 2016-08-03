@@ -6,9 +6,10 @@ import libavg
 import vis_params
 import movement_panel
 import wall_panel
+import floor_panel
+import video_panel
 import options_panel
 import global_values
-import video_panel
 import pat_model
 
 
@@ -43,6 +44,8 @@ class MainDiv(app.MainDiv):
         self.timeline_panel = movement_panel.MovementPanel(pos=panel00_pos, size=panel_size,
                 session=self.session, vis_params=self.__vis_params, parent=self)
         self.wall_panel = wall_panel.WallPanel(pos=panel10_pos, size=panel_size,
+                session=self.session, vis_params=self.__vis_params, parent=self)
+        self.floor_panel = floor_panel.FloorPanel(pos=panel11_pos, size=panel_size,
                 session=self.session, vis_params=self.__vis_params, parent=self)
 
         self.video = video_panel.VideoPanel(pos=panel01_pos, size=panel_size,
