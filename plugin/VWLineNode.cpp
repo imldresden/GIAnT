@@ -48,7 +48,6 @@ void VWLineNode::setValues(const vector<glm::vec2>& pts, const vector<float>& di
     m_Colors.clear();
     m_Triangles.clear();
 
-    float avgWidth = 0;
     vector<float> clampedDists;
     vector<float> widths;
     for (int i=0; i<pts.size(); ++i) {
@@ -57,6 +56,7 @@ void VWLineNode::setValues(const vector<glm::vec2>& pts, const vector<float>& di
         widths.push_back(calcWidth(dist));
     }
 
+    float avgWidth = widths[0] + widths[1];
     for (int i=0; i<pts.size(); ++i) {
         int vi = m_VertexCoords.size();
 
@@ -66,17 +66,20 @@ void VWLineNode::setValues(const vector<glm::vec2>& pts, const vector<float>& di
         bool bStartEnd = false;
         if (i >= WIDTH_WINDOW/2) {
             avgWidth -= widths[i-WIDTH_WINDOW/2];
+        } else {
             bStartEnd = true;
         }
         if (i < pts.size() - WIDTH_WINDOW/2) {
             avgWidth += widths[i+WIDTH_WINDOW/2];
+        } else {
             bStartEnd = true;
         }
         float visWidth;
         if (bStartEnd) {
             visWidth = widths[i];
         } else {
-            visWidth = avgWidth;
+            float angle = getLineAngle(pts[i - WIDTH_WINDOW/2], pts[i + WIDTH_WINDOW/2]);
+            visWidth = calcVertWidth(avgWidth/WIDTH_WINDOW, angle);
         }
 
         glm::vec2 offset(0, visWidth);
@@ -146,6 +149,16 @@ void VWLineNode::appendColors(int numEntries, avg::Pixel32 color, float opacity)
 float VWLineNode::calcWidth(float dist)
 {
     return 1 + dist * m_MaxWidth;
+}
+
+float VWLineNode::calcVertWidth(float width, float angle)
+{
+    return min(width / cos(angle), width*2);
+}
+
+float VWLineNode::getLineAngle(const glm::vec2& pt1, const glm::vec2& pt2)
+{
+    return atan2(pt2.y-pt1.y, pt2.x-pt1.x);
 }
 
 float VWLineNode::calcOpacity(float dist)

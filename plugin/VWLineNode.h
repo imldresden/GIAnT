@@ -29,6 +29,8 @@ class VWLineNode: public avg::VectorNode
     private:
         void appendColors(int numEntries, avg::Pixel32 color, float opacity);
         float calcWidth(float dist);
+        float calcVertWidth(float width, float angle);
+        float getLineAngle(const glm::vec2& pt1, const glm::vec2& pt2);
         float calcOpacity(float dist);
         glm::vec2 posOnLine(float x) const;
 
