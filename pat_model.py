@@ -76,9 +76,9 @@ class HeadData(object):
 
     def calc_wall_viewpoint(self):
         yaw_quat = pyglm.quat.fromAxisAngle((0,1,0), self.rotation[0])
-#        pitch_quat = pyglm.quat.fromAxisAngle((1,0,0), self.rotation[1])
-#        roll_quat = pyglm.quat.fromAxisAngle((0,0,1), self.rotation[2])
-        q = yaw_quat #* pitch_quat * roll_quat
+        pitch_quat = pyglm.quat.fromAxisAngle((1,0,0), self.rotation[1])
+        roll_quat = pyglm.quat.fromAxisAngle((0,0,1), self.rotation[2])
+        q = yaw_quat * pitch_quat * roll_quat
         head_dir = q*pyglm.vec3(0,0,1)
 
         viewpt3d = line_plane_intersect(self.pos, head_dir, (0,0,0), (0,0,1))
