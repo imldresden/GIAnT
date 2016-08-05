@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import math
+
 import pat_model
 import global_values
 import vis_panel
@@ -30,12 +32,13 @@ class FloorPanel(vis_panel.VisPanel):
     def __show_users(self, time):
         self._unlink_node_list(self.__user_nodes)
         self.__user_nodes = []
+        wall_y = self._y_axis.value_to_pixel(0)
 
         for i, user in enumerate(self.__users):
-            color = vis_params.VisParams.get_user_color(user.userid)
             pos = user.get_head_position(time)
-            pixel_pos = (self._x_axis.value_to_pixel(pos[0]), self._y_axis.value_to_pixel(pos[2]))
-            node = avg.CircleNode(pos=pixel_pos, r=6, color=color, parent=self._data_div)
+            pixel_pos = avg.Point2D(self._x_axis.value_to_pixel(pos[0]), self._y_axis.value_to_pixel(pos[2]))
+            rot = user.get_head_orientation(time)
+            node = UserNode(user.userid, pos=pixel_pos, wall_y=wall_y, angle=rot[0], parent=self._data_div)
             self.__user_nodes.append(node)
 
     def __create_wall_rect(self):
@@ -45,3 +48,20 @@ class FloorPanel(vis_panel.VisPanel):
 
         avg.RectNode(pos=(x_min, y_max-16), size=(x_max - x_min, 16), fillcolor=global_values.COLOR_DARK_GREY,
                 fillopacity=1, parent=self._data_div)
+
+
+class UserNode(avg.DivNode):
+
+    def __init__(self, userid, pos, wall_y, angle, parent, **kwargs):
+        super(UserNode, self).__init__(**kwargs)
+        self.registerInstance(self, parent)
+
+        color = vis_params.VisParams.get_user_color(userid)
+
+        slope = math.tan(angle+math.pi/2)
+        end_pos = avg.Point2D(pos.x + (pos.y - wall_y)/slope, wall_y)
+        if (pos-end_pos).getNorm() > 200:
+            end_pos = pos + avg.Point2D(math.sin(angle), -math.cos(angle))*200
+        avg.LineNode(pos1=pos, pos2=end_pos, color=color, parent=self)
+
+        avg.CircleNode(pos=pos, r=6, fillopacity=1, color=color, fillcolor="000000", parent=self)
