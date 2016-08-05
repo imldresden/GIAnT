@@ -61,7 +61,7 @@ class UserNode(avg.DivNode):
         slope = math.tan(angle+math.pi/2)
         end_pos = avg.Point2D(pos.x + (pos.y - wall_y)/slope, wall_y)
         if (pos-end_pos).getNorm() > 200:
-            end_pos = pos + avg.Point2D(math.sin(angle), -math.cos(angle))*200
+            end_pos = pos - avg.Point2D(math.sin(angle), math.cos(angle))*200
         avg.LineNode(pos1=pos, pos2=end_pos, color=color, parent=self)
 
         avg.CircleNode(pos=pos, r=6, fillopacity=1, color=color, fillcolor="000000", parent=self)
