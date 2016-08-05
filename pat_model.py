@@ -2,7 +2,10 @@
 
 import time
 import sqlite3
-from libavg import avg
+import math
+from libavg import avg, player
+
+player.loadPlugin("pyglm")
 
 wall_width = 4.90
 wall_height = 2.06
@@ -35,6 +38,18 @@ def csvtime_to_float(date, csv_time):
     return time.mktime(time_struct) + float(millisecs) / 1000
 
 
+def line_plane_intersect(line_pt, line_dir, plane_pt, plane_normal):
+    line_pt = pyglm.vec3(line_pt)
+    line_dir = pyglm.vec3(line_dir)
+    plane_pt = pyglm.vec3(plane_pt)
+    numerator = pyglm.vec3.dot(plane_pt - line_pt, plane_normal)
+    denominator = pyglm.vec3.dot(line_dir, plane_normal)
+    if math.fabs(denominator) > 0.000000001:
+        length = numerator/denominator
+        return pyglm.vec3(line_pt + pyglm.vec3(line_dir.getNormalized())*length)
+    else:
+        return None
+
 class HeadData(object):
     def __init__(self):
         self.userid = None
@@ -59,6 +74,19 @@ class HeadData(object):
         else:
             self.pos_prefix_sum = self.pos
 
+    def calc_wall_viewpoint(self):
+        yaw_quat = pyglm.quat.fromAxisAngle((0,1,0), self.rotation[0])
+#        pitch_quat = pyglm.quat.fromAxisAngle((1,0,0), self.rotation[1])
+#        roll_quat = pyglm.quat.fromAxisAngle((0,0,1), self.rotation[2])
+        q = yaw_quat #* pitch_quat * roll_quat
+        head_dir = q*pyglm.vec3(0,0,1)
+
+        viewpt3d = line_plane_intersect(self.pos, head_dir, (0,0,0), (0,0,1))
+        if viewpt3d is not None:
+            self.wall_viewpoint = avg.Point2D(viewpt3d.x, viewpt3d.y)
+        else:
+            self.wall_viewpoint = avg.Point2D(0,0)
+
     @classmethod
     def from_csv(cls, csv_record, date):
         head_data = HeadData()
@@ -72,7 +100,8 @@ class HeadData(object):
         #   If facing the wall, x points right, y up, z away from the wall
         head_data.pos[0] = -head_data.pos[0]
         head_data.pos[2] = -head_data.pos[2]
-        head_data.rotation = eval(csv_record[3])  # yaw, pitch, roll
+        # Rotation is yaw, pitch, roll, origin is facing wall.
+        head_data.rotation = eval(csv_record[3])
         return head_data
 
     @classmethod
@@ -83,6 +112,7 @@ class HeadData(object):
         head_data.rotation = head_list[4], head_list[5], head_list[6]
         head_data.timestamp = head_list[7]
         head_data.pos_prefix_sum = head_list[8], head_list[9], head_list[10]
+        head_data.calc_wall_viewpoint()
         return head_data
 
     @classmethod
@@ -144,6 +174,10 @@ class User(object):
 
     def get_num_states(self):
         return len(self.__head_data)
+
+    def get_viewpoint(self, cur_time):
+        i = self.__time_to_index(cur_time)
+        return self.__head_data[i].wall_viewpoint
 
     def get_head_position(self, cur_time):
         i = self.__time_to_index(cur_time)

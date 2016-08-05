@@ -37,8 +37,10 @@ class FloorPanel(vis_panel.VisPanel):
         for i, user in enumerate(self.__users):
             pos = user.get_head_position(time)
             pixel_pos = avg.Point2D(self._x_axis.value_to_pixel(pos[0]), self._y_axis.value_to_pixel(pos[2]))
-            rot = user.get_head_orientation(time)
-            node = UserNode(user.userid, pos=pixel_pos, wall_y=wall_y, angle=rot[0], parent=self._data_div)
+            viewpt = (self._x_axis.value_to_pixel(user.get_viewpoint(time).x),
+                    self._y_axis.value_to_pixel(0))
+            node = UserNode(user.userid, pos=pixel_pos, wall_y=wall_y, viewpt=viewpt,
+                    parent=self._data_div)
             self.__user_nodes.append(node)
 
     def __create_wall_rect(self):
@@ -52,16 +54,16 @@ class FloorPanel(vis_panel.VisPanel):
 
 class UserNode(avg.DivNode):
 
-    def __init__(self, userid, pos, wall_y, angle, parent, **kwargs):
+    def __init__(self, userid, pos, wall_y, viewpt, parent, **kwargs):
         super(UserNode, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
         color = vis_params.VisParams.get_user_color(userid)
 
-        slope = math.tan(angle+math.pi/2)
-        end_pos = avg.Point2D(pos.x + (pos.y - wall_y)/slope, wall_y)
-        if (pos-end_pos).getNorm() > 200:
-            end_pos = pos - avg.Point2D(math.sin(angle), math.cos(angle))*200
+        end_pos = avg.Point2D(viewpt)
+        if (end_pos-pos).getNorm() > 200:
+            dir = (end_pos-pos).getNormalized()
+            end_pos = pos + dir*200
         avg.LineNode(pos1=pos, pos2=end_pos, color=color, parent=self)
 
         avg.CircleNode(pos=pos, r=6, fillopacity=1, color=color, fillcolor="000000", parent=self)
