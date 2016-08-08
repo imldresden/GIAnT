@@ -43,8 +43,9 @@ class WallPanel(vis_panel.VisPanel):
             node = heatmap.HeatMapNode(size=self.__plot_div.size,
                     viewportrangemin=(pat_model.x_wall_range[0], pat_model.y_wall_range[0]),
                     viewportrangemax=(pat_model.x_wall_range[1], pat_model.y_wall_range[1]),
-                    mapsize=(32,16), valuerangemin=0, valuerangemax=32,
+                    mapsize=(64,32), valuerangemin=0, valuerangemax=8,
                     colormap=color_map, opacitymap=opacity_map, blendmode="add", parent=self.__plot_div)
+            node.setEffect(avg.BlurFXNode(radius=1))
             self.__heatmap_nodes.append(node)
 
             node = plots.ScatterPlotNode(size=self.__plot_div.size, viewportrangemax=pat_model.touch_range,
