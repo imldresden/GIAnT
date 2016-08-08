@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import math
+
 import pat_model
 import global_values
 import vis_panel
@@ -16,6 +18,7 @@ class MovementPanel(vis_panel.VisPanel):
     def __init__(self, session, vis_params, parent, **kwargs):
         super(MovementPanel, self).__init__("Timeline", vis_params, (60, 25), True, parent=parent, **kwargs)
 
+        self.__duration = session.duration
         self.__users = session.users
 
         self.__user_lines = []
@@ -62,6 +65,7 @@ class MovementPanel(vis_panel.VisPanel):
         for i, user_line in enumerate(self.__user_lines):
             user_line.active = vis_params.get_user_visible(i)
 
+        self._x_axis.hide_rims = not(math.fabs(vis_params.get_time_duration() - self.__duration) < 0.0001)
         self._x_axis.update(interval[0], interval[1])
         self._update_grid()
 
