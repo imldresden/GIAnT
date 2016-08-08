@@ -20,7 +20,7 @@ class FloorPanel(vis_panel.VisPanel):
         self.__users = session.users
 
         self._create_x_axis(data_range=(pos_range[0][0], pos_range[1][0]), unit="m", top_axis=True)
-        self._create_y_axis(data_range=(-0.5,2.5), unit="m", hide_rims=True)
+        self._create_y_axis(data_range=(-0.5,2.5), tick_positions=[0,1,2], unit="m", hide_rims=True)
         self.__create_wall_rect()
 
         self._create_data_div()
@@ -44,7 +44,7 @@ class FloorPanel(vis_panel.VisPanel):
         self.__show_user_heatmap(vis_params.get_time_interval())
 
     def __show_users(self, time):
-        self._unlink_node_list(self.__user_nodes)
+        vis_panel.unlink_node_list(self.__user_nodes)
         self.__user_nodes = []
         wall_y = self._y_axis.value_to_pixel(0)
 

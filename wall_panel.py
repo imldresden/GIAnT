@@ -17,8 +17,9 @@ class WallPanel(vis_panel.VisPanel):
 
         self.__users = session.users
 
-        self._create_x_axis(data_range=(pos_range[0][0], pos_range[1][0]), unit="m")
-        self._create_y_axis(data_range=(pos_range[0][1], pos_range[1][1]), unit="m", hide_rims=True, inverted=True)
+        self._create_x_axis(data_range=(pos_range[0][0], pos_range[1][0]), hide_rims=True, unit="m")
+        self._create_y_axis(data_range=(pos_range[0][1], pos_range[1][1]), unit="m",
+                tick_positions=[0,1,2], hide_rims=True, inverted=True)
 
         # Calculate size of wall in pixels.
         normalized_wall_pos = avg.Point2D((pat_model.x_wall_range[0] - pos_range[0][0]) / view_extent.x,

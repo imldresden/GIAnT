@@ -64,7 +64,7 @@ class VisPanel(avg.DivNode):
 
     def _update_grid(self):
         # Horizontal
-        self._unlink_node_list(self._x_grid)
+        unlink_node_list(self._x_grid)
         self._x_grid = []
 
         if self._x_axis:
@@ -76,7 +76,7 @@ class VisPanel(avg.DivNode):
                 self._x_grid.append(node)
 
         # Vertical
-        self._unlink_node_list(self._y_grid)
+        unlink_node_list(self._y_grid)
         self._y_grid = []
 
         if self._y_axis:
@@ -86,10 +86,6 @@ class VisPanel(avg.DivNode):
                 node = avg.LineNode(pos1=(0, y), pos2=(x_max, y), color=global_values.COLOR_BACKGROUND,
                     parent=self._grid_div)
                 self._y_grid.append(node)
-
-    def _unlink_node_list(self, node_list):
-        for node in node_list:
-            node.unlink(True)
 
     def _create_color_map(self, start_color, end_color, steps):
         color_map = []
@@ -106,7 +102,7 @@ class AxisNode(avg.DivNode):
     TICK_LENGTH = 10
 
     def __init__(self, data_range, unit="m", hide_rims=False, top_axis=False, inverted=False, parent=None,
-                 label_offset=0, **kwargs):
+                 label_offset=0, tick_positions=None, **kwargs):
         """
         Custom AxisNode with axis lines, grid lines and labeling.
         :param data_range: The minimum and maximum data range to be displayed
@@ -122,16 +118,20 @@ class AxisNode(avg.DivNode):
         self.__parent = parent
         self.__top_axis = top_axis                           # determines if the x-axis should be displayed at the top
         self.__label_offset = label_offset                   # offset of tick labels from axis line
-        self.__label_values = []                             # contains the data values of the tick labels of the axis
+        if tick_positions is None:
+            self.__tick_positions = []                       # contains the data values of the tick labels
+            self.__auto_tick_positions = True
+        else:
+            self.__tick_positions = tick_positions
+            self.__auto_tick_positions = False
         self.__label_pos = []                                # contains the pos at axis for each label in __label_values
         self.__ticks = []                                    # separation lines (ticks) for axis
-        self.__labels = []                                   # nice numbers for tick labels from __label_values
         self.__label_nodes = []                              # WordNodes for tick labels with values from _labels
         self.__vertical = False                              # if True, axis is drawn vertically
         self.__data_range = data_range                       # data range of data set
         self.__start = data_range[0]                         # current minimal data value of visualization data
         self.__end = data_range[1]                           # current maximal data value of visualization data
-        self.__unit = unit                                   # unit of measurement (time: ms, length: cm)
+        self.__unit = unit                                   # unit of measurement
         self.__hide_rims = hide_rims                         # determines if the first and last tick are shown
         self.__inverted = inverted                           # shows values on axis inverted if true
 
@@ -152,19 +152,17 @@ class AxisNode(avg.DivNode):
         self.__start = start
         self.__end = end
 
-        # calculate tick marks with R's pretty algorithm and format numbers
-        if self.__unit is "s":
-            self.__label_values = r_pretty(dmin=self.__start, dmax=self.__end, n=5, time=True)
-        else:
-            self.__label_values = r_pretty(dmin=self.__start, dmax=self.__end, n=5)
-        self.__labels = [self.__format_label(v) for v in self.__label_values]
+        if self.__auto_tick_positions:
+            # calculate tick marks with R's pretty algorithm and format numbers
+            is_time = (self.__unit is "s")
+            self.__tick_positions = r_pretty(dmin=self.__start, dmax=self.__end, n=5, time=is_time)
 
         # calculate positions of ticks within AxisNode
         if self.__inverted:
             offset = self.value_to_pixel(end)
         else:
             offset = self.value_to_pixel(start)
-        self.__label_pos = [self.value_to_pixel(t) - offset for t in self.__label_values]
+        self.__label_pos = [self.value_to_pixel(t) - offset for t in self.__tick_positions]
 
         self.__draw_ticks()
 
@@ -172,14 +170,11 @@ class AxisNode(avg.DivNode):
         """
         draw each tick and the corresponding tick label on the position at the axis line
         """
-        # delete old axis ticks
-        for tick in self.__ticks:
-            tick.unlink()
+        unlink_node_list(self.__ticks)
         self.__ticks = [None] * len(self.__label_pos)
 
         # delete old axis labels
-        for label in self.__label_nodes:
-            label.unlink()
+        unlink_node_list(self.__label_nodes)
         self.__label_nodes = [None] * len(self.__label_pos)
 
         # for each tick create new tick-line, value label and grid line at position on axis line
@@ -191,7 +186,7 @@ class AxisNode(avg.DivNode):
 
             # set label value
             if not self.__top_axis:
-                self.__label_nodes[i].text = self.__labels[i]
+                self.__label_nodes[i].text = self.__format_label(self.__tick_positions[i])
             label = self.__label_nodes[i]
 
             if self.__vertical:
@@ -209,14 +204,16 @@ class AxisNode(avg.DivNode):
                 label.pos = (pos, self.TICK_LENGTH/2 + self.__label_offset)
                 label.alignment = "center"
 
-        # delete first and last tick except it is min or max of data range
-        if self.__label_values[0] not in self.__data_range or self.__hide_rims:
-            self.__ticks[0].unlink()
-            self.__label_nodes[0].unlink()
-        self.__label_nodes[len(self.__label_nodes) - 1].alignment = "right"
-        if self.__label_values[len(self.__label_values) - 1] not in self.__data_range or self.__hide_rims:
-            self.__ticks[len(self.__label_values) - 1].unlink()
-            self.__label_nodes[len(self.__label_values) - 1].unlink()
+        # TODO: Move to tick pos calculation
+        if self.__auto_tick_positions:
+            # delete first and last tick except it is min or max of data range
+            if self.__tick_positions[0] not in self.__data_range or self.__hide_rims:
+                self.__ticks[0].unlink()
+                self.__label_nodes[0].unlink()
+            self.__label_nodes[len(self.__label_nodes) - 1].alignment = "right"
+            if self.__tick_positions[len(self.__tick_positions) - 1] not in self.__data_range or self.__hide_rims:
+                self.__ticks[len(self.__tick_positions) - 1].unlink()
+                self.__label_nodes[len(self.__tick_positions) - 1].unlink()
 
     def get_tick_posns(self):
         if self.__vertical:
@@ -363,3 +360,7 @@ def r_pretty(dmin, dmax, n, time=False):
     if res[-1] > dmax:
         res[-1] = dmax
     return res
+
+def unlink_node_list(node_list):
+    for node in node_list:
+        node.unlink(True)
