@@ -38,17 +38,18 @@ class WallPanel(vis_panel.VisPanel):
         self.__heatmap_nodes = []
         for user in self.__users:
             color = vis_params.get_user_color(user.userid)
-            node = plots.ScatterPlotNode(size=self.__plot_div.size, viewportrangemax=pat_model.touch_range,
-                    color=color, parent=self.__plot_div)
-            self.__plot_nodes.append(node)
 
-            color_map = self.__create_color_map("000000", color, 16)
+            color_map, opacity_map = self.__create_color_map("000000", color, 16)
             node = heatmap.HeatMapNode(size=self.__plot_div.size,
                     viewportrangemin=(pat_model.x_wall_range[0], pat_model.y_wall_range[0]),
                     viewportrangemax=(pat_model.x_wall_range[1], pat_model.y_wall_range[1]),
-                    mapsize=(64,32), valuerangemin=0, valuerangemax=16,
-                    colormap=color_map, parent=self.__plot_div)
+                    mapsize=(32,16), valuerangemin=0, valuerangemax=16,
+                    colormap=color_map, opacitymap=opacity_map, blendmode="add", parent=self.__plot_div)
             self.__heatmap_nodes.append(node)
+
+            node = plots.ScatterPlotNode(size=self.__plot_div.size, viewportrangemax=pat_model.touch_range,
+                    color=color, parent=self.__plot_div)
+            self.__plot_nodes.append(node)
 
     def _update_time(self, vis_params):
         self.__show_touches(vis_params.get_time_interval())
@@ -79,8 +80,10 @@ class WallPanel(vis_panel.VisPanel):
 
     def __create_color_map(self, start_color, end_color, steps):
         color_map = []
+        opacity_map = []
         for i in xrange(steps):
             color = avg.Color.mix(end_color, start_color, float(i)/steps)
             color_map.append(str(color))
-        return color_map
+            opacity_map.append(float(i)/steps)
+        return color_map, opacity_map
 
