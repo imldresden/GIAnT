@@ -39,11 +39,11 @@ class WallPanel(vis_panel.VisPanel):
         for user in self.__users:
             color = vis_params.get_user_color(user.userid)
 
-            color_map, opacity_map = self.__create_color_map("000000", color, 16)
+            color_map, opacity_map = self.__create_color_map("000000", color, 64)
             node = heatmap.HeatMapNode(size=self.__plot_div.size,
                     viewportrangemin=(pat_model.x_wall_range[0], pat_model.y_wall_range[0]),
                     viewportrangemax=(pat_model.x_wall_range[1], pat_model.y_wall_range[1]),
-                    mapsize=(32,16), valuerangemin=0, valuerangemax=16,
+                    mapsize=(32,16), valuerangemin=0, valuerangemax=32,
                     colormap=color_map, opacitymap=opacity_map, blendmode="add", parent=self.__plot_div)
             self.__heatmap_nodes.append(node)
 
@@ -69,14 +69,22 @@ class WallPanel(vis_panel.VisPanel):
 
     def __show_touches(self, time_interval):
         for i, user in enumerate(self.__users):
-            touches = user.get_touches(time_interval[0], time_interval[1])
-            touch_posns = [touch.pos for touch in touches]
-            self.__plot_nodes[i].setPosns(touch_posns)
+            if self._vis_params.get_user_visible(i):
+                touches = user.get_touches(time_interval[0], time_interval[1])
+                touch_posns = [touch.pos for touch in touches]
+                self.__plot_nodes[i].setPosns(touch_posns)
+            else:
+                self.__plot_nodes[i].setPosns([])
 
     def __show_viewpoints(self, time_interval):
+        val_max = 16* ((time_interval[1] - time_interval[0])/60.)
         for i, user in enumerate(self.__users):
-            viewpoints = user.get_viewpoints(time_interval)
-            self.__heatmap_nodes[i].setPosns(viewpoints)
+#            self.__heatmap_nodes[i].valuerangemax = val_max
+            if self._vis_params.get_user_visible(i):
+                viewpoints = user.get_viewpoints(time_interval)
+                self.__heatmap_nodes[i].setPosns(viewpoints)
+            else:
+                self.__heatmap_nodes[i].setPosns([])
 
     def __create_color_map(self, start_color, end_color, steps):
         color_map = []

@@ -105,11 +105,11 @@ class HeadData(object):
         return head_data
 
     @classmethod
-    def from_list(cls, head_list):
+    def from_list(cls, head_list, pitch_offset):
         head_data = HeadData()
         head_data.userid = head_list[0]
         head_data.pos = head_list[1], head_list[2], head_list[3]
-        head_data.rotation = head_list[4], head_list[5], head_list[6]
+        head_data.rotation = head_list[4], head_list[5]+pitch_offset, head_list[6]
         head_data.timestamp = head_list[7]
         head_data.pos_prefix_sum = head_list[8], head_list[9], head_list[10]
         head_data.calc_wall_viewpoint()
@@ -157,15 +157,14 @@ class Touch(object):
 
 
 class User(object):
-    def __init__(self, session, userid):
+    def __init__(self, session, userid, pitch_offset):
         self.userid = userid
         self.__duration = session.duration
 
         head_data_list = execute_qry("SELECT user, x, y, z, pitch, yaw, roll, time, x_sum, y_sum, z_sum "
                           "FROM head WHERE user = " + str(userid) +
                           " GROUP BY time ORDER BY time;", True)
-        self.__head_data = [HeadData.from_list(head_list) for head_list in head_data_list]
-
+        self.__head_data = [HeadData.from_list(head_list, pitch_offset) for head_list in head_data_list]
 
         touch_data_list = execute_qry("SELECT user, x, y, time, duration "
                                      "FROM touch WHERE user = " + str(userid) +
@@ -226,7 +225,7 @@ class User(object):
 
 class Session(object):
     def __init__(self, data_dir, optitrack_filename, touch_filename, video_filename, date,
-            video_start_time, video_time_offset, num_users):
+            video_start_time, video_time_offset, num_users, user_pitch_offsets):
         self.data_dir = data_dir
         self.optitrack_filename = optitrack_filename
         self.touch_filename = touch_filename
@@ -243,7 +242,7 @@ class Session(object):
 
         self.__users = []
         for userid in range(0, num_users):
-            self.__users.append(User(self, userid))
+            self.__users.append(User(self, userid, user_pitch_offsets[userid]))
 
     def get_video_time_offset(self):
         return self.start_time - self.video_start_time
@@ -262,5 +261,12 @@ def create_session():
         date="2016-03-17",
         video_start_time="15:12:15",
         video_time_offset=0.3,
-        num_users=4
+        num_users=4,
+        # Heuristics: The recorded pitch data is incorrect by a constant if the subjects didn't wear the
+        # helmet correctly.
+        user_pitch_offsets=[
+                math.pi/4,
+                math.pi/12,
+                0.,
+                0.]
     )
