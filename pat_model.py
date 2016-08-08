@@ -201,6 +201,12 @@ class User(object):
         touches = [touch for touch in self.__touches if start_time <= touch.timestamp < end_time]
         return touches
 
+    def get_viewpoints(self, time_interval):
+        start_i = self.__time_to_index(time_interval[0])
+        end_i = self.__time_to_index(time_interval[1])
+        viewpoints = [head.wall_viewpoint for i, head in enumerate(self.__head_data) if start_i <= i < end_i]
+        return viewpoints
+
     def get_view_point_averaged(self, cur_time, smoothness):
         # TODO: Unused, untested
         i = self.__time_to_index(cur_time)
