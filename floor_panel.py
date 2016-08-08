@@ -26,8 +26,22 @@ class FloorPanel(vis_panel.VisPanel):
         self._create_data_div()
         self.__user_nodes = []
 
+        self.__heatmap_nodes = []
+        for user in self.__users:
+            color = vis_params.get_user_color(user.userid)
+
+            color_map, opacity_map = self._create_color_map("000000", color, 64)
+            node = heatmap.HeatMapNode(size=self._data_div.size,
+                    viewportrangemin=(pos_range[0][0], -0.5),
+                    viewportrangemax=(pos_range[1][0], 2.5),
+                    mapsize=(64,32), valuerangemin=0, valuerangemax=6,
+                    colormap=color_map, opacitymap=opacity_map, blendmode="add", parent=self._data_div)
+            node.setEffect(avg.BlurFXNode(radius=1))
+            self.__heatmap_nodes.append(node)
+
     def _update_time(self, vis_params):
         self.__show_users(vis_params.highlight_time)
+        self.__show_user_heatmap(vis_params.get_time_interval())
 
     def __show_users(self, time):
         self._unlink_node_list(self.__user_nodes)
@@ -42,6 +56,15 @@ class FloorPanel(vis_panel.VisPanel):
             node = UserNode(user.userid, pos=pixel_pos, wall_y=wall_y, viewpt=viewpt,
                     parent=self._data_div)
             self.__user_nodes.append(node)
+
+    def __show_user_heatmap(self, time_interval):
+        for i, user in enumerate(self.__users):
+            if self._vis_params.get_user_visible(i):
+                head_data = user.get_head_data(time_interval[0], time_interval[1])
+                head_posns = [(head.pos[0], head.pos[2]) for head in head_data]
+                self.__heatmap_nodes[i].setPosns(head_posns)
+            else:
+                self.__heatmap_nodes[i].setPosns([])
 
     def __create_wall_rect(self):
         x_min = self._x_axis.value_to_pixel(0)

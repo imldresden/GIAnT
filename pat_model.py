@@ -196,6 +196,12 @@ class User(object):
                          (end_integral[2] - start_integral[2]) / smoothness]
         return head_position
 
+    def get_head_data(self, start_time, end_time):
+        start_i = self.__time_to_index(start_time)
+        end_i = self.__time_to_index(end_time)
+        head_data = [head for i, head in enumerate(self.__head_data) if start_i <= i < end_i]
+        return head_data
+
     def get_touches(self, start_time, end_time):
         touches = [touch for touch in self.__touches if start_time <= touch.timestamp < end_time]
         return touches

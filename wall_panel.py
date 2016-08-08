@@ -39,7 +39,7 @@ class WallPanel(vis_panel.VisPanel):
         for user in self.__users:
             color = vis_params.get_user_color(user.userid)
 
-            color_map, opacity_map = self.__create_color_map("000000", color, 64)
+            color_map, opacity_map = self._create_color_map("000000", color, 64)
             node = heatmap.HeatMapNode(size=self.__plot_div.size,
                     viewportrangemin=(pat_model.x_wall_range[0], pat_model.y_wall_range[0]),
                     viewportrangemax=(pat_model.x_wall_range[1], pat_model.y_wall_range[1]),
@@ -86,13 +86,3 @@ class WallPanel(vis_panel.VisPanel):
                 self.__heatmap_nodes[i].setPosns(viewpoints)
             else:
                 self.__heatmap_nodes[i].setPosns([])
-
-    def __create_color_map(self, start_color, end_color, steps):
-        color_map = []
-        opacity_map = []
-        for i in xrange(steps):
-            color = avg.Color.mix(end_color, start_color, float(i)/steps)
-            color_map.append(str(color))
-            opacity_map.append(float(i)/steps)
-        return color_map, opacity_map
-
