@@ -59,8 +59,7 @@ class FloorPanel(vis_panel.VisPanel):
         for i, user in enumerate(self.__users):
             self.__heatmap_nodes[i].valuerangemax = val_max
             if self._vis_params.get_user_visible(i):
-                head_data = user.get_head_data(time_interval[0], time_interval[1])
-                head_posns = [(head.pos[0], head.pos[2]) for head in head_data]
+                head_posns = user.get_head_xz_posns(time_interval)
                 self.__heatmap_nodes[i].setPosns(head_posns)
             else:
                 self.__heatmap_nodes[i].setPosns([])

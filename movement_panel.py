@@ -109,7 +109,7 @@ class MovementPanel(vis_panel.VisPanel):
 
                 userline = self.__user_lines[i]
                 userline.setValues(points, dists)
-                touches = user.get_touches(time_start, time_end)
+                touches = user.get_touches((time_start, time_end))
                 touches_x = [self.__time_to_xpos(touch.timestamp) for touch in touches]
                 touches_width = [touch.duration*self.__time_factor for touch in touches]
                 userline.setHighlights(touches_x, touches_width)

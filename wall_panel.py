@@ -71,7 +71,7 @@ class WallPanel(vis_panel.VisPanel):
     def __show_touches(self, time_interval):
         for i, user in enumerate(self.__users):
             if self._vis_params.get_user_visible(i):
-                touches = user.get_touches(time_interval[0], time_interval[1])
+                touches = user.get_touches(time_interval)
                 touch_posns = [touch.pos for touch in touches]
                 self.__plot_nodes[i].setPosns(touch_posns)
             else:

@@ -187,7 +187,6 @@ class User(object):
         return self.__head_data[i].rotation
 
     def get_head_position_averaged(self, cur_time, smoothness):
-
         i = self.__time_to_index(cur_time)
         start_integral = self.__head_data[max(0, i - smoothness/2)].pos_prefix_sum
         end_integral = self.__head_data[min(len(self.__head_data)-1, i + int((smoothness+1)/2))].pos_prefix_sum
@@ -196,14 +195,13 @@ class User(object):
                          (end_integral[2] - start_integral[2]) / smoothness]
         return head_position
 
-    def get_head_data(self, start_time, end_time):
-        start_i = self.__time_to_index(start_time)
-        end_i = self.__time_to_index(end_time)
-        head_data = [head for i, head in enumerate(self.__head_data) if start_i <= i < end_i]
-        return head_data
+    def get_head_xz_posns(self, time_interval):
+        start_i = self.__time_to_index(time_interval[0])
+        end_i = self.__time_to_index(time_interval[1])
+        return [(head.pos[0], head.pos[2]) for i, head in enumerate(self.__head_data) if start_i <= i < end_i]
 
-    def get_touches(self, start_time, end_time):
-        touches = [touch for touch in self.__touches if start_time <= touch.timestamp < end_time]
+    def get_touches(self, time_interval):
+        touches = [touch for touch in self.__touches if time_interval[0] <= touch.timestamp < time_interval[1]]
         return touches
 
     def get_viewpoints(self, time_interval):
