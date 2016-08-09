@@ -87,15 +87,6 @@ class VisPanel(avg.DivNode):
                     parent=self._grid_div)
                 self._y_grid.append(node)
 
-    def _create_color_map(self, start_color, end_color, steps):
-        color_map = []
-        opacity_map = []
-        for i in xrange(steps):
-            color = avg.Color.mix(end_color, start_color, float(i) / steps)
-            color_map.append(str(color))
-            opacity_map.append(float(i) / steps)
-        return color_map, opacity_map
-
 
 class AxisNode(avg.DivNode):
 

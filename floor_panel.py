@@ -28,15 +28,14 @@ class FloorPanel(vis_panel.VisPanel):
 
         self.__heatmap_nodes = []
         for user in self.__users:
-            color = vis_params.get_user_color(user.userid)
+            color = str(vis_params.get_user_color(user.userid))
 
-            color_map, opacity_map = self._create_color_map("000000", color, 64)
             node = heatmap.HeatMapNode(size=self._data_div.size,
                     viewportrangemin=(pos_range[0][0], -0.5),
                     viewportrangemax=(pos_range[1][0], 2.5),
-                    mapsize=(64,32), valuerangemin=0, valuerangemax=6,
-                    colormap=color_map, opacitymap=opacity_map, blendmode="add", parent=self._data_div)
-            node.setEffect(avg.BlurFXNode(radius=1))
+                    mapsize=(50,25), valuerangemin=0, valuerangemax=6,
+                    colormap=(color, color), opacitymap=(0,1), blendmode="add", parent=self._data_div)
+            node.setEffect(avg.BlurFXNode(radius=1.2))
             self.__heatmap_nodes.append(node)
 
     def _update_time(self, vis_params):
@@ -58,7 +57,9 @@ class FloorPanel(vis_panel.VisPanel):
             self.__user_nodes.append(node)
 
     def __show_user_heatmap(self, time_interval):
+        val_max = 6 * ((time_interval[1] - time_interval[0]) / 60.)
         for i, user in enumerate(self.__users):
+            self.__heatmap_nodes[i].valuerangemax = val_max
             if self._vis_params.get_user_visible(i):
                 head_data = user.get_head_data(time_interval[0], time_interval[1])
                 head_posns = [(head.pos[0], head.pos[2]) for head in head_data]

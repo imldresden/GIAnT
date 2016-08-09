@@ -38,14 +38,13 @@ class WallPanel(vis_panel.VisPanel):
         self.__plot_nodes = []
         self.__heatmap_nodes = []
         for user in self.__users:
-            color = vis_params.get_user_color(user.userid)
+            color = str(vis_params.get_user_color(user.userid))
 
-            color_map, opacity_map = self._create_color_map("000000", color, 64)
             node = heatmap.HeatMapNode(size=self.__plot_div.size,
                     viewportrangemin=(pat_model.x_wall_range[0], pat_model.y_wall_range[0]),
                     viewportrangemax=(pat_model.x_wall_range[1], pat_model.y_wall_range[1]),
-                    mapsize=(64,32), valuerangemin=0, valuerangemax=8,
-                    colormap=color_map, opacitymap=opacity_map, blendmode="add", parent=self.__plot_div)
+                    mapsize=(50,25), valuerangemin=0, valuerangemax=8,
+                    colormap=(color, color), opacitymap=(0,1), blendmode="add", parent=self.__plot_div)
             node.setEffect(avg.BlurFXNode(radius=1))
             self.__heatmap_nodes.append(node)
 
@@ -79,9 +78,9 @@ class WallPanel(vis_panel.VisPanel):
                 self.__plot_nodes[i].setPosns([])
 
     def __show_viewpoints(self, time_interval):
-        val_max = 16* ((time_interval[1] - time_interval[0])/60.)
+        val_max = 8 * ((time_interval[1] - time_interval[0])/60.)
         for i, user in enumerate(self.__users):
-#            self.__heatmap_nodes[i].valuerangemax = val_max
+            self.__heatmap_nodes[i].valuerangemax = val_max
             if self._vis_params.get_user_visible(i):
                 viewpoints = user.get_viewpoints(time_interval)
                 self.__heatmap_nodes[i].setPosns(viewpoints)
