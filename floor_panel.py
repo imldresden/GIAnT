@@ -45,15 +45,13 @@ class FloorPanel(vis_panel.VisPanel):
     def __show_users(self, time):
         vis_panel.unlink_node_list(self.__user_nodes)
         self.__user_nodes = []
-        wall_y = self._y_axis.value_to_pixel(0)
 
         for i, user in enumerate(self.__users):
             pos = user.get_head_position(time)
             pixel_pos = avg.Point2D(self._x_axis.value_to_pixel(pos[0]), self._y_axis.value_to_pixel(pos[2]))
             viewpt = (self._x_axis.value_to_pixel(user.get_viewpoint(time).x),
                     self._y_axis.value_to_pixel(0))
-            node = UserNode(user.userid, pos=pixel_pos, wall_y=wall_y, viewpt=viewpt,
-                    parent=self._data_div)
+            node = UserNode(user.userid, pos=pixel_pos, viewpt=viewpt, parent=self._data_div)
             self.__user_nodes.append(node)
 
     def __show_user_heatmap(self, time_interval):
@@ -78,7 +76,7 @@ class FloorPanel(vis_panel.VisPanel):
 
 class UserNode(avg.DivNode):
 
-    def __init__(self, userid, pos, wall_y, viewpt, parent, **kwargs):
+    def __init__(self, userid, pos, viewpt, parent, **kwargs):
         super(UserNode, self).__init__(**kwargs)
         self.registerInstance(self, parent)
 
