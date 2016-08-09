@@ -171,6 +171,9 @@ class User(object):
                                      " GROUP BY time ORDER BY time;", True)
         self.__touches = [Touch.from_list(session, touch_list) for touch_list in touch_data_list]
 
+        self.__cached_index_interval = (0,0)
+        self.__cache_time_interval((0, self.__duration))
+
     def get_num_states(self):
         return len(self.__head_data)
 
@@ -196,18 +199,16 @@ class User(object):
         return head_position
 
     def get_head_xz_posns(self, time_interval):
-        start_i = self.__time_to_index(time_interval[0])
-        end_i = self.__time_to_index(time_interval[1])
-        return [(head.pos[0], head.pos[2]) for i, head in enumerate(self.__head_data) if start_i <= i < end_i]
+        self.__cache_time_interval(time_interval)
+        return [(head.pos[0], head.pos[2]) for head in self.__head_cache]
 
     def get_touches(self, time_interval):
         touches = [touch for touch in self.__touches if time_interval[0] <= touch.timestamp < time_interval[1]]
         return touches
 
     def get_viewpoints(self, time_interval):
-        start_i = self.__time_to_index(time_interval[0])
-        end_i = self.__time_to_index(time_interval[1])
-        viewpoints = [head.wall_viewpoint for i, head in enumerate(self.__head_data) if start_i <= i < end_i]
+        self.__cache_time_interval(time_interval)
+        viewpoints = [head.wall_viewpoint for head in self.__head_cache]
         return viewpoints
 
     def get_view_point_averaged(self, cur_time, smoothness):
@@ -222,6 +223,13 @@ class User(object):
         view_point = [(integral[i + count][0] - integral[i][0]) / count,
                       (integral[i + count][1] - integral[i][1]) / count]
         return view_point
+
+    def __cache_time_interval(self, time_interval):
+        index_interval = self.__time_to_index(time_interval[0]),  self.__time_to_index(time_interval[1])
+        if index_interval != self.__cached_index_interval:
+            self.__cached_index_interval = index_interval
+            self.__head_cache = [head for i, head in enumerate(self.__head_data)
+                    if index_interval[0] <= i < index_interval[1]]
 
     def __time_to_index(self, t):
         return int(t * len(self.__head_data) / self.__duration)
