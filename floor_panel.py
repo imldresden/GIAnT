@@ -28,7 +28,7 @@ class FloorPanel(vis_panel.VisPanel):
 
         self.__heatmap_nodes = []
         for user in self.__users:
-            color = str(vis_params.get_user_color(user.userid))
+            color = str(vis_params.get_user_color(user.getUserID()))
 
             node = heatmap.HeatMapNode(size=self._data_div.size,
                     viewportrangemin=(pos_range[0][0], -0.5),
@@ -47,11 +47,11 @@ class FloorPanel(vis_panel.VisPanel):
         self.__user_nodes = []
 
         for i, user in enumerate(self.__users):
-            pos = user.get_head_position(time)
+            pos = user.getHeadPos(time)
             pixel_pos = avg.Point2D(self._x_axis.value_to_pixel(pos[0]), self._y_axis.value_to_pixel(pos[2]))
-            viewpt = (self._x_axis.value_to_pixel(user.get_viewpoint(time).x),
+            viewpt = (self._x_axis.value_to_pixel(user.getWallViewpoint(time).x),
                     self._y_axis.value_to_pixel(0))
-            node = UserNode(user.userid, pos=pixel_pos, viewpt=viewpt, parent=self._data_div)
+            node = UserNode(user.getUserID(), pos=pixel_pos, viewpt=viewpt, parent=self._data_div)
             self.__user_nodes.append(node)
 
     def __show_user_heatmap(self, time_interval):
@@ -59,7 +59,7 @@ class FloorPanel(vis_panel.VisPanel):
         for i, user in enumerate(self.__users):
             self.__heatmap_nodes[i].valuerangemax = val_max
             if self._vis_params.get_user_visible(i):
-                head_posns = user.get_head_xz_posns(time_interval)
+                head_posns = user.getHeadXZPosns(time_interval[0], time_interval[1])
                 self.__heatmap_nodes[i].setPosns(head_posns)
             else:
                 self.__heatmap_nodes[i].setPosns([])

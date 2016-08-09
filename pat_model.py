@@ -29,15 +29,6 @@ def execute_qry(qry, do_fetch=False):
         return data
 
 
-# Converts time from csv format to float seconds since 1970.
-def csvtime_to_float(date, csv_time):
-    time_str = date + " " + csv_time
-    (time_str, millisecs_str) = time_str.split(".")
-    time_struct = time.strptime(time_str, "%Y-%m-%d %H:%M:%S")
-    millisecs = int(millisecs_str)
-    return time.mktime(time_struct) + float(millisecs) / 1000
-
-
 def line_plane_intersect(line_pt, line_dir, plane_pt, plane_normal):
     line_pt = pyglm.vec3(line_pt)
     line_dir = pyglm.vec3(line_dir)
@@ -50,7 +41,8 @@ def line_plane_intersect(line_pt, line_dir, plane_pt, plane_normal):
     else:
         return None
 
-class HeadData(object):
+
+class _HeadData(object):
     def __init__(self):
         self.userid = None
         self.pos = None
@@ -58,124 +50,26 @@ class HeadData(object):
         self.timestamp = None
         self.pos_prefix_sum = None
 
-    def as_list(self):
-        return (self.userid,
-                self.pos[0], self.pos[1], self.pos[2],
-                self.rotation[0], self.rotation[1], self.rotation[2],
-                self.timestamp,
-                self.pos_prefix_sum[0], self.pos_prefix_sum[1], self.pos_prefix_sum[2])
-
-    def calc_sums(self, prev_data):
-        if prev_data:
-            self.pos_prefix_sum = (
-                prev_data.pos_prefix_sum[0] + self.pos[0],
-                prev_data.pos_prefix_sum[1] + self.pos[1],
-                prev_data.pos_prefix_sum[2] + self.pos[2])
-        else:
-            self.pos_prefix_sum = self.pos
-
-    def calc_wall_viewpoint(self):
-        yaw_quat = pyglm.quat.fromAxisAngle((0,1,0), self.rotation[0])
-        pitch_quat = pyglm.quat.fromAxisAngle((1,0,0), self.rotation[1])
-        roll_quat = pyglm.quat.fromAxisAngle((0,0,1), self.rotation[2])
-        q = yaw_quat * pitch_quat * roll_quat
-        head_dir = q*pyglm.vec3(0,0,1)
-
-        viewpt3d = line_plane_intersect(self.pos, head_dir, (0,0,0), (0,0,1))
-        if viewpt3d is not None:
-            self.wall_viewpoint = avg.Point2D(viewpt3d.x, viewpt3d.y)
-        else:
-            self.wall_viewpoint = avg.Point2D(0,0)
-
-    @classmethod
-    def from_csv(cls, csv_record, date):
-        head_data = HeadData()
-        head_data.timestamp = csvtime_to_float(date, csv_record[0])
-        head_data.userid = eval(csv_record[1])-1
-        head_data.pos = list(eval(csv_record[2]))
-        # pos is in Meters, origin is lower left corner of the wall.
-        # In the CSV file:
-        #   If facing the wall, x points left, y up, z into the wall
-        # In the DB:
-        #   If facing the wall, x points right, y up, z away from the wall
-        head_data.pos[0] = -head_data.pos[0]
-        head_data.pos[2] = -head_data.pos[2]
-        # Rotation is yaw, pitch, roll, origin is facing wall.
-        head_data.rotation = eval(csv_record[3])
-        return head_data
-
-    @classmethod
-    def from_list(cls, head_list, pitch_offset):
-        head_data = HeadData()
-        head_data.userid = head_list[0]
-        head_data.pos = head_list[1], head_list[2], head_list[3]
-        head_data.rotation = head_list[4], head_list[5]+pitch_offset, head_list[6]
-        head_data.timestamp = head_list[7]
-        head_data.pos_prefix_sum = head_list[8], head_list[9], head_list[10]
-        head_data.calc_wall_viewpoint()
-        return head_data
-
-    @classmethod
-    def create_interpolated(cls, data1, data2, cur_time):
-
-        def interpolate(x1, x2, ratio):
-            return x1 * ratio + x2 * (1 - ratio)
-
-        if data1 is None:
-            return data2
-        else:
-            part = (cur_time - data1.timestamp) / (data2.timestamp - data1.timestamp)
-            assert(data1.userid == data2.userid)
-            head_data = HeadData()
-            head_data.timestamp = cur_time
-            head_data.userid = data1.userid
-            head_data.pos = [interpolate(data1.pos[0], data2.pos[0], part),
-                    interpolate(data1.pos[1], data2.pos[1], part),
-                    interpolate(data1.pos[2], data2.pos[2], part)]
-            head_data.rotation = [interpolate(data1.rotation[0], data2.rotation[0], part),
-                    interpolate(data1.rotation[1], data2.rotation[1], part),
-                    interpolate(data1.rotation[2], data2.rotation[2], part)]
-            return head_data
+        self.xz_pos = None    # Optimized access.
 
 
-class Touch(object):
-    def __init__(self):
-        self.userid = None
-        self.pos = avg.Point2D()
-        self.timestamp = None
-        self.duration = None
-
-
-    @classmethod
-    def from_list(cls, session, touch_list):
-        touch = Touch()
-        touch.userid = touch_list[0]
-        touch.pos = avg.Point2D(touch_list[1], touch_list[2])
-        touch.timestamp = touch_list[3] - session.start_time
-        touch.duration = touch_list[4]
-        return touch
-
-
-class User(object):
+class _User(object):
     def __init__(self, session, userid, pitch_offset):
         self.userid = userid
         self.__duration = session.duration
 
+        self.__head_data = []
         head_data_list = execute_qry("SELECT user, x, y, z, pitch, yaw, roll, time, x_sum, y_sum, z_sum "
                           "FROM head WHERE user = " + str(userid) +
                           " GROUP BY time ORDER BY time;", True)
-        self.__head_data = [HeadData.from_list(head_list, pitch_offset) for head_list in head_data_list]
+        for head_list in head_data_list:
+            head_data = self.__head_data_from_list(head_list, pitch_offset)
+            self.__head_data.append(head_data)
 
         touch_data_list = execute_qry("SELECT user, x, y, time, duration "
                                      "FROM touch WHERE user = " + str(userid) +
                                      " GROUP BY time ORDER BY time;", True)
-        self.__touches = [Touch.from_list(session, touch_list) for touch_list in touch_data_list]
-
-        self.__cached_index_interval = (0,0)
-        self.__cache_time_interval((0, self.__duration))
-
-    def get_num_states(self):
-        return len(self.__head_data)
+        self.__touches = [self.__touch_data_from_list(session, touch_list) for touch_list in touch_data_list]
 
     def get_viewpoint(self, cur_time):
         i = self.__time_to_index(cur_time)
@@ -200,7 +94,7 @@ class User(object):
 
     def get_head_xz_posns(self, time_interval):
         self.__cache_time_interval(time_interval)
-        return [(head.pos[0], head.pos[2]) for head in self.__head_cache]
+        return [head.xz_pos for head in self.__head_cache]
 
     def get_touches(self, time_interval):
         touches = [touch for touch in self.__touches if time_interval[0] <= touch.timestamp < time_interval[1]]
@@ -210,19 +104,6 @@ class User(object):
         self.__cache_time_interval(time_interval)
         viewpoints = [head.wall_viewpoint for head in self.__head_cache]
         return viewpoints
-
-    def get_view_point_averaged(self, cur_time, smoothness):
-        # TODO: Unused, untested
-        i = self.__time_to_index(cur_time)
-        count = min(smoothness, len(self.__viewpoints_integral) - i - 1)
-        integral = self.__viewpoints_integral
-        if count <= 0:
-            count = 1
-        i = min(max(0, i), len(integral) - count - 1)
-
-        view_point = [(integral[i + count][0] - integral[i][0]) / count,
-                      (integral[i + count][1] - integral[i][1]) / count]
-        return view_point
 
     def __cache_time_interval(self, time_interval):
         index_interval = self.__time_to_index(time_interval[0]),  self.__time_to_index(time_interval[1])
@@ -244,17 +125,20 @@ class Session(object):
         self.video_filename = video_filename
         self.date = date
         self.num_users = num_users
+        self.user_pitch_offsets = user_pitch_offsets
 
         time_str = date + " " + video_start_time
         time_struct = time.strptime(time_str, "%Y-%m-%d %H:%M:%S")
         self.video_start_time = time.mktime(time_struct) + video_time_offset
 
+
+    def load_from_db(self):
         self.start_time = execute_qry("SELECT min(time) FROM head;", True)[0][0]
         self.duration = execute_qry("SELECT max(time) FROM head;", True)[0][0] - self.start_time
 
         self.__users = []
-        for userid in range(0, num_users):
-            self.__users.append(User(self, userid, user_pitch_offsets[userid]))
+        for userid in range(0, self.num_users):
+            self.__users.append(self.__create_user(userid))
 
     def get_video_time_offset(self):
         return self.start_time - self.video_start_time
@@ -262,6 +146,57 @@ class Session(object):
     @property
     def users(self):
         return self.__users
+
+    def __create_user(self, userid):
+        user = plots.User(userid, self.duration)
+        pitch_offset = self.user_pitch_offsets[userid]
+
+        head_data_list = execute_qry("SELECT user, x, y, z, pitch, yaw, roll, time, x_sum, y_sum, z_sum "
+                          "FROM head WHERE user = " + str(userid) +
+                          " GROUP BY time ORDER BY time;", True)
+        for head_list in head_data_list:
+            head_data = self.__head_data_from_list(head_list, pitch_offset)
+            user.addHeadData(head_data)
+
+        touch_data_list = execute_qry("SELECT user, x, y, time, duration "
+                                     "FROM touch WHERE user = " + str(userid) +
+                                     " GROUP BY time ORDER BY time;", True)
+        for touch_list in touch_data_list:
+            touch = self.__touch_data_from_list(self, touch_list)
+            user.addTouch(touch)
+        return user
+
+    def __head_data_from_list(self, head_list, pitch_offset):
+
+        def calc_wall_viewpoint(head_data):
+            yaw_quat = pyglm.quat.fromAxisAngle((0, 1, 0), head_data.rot[0])
+            pitch_quat = pyglm.quat.fromAxisAngle((1, 0, 0), head_data.rot[1])
+            roll_quat = pyglm.quat.fromAxisAngle((0, 0, 1), head_data.rot[2])
+            q = yaw_quat * pitch_quat * roll_quat
+            head_dir = q * pyglm.vec3(0, 0, 1)
+
+            viewpt3d = line_plane_intersect(head_data.pos, head_dir, (0, 0, 0), (0, 0, 1))
+            if viewpt3d is not None:
+                head_data.setWallViewpoint(avg.Point2D(viewpt3d.x, viewpt3d.y))
+            else:
+                head_data.setWallViewpoint(avg.Point2D(0, 0))
+
+        userid = head_list[0]
+        pos = head_list[1], head_list[2], head_list[3]
+        rot = head_list[4], head_list[5] + pitch_offset, head_list[6]
+        timestamp = head_list[7]
+
+        head_data = plots.HeadData(userid, pos, rot, timestamp)
+        head_data.posPrefixSum = head_list[8], head_list[9], head_list[10]
+        calc_wall_viewpoint(head_data)
+        return head_data
+
+    def __touch_data_from_list(self, session, touch_list):
+        userid = touch_list[0]
+        pos = avg.Point2D(touch_list[1], touch_list[2])
+        timestamp = touch_list[3] - session.start_time
+        duration = touch_list[4]
+        return plots.Touch(userid, pos, timestamp, duration)
 
 
 def create_session():

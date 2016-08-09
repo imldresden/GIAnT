@@ -38,7 +38,7 @@ class WallPanel(vis_panel.VisPanel):
         self.__plot_nodes = []
         self.__heatmap_nodes = []
         for user in self.__users:
-            color = str(vis_params.get_user_color(user.userid))
+            color = str(vis_params.get_user_color(user.getUserID()))
 
             node = heatmap.HeatMapNode(size=self.__plot_div.size,
                     viewportrangemin=(pat_model.x_wall_range[0], pat_model.y_wall_range[0]),
@@ -71,7 +71,7 @@ class WallPanel(vis_panel.VisPanel):
     def __show_touches(self, time_interval):
         for i, user in enumerate(self.__users):
             if self._vis_params.get_user_visible(i):
-                touches = user.get_touches(time_interval)
+                touches = user.getTouches(time_interval[0], time_interval[1])
                 touch_posns = [touch.pos for touch in touches]
                 self.__plot_nodes[i].setPosns(touch_posns)
             else:
@@ -82,7 +82,7 @@ class WallPanel(vis_panel.VisPanel):
         for i, user in enumerate(self.__users):
             self.__heatmap_nodes[i].valuerangemax = val_max
             if self._vis_params.get_user_visible(i):
-                viewpoints = user.get_viewpoints(time_interval)
+                viewpoints = user.getHeadViewpoints(time_interval[0], time_interval[1])
                 self.__heatmap_nodes[i].setPosns(viewpoints)
             else:
                 self.__heatmap_nodes[i].setPosns([])

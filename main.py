@@ -19,6 +19,7 @@ class MainDiv(app.MainDiv):
 
     def onInit(self):
         self.session = pat_model.create_session()
+        self.session.load_from_db()
         self.__vis_params = vis_params.VisParams(self.session)
 #        self.elementoutlinecolor="FF0000"
 

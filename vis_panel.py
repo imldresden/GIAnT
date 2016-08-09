@@ -19,8 +19,6 @@ class VisPanel(avg.DivNode):
         if aspect is not None:
             data_div_size.y = data_div_size.x * aspect
             self.size = data_div_size + self.__axis_size
-        print aspect
-        print data_div_size
 
         # rect for background
         avg.RectNode(pos=(self.__axis_size.x, 0), size=data_div_size,

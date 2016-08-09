@@ -97,7 +97,7 @@ class MovementPanel(vis_panel.VisPanel):
                 for cur_sample_x in range(0, int(self._data_div.width), self.PIXELS_PER_SAMPLE):
                     cur_time = self.__xpos_to_time(cur_sample_x)
 
-                    head_position_averaged = user.get_head_position_averaged(cur_time, smoothness)
+                    head_position_averaged = user.getHeadPosAvg(cur_time, smoothness)
 
                     norm_x = 1 - (head_position_averaged[0] - pos_range[0][0]) / x_extent
                     norm_z = (head_position_averaged[2] - pos_range[0][2]) / y_extent
@@ -109,8 +109,8 @@ class MovementPanel(vis_panel.VisPanel):
 
                 userline = self.__user_lines[i]
                 userline.setValues(points, dists)
-                touches = user.get_touches((time_start, time_end))
-                touches_x = [self.__time_to_xpos(touch.timestamp) for touch in touches]
+                touches = user.getTouches(time_start, time_end)
+                touches_x = [self.__time_to_xpos(touch.time) for touch in touches]
                 touches_width = [touch.duration*self.__time_factor for touch in touches]
                 userline.setHighlights(touches_x, touches_width)
 
