@@ -240,12 +240,7 @@ class AxisNode(avg.DivNode):
             return "{} m".format(value)
 
         elif self.__unit is "s":  # seconds
-            ms = int((value - int(value)) * 1000 + 0.5)
-            m, s = divmod(value, 60)
-            label = "{:02d}:{:02d}".format(int(m), int(s))
-            if ms != 0:
-                label += ".{:03d}".format(ms)
-            return label
+            return format_time(value)
 
         elif self.__unit is "px": # pixels
             return ""
@@ -353,3 +348,11 @@ def r_pretty(dmin, dmax, n, time=False):
 def unlink_node_list(node_list):
     for node in node_list:
         node.unlink(True)
+
+def format_time(value, show_ms=True):
+    ms = int((value - int(value)) * 1000 + 0.5)
+    m, s = divmod(value, 60)
+    time_str = "{:02d}:{:02d}".format(int(m), int(s))
+    if show_ms and ms != 0:
+        time_str += ".{:03d}".format(ms)
+    return time_str

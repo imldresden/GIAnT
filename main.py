@@ -9,6 +9,7 @@ import wall_panel
 import floor_panel
 import video_panel
 import options_panel
+import stats_panel
 import global_values
 import pat_model
 
@@ -43,16 +44,19 @@ class MainDiv(app.MainDiv):
 
         self.timeline_panel = movement_panel.MovementPanel(pos=panel00_pos, size=panel_size,
                 session=self.session, vis_params=self.__vis_params, parent=self)
-        self.wall_panel = wall_panel.WallPanel(pos=panel10_pos, size=panel_size,
-                session=self.session, vis_params=self.__vis_params, parent=self)
-        panel11_pos = (panel_size.x + padding, self.wall_panel.height + 5)
-        self.floor_panel = floor_panel.FloorPanel(pos=panel11_pos, size=panel_size,
-                session=self.session, vis_params=self.__vis_params, parent=self)
-
         self.video = video_panel.VideoPanel(pos=panel01_pos, size=panel_size,
                 filename=self.session.data_dir + "/" + self.session.video_filename,
                 time_offset=self.session.get_video_time_offset(),
                 vis_params=self.__vis_params, parent=self)
+
+        self.wall_panel = wall_panel.WallPanel(pos=panel10_pos, size=panel_size,
+                session=self.session, vis_params=self.__vis_params, parent=self)
+        panel11_pos = avg.Point2D(panel_size.x + padding, self.wall_panel.height + 5)
+        self.floor_panel = floor_panel.FloorPanel(pos=panel11_pos, size=panel_size,
+                session=self.session, vis_params=self.__vis_params, parent=self)
+        panel12_pos = panel11_pos + (0, self.floor_panel.height + 5)
+        self.stats_panel = stats_panel.StatsPanel(pos=panel12_pos, size=panel_size,
+                session=self.session, vis_params=self.__vis_params, parent=self)
 
         options_pos = (0, self.height-menu_height)
         options_size = (self.width, menu_height)
