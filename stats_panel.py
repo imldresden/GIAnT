@@ -28,6 +28,8 @@ class StatsPanel(avg.DivNode):
         self.__dist_nodes = []
         avg.WordsNode(pos=(0, 25 + LINE_SPACING*4), text="Avg. dist from wall: ", parent=self.__data_div)
         self.__avg_dist_nodes = []
+        avg.WordsNode(pos=(0, 25 + LINE_SPACING*5), text="Number of touches: ", parent=self.__data_div)
+        self.__num_touches_nodes = []
         for col in range(4):
             col_x = COL_MARGIN+COL_WIDTH*col
             avg.WordsNode(pos=(col_x, 25 + LINE_SPACING*2), text="User "+str(col+1),
@@ -36,6 +38,8 @@ class StatsPanel(avg.DivNode):
             self.__dist_nodes.append(dist_node)
             avg_dist_node = avg.WordsNode(pos=(col_x, 25 + LINE_SPACING * 4), parent=self.__data_div)
             self.__avg_dist_nodes.append(avg_dist_node)
+            num_touches_node = avg.WordsNode(pos=(col_x, 25 + LINE_SPACING * 5), parent=self.__data_div)
+            self.__num_touches_nodes.append(num_touches_node)
 
         vis_params.subscribe(vis_params.CHANGED, self.__update)
 
@@ -51,3 +55,4 @@ class StatsPanel(avg.DivNode):
         for i, user in enumerate(self.__session.users):
             self.__dist_nodes[i].text = "{:.2f}".format(user.getDistTravelled(start_time, end_time))+" m"
             self.__avg_dist_nodes[i].text = "{:.2f}".format(user.getAvgDistFromWall(start_time, end_time))+" m"
+            self.__num_touches_nodes[i].text = str(len(user.getTouches(start_time, end_time)))
