@@ -39,6 +39,7 @@ public:
 
     glm::vec3 getHeadPosAvg(float time, int smoothness) const;
     float getDistTravelled(float startTime, float endTime) const;
+    float getAvgDistFromWall(float startTime, float endTime) const;
 
     std::vector<Touch> getTouches(float startTime, float endTime) const;
     std::vector<glm::vec2> getHeadXZPosns(float startTime, float endTime) const;

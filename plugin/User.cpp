@@ -104,7 +104,20 @@ float User::getDistTravelled(float startTime, float endTime) const
     }
     return dist;
 }
-    
+
+float User::getAvgDistFromWall(float startTime, float endTime) const
+{
+    int start_i = timeToIndex(startTime);
+    int end_i = timeToIndex(endTime);
+    float sum = 0;
+    for (int i=start_i; i<end_i; ++i) {
+        sum += m_HeadData[i].getPos().z;
+    }
+    return sum/(end_i-start_i);
+}
+
+
+
 vector<Touch> User::getTouches(float startTime, float endTime) const
 {
     vector<Touch> touches;
