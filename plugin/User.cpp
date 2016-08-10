@@ -1,5 +1,9 @@
 #include "User.h"
 
+#include "Path.h"
+
+using namespace std;
+
 Touch::Touch(int userid, const glm::vec2& pos, float time, float duration)
     : m_UserID(userid),
       m_Pos(pos),
@@ -81,25 +85,29 @@ glm::vec3 User::getHeadPosAvg(float time, int smoothness) const
 
 float User::getDistTravelled(float startTime, float endTime) const
 {
-    std::vector<glm::vec2> posns; 
     int start_i = timeToIndex(startTime);
     int end_i = timeToIndex(endTime);
+    vector<glm::vec2> origPosns;
+    for (int i=start_i; i<end_i; ++i) {
+        const HeadData& head = m_HeadData[i];
+        origPosns.push_back(glm::vec2(head.getPos().x, head.getPos().z));
+    }
+    vector<glm::vec2> posns = simplifyPath(origPosns, 0.1f);
+
     float dist = 0.0f;
-    glm::vec3 headPos = m_HeadData[0].getPos();
-    glm::vec2 pos(headPos.x, headPos.z);
+    glm::vec2 pos = origPosns[0];
     glm::vec2 oldPos;
-    for (int i=start_i+1; i<end_i; ++i) {
+    for (int i=1; i<posns.size(); ++i) {
         oldPos = pos;
-        headPos = m_HeadData[i].getPos();
-        pos = glm::vec2(headPos.x, headPos.z);
+        pos = posns[i];
         dist += glm::distance(pos, oldPos);
     }
     return dist;
 }
     
-std::vector<Touch> User::getTouches(float startTime, float endTime) const
+vector<Touch> User::getTouches(float startTime, float endTime) const
 {
-    std::vector<Touch> touches;
+    vector<Touch> touches;
     for (auto touch: m_Touches) {
         if (startTime <= touch.getTime() && touch.getTime() <= endTime) {
             touches.push_back(touch);
@@ -108,9 +116,9 @@ std::vector<Touch> User::getTouches(float startTime, float endTime) const
     return touches;
 }
 
-std::vector<glm::vec2> User::getHeadXZPosns(float startTime, float endTime) const
+vector<glm::vec2> User::getHeadXZPosns(float startTime, float endTime) const
 {
-    std::vector<glm::vec2> posns; 
+    vector<glm::vec2> posns;
     int start_i = timeToIndex(startTime);
     int end_i = timeToIndex(endTime);
     for (int i=start_i; i<end_i; ++i) {
@@ -120,9 +128,9 @@ std::vector<glm::vec2> User::getHeadXZPosns(float startTime, float endTime) cons
     return posns;
 }
 
-std::vector<glm::vec2> User::getHeadViewpoints(float startTime, float endTime) const
+vector<glm::vec2> User::getHeadViewpoints(float startTime, float endTime) const
 {
-    std::vector<glm::vec2> viewpts; 
+    vector<glm::vec2> viewpts;
     int start_i = timeToIndex(startTime);
     int end_i = timeToIndex(endTime);
     for (int i=start_i; i<end_i; ++i) {
