@@ -38,9 +38,14 @@ class FloorPanel(vis_panel.VisPanel):
             node.setEffect(avg.BlurFXNode(radius=1.2))
             self.__heatmap_nodes.append(node)
 
+        self.__time_interval = [None, None]
+
     def _update_time(self, vis_params):
         self.__show_users(vis_params.highlight_time)
-        self.__show_user_heatmap(vis_params.get_time_interval())
+        old_interval = self.__time_interval[:]
+        self.__time_interval = vis_params.get_time_interval()[:]
+        if old_interval != self.__time_interval:
+            self.__show_user_heatmap(vis_params.get_time_interval())
 
     def __show_users(self, time):
         vis_panel.unlink_node_list(self.__user_nodes)

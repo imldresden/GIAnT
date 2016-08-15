@@ -87,15 +87,15 @@ float User::getDistTravelled(float startTime, float endTime) const
 {
     int start_i = timeToIndex(startTime);
     int end_i = timeToIndex(endTime);
-    vector<glm::vec2> origPosns;
+    vector<glm::vec2> posns;
     for (int i=start_i; i<end_i; ++i) {
         const HeadData& head = m_HeadData[i];
-        origPosns.push_back(glm::vec2(head.getPos().x, head.getPos().z));
+        posns.push_back(glm::vec2(head.getPos().x, head.getPos().z));
     }
-    vector<glm::vec2> posns = simplifyPath(origPosns, 0.1f);
+//    vector<glm::vec2> posns = simplifyPath(origPosns, 0.1f);
 
     float dist = 0.0f;
-    glm::vec2 pos = origPosns[0];
+    glm::vec2 pos = posns[0];
     glm::vec2 oldPos;
     for (int i=1; i<posns.size(); ++i) {
         oldPos = pos;

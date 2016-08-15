@@ -52,9 +52,14 @@ class WallPanel(vis_panel.VisPanel):
                     color=color, parent=self.__plot_div)
             self.__plot_nodes.append(node)
 
+        self.__time_interval = [None, None]
+
     def _update_time(self, vis_params):
-        self.__show_touches(vis_params.get_time_interval())
-        self.__show_viewpoints(vis_params.get_time_interval())
+        old_interval = self.__time_interval[:]
+        self.__time_interval = vis_params.get_time_interval()[:]
+        if old_interval != self.__time_interval:
+            self.__show_touches(self.__time_interval)
+            self.__show_viewpoints(self.__time_interval)
 
     def __create_display_borders(self):
         parent = self.__plot_div
