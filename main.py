@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from libavg import app, avg
+from libavg import app, avg, player
 import libavg
 import vis_params
 import movement_panel
@@ -100,4 +100,5 @@ def value_to_pixel(value, max_px, interval):
     return (value - interval[0]) / a
 
 
+player.setWindowTitle("PAT")
 app.App().run(MainDiv(), app_resolution="1500x1000")
