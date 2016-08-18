@@ -5,7 +5,7 @@ import math
 import pat_model
 import global_values
 import vis_panel
-from libavg import avg, player
+from libavg import avg, player, gesture
 
 player.loadPlugin("plots")
 
@@ -40,13 +40,16 @@ class MovementPanel(vis_panel.VisPanel):
                 pos1=(0, 0), pos2=(0, self._data_div.height), opacity=1, parent=self._data_div)
         self.__hover_id = self._data_div.subscribe(avg.Node.CURSOR_MOTION, self.__on_hover)
 
-#        self.legend = Legend(size=(250, 100), maxwidth=max_width, color=vis_params.get_user_color(-1), parent=self)
-#        self.legend.pos = (self.width - self.legend.width - 10, 10)
-
         self.__enable_time = True
         vis_params.subscribe(vis_params.IS_PLAYING, self.__on_play_pause)
 
         self._data_div.subscribe(avg.Node.MOUSE_WHEEL, self.__on_mouse_wheel)
+        self.__drag_recognizer = gesture.DragRecognizer(
+                eventNode=self,
+                detectedHandler=self.__onDragStart,
+                moveHandler=self.__onDrag,
+                upHandler=self.__onDrag
+                )
 
     def _update_time(self, vis_params):
         interval = vis_params.get_time_interval()
@@ -129,6 +132,19 @@ class MovementPanel(vis_panel.VisPanel):
             rel_pos = self._data_div.getRelPos(event.pos)
             self._vis_params.highlight_time = self.__xpos_to_time(rel_pos.x)
             self._vis_params.notify()
+
+    def __onDragStart(self):
+        self.__drag_start_interval = self._vis_params.get_time_interval()
+
+    def __onDrag(self, offset):
+        time_change = offset.x/self.__time_factor
+        start = self.__drag_start_interval[0]
+        end = self.__drag_start_interval[1]
+        if start - time_change < 0:
+            time_change = start
+        if end - time_change > self.__duration:
+            time_change = end - self.__duration
+        self._vis_params.set_time_interval((start-time_change, end-time_change))
 
     def __xpos_to_time(self, x):
         return x / self.__time_factor + self._vis_params.get_time_interval()[0]
