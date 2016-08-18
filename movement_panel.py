@@ -46,9 +46,9 @@ class MovementPanel(vis_panel.VisPanel):
         self._data_div.subscribe(avg.Node.MOUSE_WHEEL, self.__on_mouse_wheel)
         self.__drag_recognizer = gesture.DragRecognizer(
                 eventNode=self,
-                detectedHandler=self.__onDragStart,
-                moveHandler=self.__onDrag,
-                upHandler=self.__onDrag
+                detectedHandler=self.__on_drag_start,
+                moveHandler=self.__on_drag,
+                upHandler=self.__on_drag
                 )
 
     def _update_time(self, vis_params):
@@ -133,10 +133,10 @@ class MovementPanel(vis_panel.VisPanel):
             self._vis_params.highlight_time = self.__xpos_to_time(rel_pos.x)
             self._vis_params.notify()
 
-    def __onDragStart(self):
+    def __on_drag_start(self):
         self.__drag_start_interval = self._vis_params.get_time_interval()
 
-    def __onDrag(self, offset):
+    def __on_drag(self, offset):
         time_change = offset.x/self.__time_factor
         start = self.__drag_start_interval[0]
         end = self.__drag_start_interval[1]
