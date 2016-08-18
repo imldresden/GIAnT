@@ -130,7 +130,7 @@ def create_session():
         data_dir="Study Data/Session 3",
         optitrack_filename="optitrack_Beginner's Village15-24_17-03-2016_log.csv",
         touch_filename="touch_Beginner's Village15-24_17-03-2016_log.csv",
-        video_filename="2016.03.17-151215.avi",
+        video_filename="2016.03.17-151215_small.mp4",
         date="2016-03-17",
         video_start_time="15:12:15",
         video_time_offset=0.3,
