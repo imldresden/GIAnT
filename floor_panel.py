@@ -76,6 +76,9 @@ class FloorPanel(vis_panel.VisPanel):
 
         avg.RectNode(pos=(x_min, y_max-16), size=(x_max - x_min, 16), fillcolor=global_values.COLOR_DARK_GREY,
                 fillopacity=1, parent=self._data_div)
+        label_pos = (x_min + (x_max-x_min)/2, y_max-18)
+        avg.WordsNode(pos=label_pos, text="WALL", fontsize=14, alignment="center",
+                parent=self._data_div)
 
 
 class UserNode(avg.DivNode):
