@@ -14,6 +14,7 @@ class OptionsPanel(libavg.DivNode):
 
         self.__vis_params = vis_params
         self.parent_div = parent        # parent node
+        self.__duration = duration
 
         # rect for coloured border and background
         self.background_rect = libavg.RectNode(pos=(0, 0), size=self.size, parent=self, strokewidth=1, fillopacity=1,
@@ -48,19 +49,21 @@ class OptionsPanel(libavg.DivNode):
 
     def __init_time_bar(self, duration):
         pos = avg.Point2D(48, 0)
-        avg.WordsNode(pos=pos, color=global_values.COLOR_FOREGROUND, text="Time range", parent=self)
+        size = avg.Point2D(self.width - pos.x - 190, 60)
+        self.__time_bar = avg.DivNode(pos=pos, size=size,  parent=self)
 
-        width = self.width - pos.x - 190
-        self.__time_bar = custom_slider.IntervalScrollBar(pos=pos+(0,23), width=width,
-                range=(0, duration), thumbExtent=duration, parent=self)
-        self.__time_bar.subscribe(custom_slider.IntervalScrollBar.THUMB_POS_CHANGED, self.__on_scroll)
+        avg.WordsNode(pos=(0,0), color=global_values.COLOR_FOREGROUND, text="Time range", parent=self.__time_bar)
 
-        self.__start_label = avg.WordsNode(pos=pos+(0,42), color=global_values.COLOR_FOREGROUND,
-                text="0:00", parent=self)
-        end_pos = avg.Point2D(self.width - 190, 42)
-        self.__end_label = avg.WordsNode(pos=end_pos, color=global_values.COLOR_FOREGROUND,
-                text=vis_panel.format_time(duration, False), alignment="right", parent=self)
+        self.__time_slider = custom_slider.IntervalScrollBar(pos=(0,23), width=size.x,
+                range=(0, duration), thumbExtent=duration, parent=self.__time_bar)
+        self.__time_slider.subscribe(custom_slider.IntervalScrollBar.THUMB_POS_CHANGED, self.__on_scroll)
 
+        self.__start_label = avg.WordsNode(pos=(0,40), color=global_values.COLOR_FOREGROUND,
+                text="0:00", parent=self.__time_bar)
+        self.__end_label = avg.WordsNode(pos=(size.x,40), color=global_values.COLOR_FOREGROUND,
+                text=vis_panel.format_time(duration, False), alignment="right", parent=self.__time_bar)
+        self.__cur_time_line = avg.LineNode(color=global_values.COLOR_WHITE,
+                sensitive=False, parent=self.__time_bar)
 
     def __init_smoothness_slider(self):
         pos = avg.Point2D(self.width - 180, 0)
@@ -80,7 +83,7 @@ class OptionsPanel(libavg.DivNode):
         # update global time interval
         delta = pos - self.__vis_params.get_time_interval()[0]
         self.__vis_params.highlight_time += delta
-        interval = pos, pos + self.__time_bar.thumbExtent
+        interval = pos, pos + self.__time_slider.thumbExtent
         self.__vis_params.set_time_interval(interval)
 
     def __play_pause(self, checked):
@@ -88,10 +91,14 @@ class OptionsPanel(libavg.DivNode):
 
     def __update_time(self, vis_params):
         interval = vis_params.get_time_interval()
-        self.__time_bar.setThumbPos(interval[0])
-        self.__time_bar.setThumbExtent(interval[1] - interval[0])
+        self.__time_slider.setThumbPos(interval[0])
+        self.__time_slider.setThumbExtent(interval[1] - interval[0])
+        cur_time = vis_params.highlight_time
+        line_x = (cur_time/self.__duration)*self.__time_slider.width
+        self.__cur_time_line.pos1 = (line_x, 23)
+        self.__cur_time_line.pos2 = (line_x, 50)
 
     def __on_play_pause(self, playing):
-        self.__time_bar.sensitive = not playing
+        self.__time_slider.sensitive = not playing
         self.play_button.checked = self.__vis_params.is_playing
 
