@@ -25,7 +25,7 @@ class MainDiv(app.MainDiv):
 #        self.elementoutlinecolor="FF0000"
 
         padding = global_values.APP_PADDING  # and padding inbetween elements of visualization
-        menu_height = 50
+        menu_height = 60
 
         margin = global_values.APP_MARGIN    # distance to all sides of application window
         self.pos = (margin, margin)

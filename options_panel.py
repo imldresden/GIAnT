@@ -3,6 +3,7 @@
 import libavg
 from libavg import widget, avg
 import custom_slider
+import vis_panel
 import global_values
 
 
@@ -53,6 +54,13 @@ class OptionsPanel(libavg.DivNode):
         self.__time_bar = custom_slider.IntervalScrollBar(pos=pos+(0,23), width=width,
                 range=(0, duration), thumbExtent=duration, parent=self)
         self.__time_bar.subscribe(custom_slider.IntervalScrollBar.THUMB_POS_CHANGED, self.__on_scroll)
+
+        self.__start_label = avg.WordsNode(pos=pos+(0,42), color=global_values.COLOR_FOREGROUND,
+                text="0:00", parent=self)
+        end_pos = avg.Point2D(self.width - 190, 42)
+        self.__end_label = avg.WordsNode(pos=end_pos, color=global_values.COLOR_FOREGROUND,
+                text=vis_panel.format_time(duration, False), alignment="right", parent=self)
+
 
     def __init_smoothness_slider(self):
         pos = avg.Point2D(self.width - 180, 0)
