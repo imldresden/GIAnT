@@ -64,6 +64,8 @@ class OptionsPanel(libavg.DivNode):
                 text=vis_panel.format_time(duration, False), alignment="right", parent=self.__time_bar)
         self.__cur_time_line = avg.LineNode(color=global_values.COLOR_WHITE,
                 sensitive=False, parent=self.__time_bar)
+        self.__cur_time_label = avg.WordsNode(pos=(size.x,0), color=global_values.COLOR_FOREGROUND, alignment="right",
+                parent=self.__time_bar)
 
     def __init_smoothness_slider(self):
         pos = avg.Point2D(self.width - 180, 0)
@@ -97,6 +99,7 @@ class OptionsPanel(libavg.DivNode):
         line_x = (cur_time/self.__duration)*self.__time_slider.width
         self.__cur_time_line.pos1 = (line_x, 23)
         self.__cur_time_line.pos2 = (line_x, 50)
+        self.__cur_time_label.text = "Current time: "+vis_panel.format_time(cur_time, False)
 
     def __on_play_pause(self, playing):
         self.__time_slider.sensitive = not playing

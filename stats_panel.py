@@ -20,8 +20,6 @@ class StatsPanel(avg.DivNode):
         self.__session = session
         self.__data_div = avg.DivNode(pos=(X_MARGIN, 0), parent=self)
 
-        self.__cur_time_node = avg.WordsNode(pos=(0,0), parent=self.__data_div)
-
         avg.WordsNode(pos=(0, 25 + LINE_SPACING*2), text="Distance travelled: ", parent=self.__data_div)
         self.__dist_nodes = []
         avg.WordsNode(pos=(0, 25 + LINE_SPACING*3), text="Avg. dist from wall: ", parent=self.__data_div)
@@ -44,8 +42,6 @@ class StatsPanel(avg.DivNode):
     def __update(self, vis_params):
         start_time = vis_params.get_time_interval()[0]
         end_time = vis_params.get_time_interval()[1]
-        cur_time = vis_params.highlight_time
-        self.__cur_time_node.text = "Current time: " + vis_panel.format_time(cur_time)
 
         for i, user in enumerate(self.__session.users):
             self.__dist_nodes[i].text = "{:.2f}".format(user.getDistTravelled(start_time, end_time))+" m"
