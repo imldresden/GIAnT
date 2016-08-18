@@ -4,6 +4,7 @@ import libavg
 from libavg import avg, player
 import global_values
 
+LEFT_MARGIN = 60
 
 class VideoPanel(avg.DivNode):
     def __init__(self, filename, vis_params, time_offset, parent=None, **kwargs):
@@ -11,12 +12,12 @@ class VideoPanel(avg.DivNode):
         self.registerInstance(self, parent)
 
         self.path = filename
-        size = self.size
+        size = self.size - (LEFT_MARGIN,0)
         if size[0] / size[1] > 16.0 / 9.0:
             vid_size = (size[1] * 16.0 / 9.0, size[1])
         else:
             vid_size = (size[0], size[0] * 9.0 / 16.0)
-        vid_pos = (size - vid_size)/2
+        vid_pos = (LEFT_MARGIN,0) # (size - vid_size)/2
         self.__time_offset = time_offset
 
         self.__vis_params = vis_params
