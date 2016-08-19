@@ -2,6 +2,7 @@
 
 import math
 
+import helper
 import pat_model
 import global_values
 import vis_panel
@@ -48,7 +49,7 @@ class FloorPanel(vis_panel.VisPanel):
             self.__show_user_heatmap(vis_params.get_time_interval())
 
     def __show_users(self, time):
-        vis_panel.unlink_node_list(self.__user_nodes)
+        helper.unlink_node_list(self.__user_nodes)
         self.__user_nodes = []
 
         for i, user in enumerate(self.__users):

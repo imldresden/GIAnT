@@ -3,7 +3,7 @@
 import libavg
 from libavg import widget, avg
 import custom_slider
-import vis_panel
+import helper
 import global_values
 
 
@@ -61,7 +61,7 @@ class OptionsPanel(libavg.DivNode):
         self.__start_label = avg.WordsNode(pos=(0,40), color=global_values.COLOR_FOREGROUND,
                 text="0:00", parent=self.__time_bar)
         self.__end_label = avg.WordsNode(pos=(size.x,40), color=global_values.COLOR_FOREGROUND,
-                text=vis_panel.format_time(duration, False), alignment="right", parent=self.__time_bar)
+                text=helper.format_time(duration, False), alignment="right", parent=self.__time_bar)
         self.__cur_time_line = avg.LineNode(color=global_values.COLOR_WHITE,
                 sensitive=False, parent=self.__time_bar)
         self.__cur_time_label = avg.WordsNode(pos=(size.x,0), color=global_values.COLOR_FOREGROUND, alignment="right",
@@ -99,7 +99,7 @@ class OptionsPanel(libavg.DivNode):
         line_x = (cur_time/self.__duration)*self.__time_slider.width
         self.__cur_time_line.pos1 = (line_x, 23)
         self.__cur_time_line.pos2 = (line_x, 50)
-        self.__cur_time_label.text = "Current time: "+vis_panel.format_time(cur_time, False)
+        self.__cur_time_label.text = "Current time: " + helper.format_time(cur_time, False)
 
     def __on_play_pause(self, playing):
         self.__time_slider.sensitive = not playing

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
-import vis_panel
+import helper
+import global_values
 
 from libavg import avg, player
 
@@ -18,32 +18,97 @@ class StatsPanel(avg.DivNode):
         self.registerInstance(self, parent)
 
         self.__session = session
-        self.__data_div = avg.DivNode(pos=(X_MARGIN, 0), parent=self)
-
-        avg.WordsNode(pos=(0, 25 + LINE_SPACING*2), text="Distance travelled: ", parent=self.__data_div)
-        self.__dist_nodes = []
-        avg.WordsNode(pos=(0, 25 + LINE_SPACING*3), text="Avg. dist from wall: ", parent=self.__data_div)
-        self.__avg_dist_nodes = []
-        avg.WordsNode(pos=(0, 25 + LINE_SPACING*4), text="Number of touches: ", parent=self.__data_div)
-        self.__num_touches_nodes = []
-        for col in range(4):
-            col_x = COL_MARGIN+COL_WIDTH*col
-            avg.WordsNode(pos=(col_x, 25 + LINE_SPACING), text="User "+str(col+1),
-                    color=vis_params.get_user_color(col), parent=self.__data_div)
-            dist_node = avg.WordsNode(pos=(col_x, 25+LINE_SPACING*2), parent=self.__data_div)
-            self.__dist_nodes.append(dist_node)
-            avg_dist_node = avg.WordsNode(pos=(col_x, 25 + LINE_SPACING * 3), parent=self.__data_div)
-            self.__avg_dist_nodes.append(avg_dist_node)
-            num_touches_node = avg.WordsNode(pos=(col_x, 25 + LINE_SPACING * 4), parent=self.__data_div)
-            self.__num_touches_nodes.append(num_touches_node)
-
+        colors = [vis_params.get_user_color(i) for i in range(4)]
+        self.__plot = ParallelCoordPlotNode(size=self.size, obj_colors=colors,
+                attrib_names = ["Dist travelled", "Avg. dist from wall", "Num Touches"],
+                parent=self
+        )
         vis_params.subscribe(vis_params.CHANGED, self.__update)
+
 
     def __update(self, vis_params):
         start_time = vis_params.get_time_interval()[0]
         end_time = vis_params.get_time_interval()[1]
 
-        for i, user in enumerate(self.__session.users):
-            self.__dist_nodes[i].text = "{:.2f}".format(user.getDistTravelled(start_time, end_time))+" m"
-            self.__avg_dist_nodes[i].text = "{:.2f}".format(user.getAvgDistFromWall(start_time, end_time))+" m"
-            self.__num_touches_nodes[i].text = str(len(user.getTouches(start_time, end_time)))
+        dist_travelled = []
+        dist_from_wall = []
+        num_touches = []
+        for user in self.__session.users:
+            dist_travelled.append(user.getDistTravelled(start_time, end_time))
+            dist_from_wall.append(user.getAvgDistFromWall(start_time, end_time))
+            num_touches.append(len(user.getTouches(start_time, end_time)))
+        for i, attr in enumerate((dist_travelled, dist_from_wall, num_touches)):
+            range = min(attr), max(attr)
+            self.__plot.set_attr_vals(i, attr, range)
+
+        self.__plot.update()
+
+
+class ParallelCoordPlotAttrib:
+
+    def __init__(self, name):
+        self.name = name
+
+        self.min = 0
+        self.max = 0
+        self.vals = []
+
+
+class ParallelCoordPlotNode(avg.DivNode):
+
+    MARGIN = (50,20)
+
+    def __init__(self, obj_colors, attrib_names, parent, **kwargs):
+        super(ParallelCoordPlotNode, self).__init__(**kwargs)
+        self.registerInstance(self, parent)
+
+        self.__obj_colors = obj_colors
+        self.__num_objs = len(obj_colors)
+        self.__attribs = []
+        for name in attrib_names:
+            self.__attribs.append(ParallelCoordPlotAttrib(name))
+
+        self.__axis_nodes = []
+        self.__attrib_nodes = []
+
+    def set_attr_vals(self, i, vals, range):
+        assert (self.__num_objs == len(vals))
+        self.__attribs[i].vals = vals
+        self.__attribs[i].min = range[0]
+        self.__attribs[i].max = range[1]
+
+    def update(self):
+        helper.unlink_node_list(self.__axis_nodes)
+        self.__axis_nodes = []
+        helper.unlink_node_list(self.__attrib_nodes)
+        self.__attrib_nodes = []
+
+        width_per_attr = (self.width - self.MARGIN[0] * 2) / (len(self.__attribs) - 1)
+        axis_x_pos = [i*width_per_attr + self.MARGIN[0] for i in range(len(self.__attribs))]
+
+        # axes
+        for i in range(len(self.__attribs)):
+            x_pos = axis_x_pos[i]
+            axis_node = avg.DivNode(pos=(x_pos, 0), parent=self)
+            avg.LineNode(pos1=(0,self.MARGIN[1]*2), pos2=(0,self.height-self.MARGIN[1]),
+                    color=global_values.COLOR_FOREGROUND, parent=axis_node)
+
+            attrib = self.__attribs[i]
+            avg.WordsNode(pos=(0, 0), alignment="center", text=attrib.name, parent=axis_node)
+            avg.WordsNode(pos=(0,self.MARGIN[1]), alignment="center", text=str(attrib.min), parent=axis_node)
+            avg.WordsNode(pos=(0,self.height-self.MARGIN[1]), alignment="center", text=str(attrib.max), parent=axis_node)
+            self.__axis_nodes.append(axis_node)
+
+        axis_height = self.height - self.MARGIN[1]*3
+
+        # value polylines
+        for i in range(self.__num_objs):
+            color = self.__obj_colors[i]
+            posns = []
+            for j, attrib in enumerate(self.__attribs):
+                val = attrib.vals[i]
+                rel_y_pos = (val-attrib.min) / (attrib.max-attrib.min)
+                y_pos = rel_y_pos * axis_height + self.MARGIN[1]*2
+                posns.append((axis_x_pos[j], y_pos))
+            polyline = avg.PolyLineNode(pos=posns, color=color, parent=self)
+            self.__attrib_nodes.append(polyline)

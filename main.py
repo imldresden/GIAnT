@@ -55,7 +55,7 @@ class MainDiv(app.MainDiv):
         self.floor_panel = floor_panel.FloorPanel(pos=panel11_pos, size=panel_size,
                 session=self.session, vis_params=self.__vis_params, parent=self)
         panel12_pos = panel11_pos + (0, self.floor_panel.height + 5)
-        self.stats_panel = stats_panel.StatsPanel(pos=panel12_pos, size=panel_size,
+        self.stats_panel = stats_panel.StatsPanel(pos=panel12_pos, size=(panel_size.x, vis_area_size.y - panel12_pos.y),
                 session=self.session, vis_params=self.__vis_params, parent=self)
 
         options_pos = (0, self.height-menu_height)

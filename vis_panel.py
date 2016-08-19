@@ -2,9 +2,10 @@
 import math
 
 import libavg
+from libavg import avg
 
 import global_values
-from libavg import avg
+import helper
 
 
 class VisPanel(avg.DivNode):
@@ -62,7 +63,7 @@ class VisPanel(avg.DivNode):
 
     def _update_grid(self):
         # Horizontal
-        unlink_node_list(self._x_grid)
+        helper.unlink_node_list(self._x_grid)
         self._x_grid = []
 
         if self._x_axis:
@@ -74,7 +75,7 @@ class VisPanel(avg.DivNode):
                 self._x_grid.append(node)
 
         # Vertical
-        unlink_node_list(self._y_grid)
+        helper.unlink_node_list(self._y_grid)
         self._y_grid = []
 
         if self._y_axis:
@@ -160,11 +161,11 @@ class AxisNode(avg.DivNode):
         """
         draw each tick and the corresponding tick label on the position at the axis line
         """
-        unlink_node_list(self.__ticks)
+        helper.unlink_node_list(self.__ticks)
         self.__ticks = [None] * len(self.__label_pos)
 
         # delete old axis labels
-        unlink_node_list(self.__label_nodes)
+        helper.unlink_node_list(self.__label_nodes)
         self.__label_nodes = [None] * len(self.__label_pos)
 
         # for each tick create new tick-line, value label and grid line at position on axis line
@@ -240,7 +241,7 @@ class AxisNode(avg.DivNode):
             return "{} m".format(value)
 
         elif self.__unit is "s":  # seconds
-            return format_time(value)
+            return helper.format_time(value)
 
         elif self.__unit is "px": # pixels
             return ""
@@ -344,15 +345,3 @@ def r_pretty(dmin, dmax, n, time=False):
     if res[-1] > dmax:
         res[-1] = dmax
     return res
-
-def unlink_node_list(node_list):
-    for node in node_list:
-        node.unlink(True)
-
-def format_time(value, show_ms=True):
-    ms = int((value - int(value)) * 1000 + 0.5)
-    m, s = divmod(value, 60)
-    time_str = "{:02d}:{:02d}".format(int(m), int(s))
-    if show_ms and ms != 0:
-        time_str += ".{:03d}".format(ms)
-    return time_str
