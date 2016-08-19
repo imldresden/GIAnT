@@ -19,7 +19,8 @@ class StatsPanel(avg.DivNode):
 
         self.__session = session
         colors = [vis_params.get_user_color(i) for i in range(4)]
-        self.__plot = ParallelCoordPlotNode(size=self.size, obj_colors=colors,
+        pos = avg.Point2D(50,0)
+        self.__plot = ParallelCoordPlotNode(pos=pos, size=self.size-pos, obj_colors=colors,
                 attrib_names = ["Dist travelled", "Avg. dist from wall", "Num Touches"],
                 parent=self
         )
@@ -95,20 +96,25 @@ class ParallelCoordPlotNode(avg.DivNode):
 
             attrib = self.__attribs[i]
             avg.WordsNode(pos=(0, 0), alignment="center", text=attrib.name, parent=axis_node)
-            avg.WordsNode(pos=(0,self.MARGIN[1]), alignment="center", text=str(attrib.min), parent=axis_node)
-            avg.WordsNode(pos=(0,self.height-self.MARGIN[1]), alignment="center", text=str(attrib.max), parent=axis_node)
+            avg.WordsNode(pos=(0,self.MARGIN[1]), alignment="center", text=self.__format_label(attrib.min),
+                    parent=axis_node)
+            avg.WordsNode(pos=(0,self.height-self.MARGIN[1]), alignment="center", text=self.__format_label(attrib.max),
+                    parent=axis_node)
             self.__axis_nodes.append(axis_node)
 
         axis_height = self.height - self.MARGIN[1]*3
 
-        # value polylines
+        # Value polylines
         for i in range(self.__num_objs):
             color = self.__obj_colors[i]
             posns = []
             for j, attrib in enumerate(self.__attribs):
-                val = attrib.vals[i]
+                val = float(attrib.vals[i])
                 rel_y_pos = (val-attrib.min) / (attrib.max-attrib.min)
                 y_pos = rel_y_pos * axis_height + self.MARGIN[1]*2
                 posns.append((axis_x_pos[j], y_pos))
             polyline = avg.PolyLineNode(pos=posns, color=color, parent=self)
             self.__attrib_nodes.append(polyline)
+
+    def __format_label(self, val):
+        return "{}".format(round(val,2))
