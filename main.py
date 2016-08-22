@@ -43,7 +43,8 @@ class MainDiv(app.MainDiv):
         panel10_pos = (panel_size.x + padding, 0)
 
         self.timeline_panel = movement_panel.MovementPanel(pos=panel00_pos, size=panel_size,
-                session=self.session, vis_params=self.__vis_params, is_dist_view=True, parent=self)
+                session=self.session, vis_params=self.__vis_params, is_dist_view=False, parent=self)
+        self.__show_dist_view = False
         self.video = video_panel.VideoPanel(pos=panel01_pos, size=panel_size,
                 filename=self.session.data_dir + "/" + self.session.video_filename,
                 time_offset=self.session.get_video_time_offset(),
@@ -68,6 +69,7 @@ class MainDiv(app.MainDiv):
         app.keyboardmanager.bindKeyDown(keyname='Up', handler=self.zoom_in, help="Zoom in")
         app.keyboardmanager.bindKeyDown(keyname='Down', handler=self.zoom_out, help="Zoom out")
         app.keyboardmanager.bindKeyDown(keyname='Space', handler=self.play_pause, help="Play/pause")
+        app.keyboardmanager.bindKeyDown(keyname='Q', handler=self.toggle_main_panel, help="Toggle timeline panel")
         for i in range(0,4):
             app.keyboardmanager.bindKeyDown(keyname=str(i+1),
                     handler=lambda userid=i: self.toggle_user_visible(userid),
@@ -89,6 +91,16 @@ class MainDiv(app.MainDiv):
 
     def play_pause(self):
         self.__vis_params.is_playing = not self.__vis_params.is_playing
+
+    def toggle_main_panel(self):
+        self.__show_dist_view = not self.__show_dist_view
+        pos = self.timeline_panel.pos
+        size = self.timeline_panel.size
+        self.timeline_panel.unlink()
+        self.timeline_panel = movement_panel.MovementPanel(pos=pos, size=size,
+                session=self.session, vis_params=self.__vis_params, is_dist_view=self.__show_dist_view, parent=self)
+        self.__vis_params.notify()
+
 
     def toggle_user_visible(self, userid):
         is_visible = self.__vis_params.get_user_visible(userid)
