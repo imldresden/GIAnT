@@ -40,6 +40,7 @@ class StatsPanel(avg.DivNode):
         dist_travelled, dist_from_wall, num_touches = self.__get_user_data(start_time, end_time)
         for i, attr in enumerate((dist_travelled, dist_from_wall, num_touches)):
             self.__plot.set_attr_vals(i, attr)
+        self.__plot.set_objs_visible([vis_params.get_user_visible(i) for i in range(4)])
 
         self.__plot.update()
 
@@ -83,14 +84,19 @@ class ParallelCoordPlotNode(avg.DivNode):
 
         self.__axis_nodes = []
         self.__attrib_nodes = []
+        self.__is_obj_visible = [True] * 4
 
     def set_attr_vals(self, i, vals):
-        assert (self.__num_objs == len(vals))
+        assert(self.__num_objs == len(vals))
         self.__attribs[i].vals = vals
 
     def set_attr_interval(self, i, interval):
         self.__attribs[i].min = interval[0]
         self.__attribs[i].max = interval[1]
+
+    def set_objs_visible(self, is_obj_visible):
+        assert(self.__num_objs == len(is_obj_visible))
+        self.__is_obj_visible = is_obj_visible
 
     def update(self):
         helper.unlink_node_list(self.__axis_nodes)
@@ -128,6 +134,7 @@ class ParallelCoordPlotNode(avg.DivNode):
                 y_pos = rel_y_pos * axis_height + self.MARGIN[1]*2
                 posns.append((axis_x_pos[j], y_pos))
             polyline = avg.PolyLineNode(pos=posns, color=color, parent=self)
+            polyline.active = self.__is_obj_visible[i]
             self.__attrib_nodes.append(polyline)
 
     def __format_label(self, val):
