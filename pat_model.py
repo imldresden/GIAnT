@@ -9,7 +9,7 @@ player.loadPlugin("pyglm")
 
 wall_width = 4.90
 wall_height = 2.06
-pos_range = [(-0.5,0,0.5), (5.5,2.5,2.5)]  # User head position minimum and maximum
+pos_range = [[-0.5,0,0.5], [5.5,2.5,2.5]]  # User head position minimum and maximum
 max_time = 0
 time_offset = 0
 touch_range = [4*1920, 3*1080]

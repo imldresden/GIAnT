@@ -22,6 +22,7 @@ void VWLineNode::registerType()
     TypeDefinition def = TypeDefinition("vwlinenode", "vectornode", 
             ExportedObject::buildObject<VWLineNode>)
         .addArg(Arg<float>("maxwidth", 1, false, offsetof(VWLineNode, m_MaxWidth)))
+        .addArg(Arg<bool>("useopacity", true, false, offsetof(VWLineNode, m_bUseOpacity)))
         ;
     const char* allowedParentNodeNames[] = {"div", "canvas", "avg", 0};
     TypeRegistry::get()->registerType(def, allowedParentNodeNames);
@@ -163,7 +164,11 @@ float VWLineNode::getLineAngle(const glm::vec2& pt1, const glm::vec2& pt2)
 
 float VWLineNode::calcOpacity(float dist)
 {
-    return pow(1-dist, 2);
+    if (m_bUseOpacity) {
+        return pow(1-dist, 2);
+    } else {
+        return 1;
+    }
 }
 
 glm::vec2 VWLineNode::posOnLine(float x) const

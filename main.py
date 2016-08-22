@@ -43,7 +43,7 @@ class MainDiv(app.MainDiv):
         panel10_pos = (panel_size.x + padding, 0)
 
         self.timeline_panel = movement_panel.MovementPanel(pos=panel00_pos, size=panel_size,
-                session=self.session, vis_params=self.__vis_params, parent=self)
+                session=self.session, vis_params=self.__vis_params, is_dist_view=True, parent=self)
         self.video = video_panel.VideoPanel(pos=panel01_pos, size=panel_size,
                 filename=self.session.data_dir + "/" + self.session.video_filename,
                 time_offset=self.session.get_video_time_offset(),

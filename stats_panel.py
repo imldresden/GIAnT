@@ -21,9 +21,15 @@ class StatsPanel(avg.DivNode):
         colors = [vis_params.get_user_color(i) for i in range(4)]
         pos = avg.Point2D(50,0)
         self.__plot = ParallelCoordPlotNode(pos=pos, size=self.size-pos, obj_colors=colors,
-                attrib_names = ["Dist travelled", "Avg. dist from wall", "Num Touches"],
+                attrib_names = ["Movement (meters/min)", "Avg. dist from wall", "Touches/min"],
                 parent=self
         )
+        # Calc ranges
+        dist_travelled, dist_from_wall, num_touches = self.__get_user_data(0, session.duration)
+        for i, attr in enumerate((dist_travelled, dist_from_wall, num_touches)):
+            interval = 0, max(attr)*2
+            self.__plot.set_attr_interval(i, interval)
+
         vis_params.subscribe(vis_params.CHANGED, self.__update)
 
 
@@ -31,18 +37,24 @@ class StatsPanel(avg.DivNode):
         start_time = vis_params.get_time_interval()[0]
         end_time = vis_params.get_time_interval()[1]
 
+        dist_travelled, dist_from_wall, num_touches = self.__get_user_data(start_time, end_time)
+        for i, attr in enumerate((dist_travelled, dist_from_wall, num_touches)):
+            self.__plot.set_attr_vals(i, attr)
+
+        self.__plot.update()
+
+    def __get_user_data(self, start_time, end_time):
+        time_diff = (end_time - start_time)/60  # In minutes
         dist_travelled = []
         dist_from_wall = []
         num_touches = []
         for user in self.__session.users:
-            dist_travelled.append(user.getDistTravelled(start_time, end_time))
+            speed = user.getDistTravelled(start_time, end_time)/time_diff      # meters/min
+            dist_travelled.append(speed)
             dist_from_wall.append(user.getAvgDistFromWall(start_time, end_time))
-            num_touches.append(len(user.getTouches(start_time, end_time)))
-        for i, attr in enumerate((dist_travelled, dist_from_wall, num_touches)):
-            range = min(attr), max(attr)
-            self.__plot.set_attr_vals(i, attr, range)
-
-        self.__plot.update()
+            touch_freq = len(user.getTouches(start_time, end_time))/time_diff  # touches/min
+            num_touches.append(touch_freq)
+        return dist_travelled, dist_from_wall, num_touches
 
 
 class ParallelCoordPlotAttrib:
@@ -72,11 +84,13 @@ class ParallelCoordPlotNode(avg.DivNode):
         self.__axis_nodes = []
         self.__attrib_nodes = []
 
-    def set_attr_vals(self, i, vals, range):
+    def set_attr_vals(self, i, vals):
         assert (self.__num_objs == len(vals))
         self.__attribs[i].vals = vals
-        self.__attribs[i].min = range[0]
-        self.__attribs[i].max = range[1]
+
+    def set_attr_interval(self, i, interval):
+        self.__attribs[i].min = interval[0]
+        self.__attribs[i].max = interval[1]
 
     def update(self):
         helper.unlink_node_list(self.__axis_nodes)

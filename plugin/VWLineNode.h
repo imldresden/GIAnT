@@ -40,6 +40,7 @@ class VWLineNode: public avg::VectorNode
         std::vector<glm::ivec3> m_Triangles;
 
         float m_MaxWidth;
+        bool m_bUseOpacity;
 };
 
 typedef boost::shared_ptr<VWLineNode> VWLineNodePtr;

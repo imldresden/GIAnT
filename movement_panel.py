@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import math
+import copy
 
 import pat_model
 import global_values
@@ -15,23 +16,31 @@ class MovementPanel(vis_panel.VisPanel):
     PIXELS_PER_SAMPLE = 4
     MAX_SMOOTHNESS = 500
 
-    def __init__(self, session, vis_params, parent, **kwargs):
+    def __init__(self, session, vis_params, is_dist_view, parent, **kwargs):
         super(MovementPanel, self).__init__("Timeline", vis_params, (60, 25), True, parent=parent, **kwargs)
 
         self.__duration = session.duration
         self.__users = session.users
+        self.__is_dist_view = is_dist_view
 
         self.__user_lines = []
-        max_width = (min(self.width, self.height) / 12)
+        if is_dist_view:
+            max_width = 1
+            y_range = pat_model.pos_range[0][2], pat_model.pos_range[1][2]
+            label_offset = 0
+        else:
+            max_width = (min(self.width, self.height) / 12)
+            y_range = pat_model.pos_range[0][0], pat_model.pos_range[1][0]
+            label_offset = 15
         for userid in range(session.num_users):
             color = vis_params.get_user_color(userid)
-            self.__user_lines.append(plots.VWLineNode(color=color, maxwidth=max_width,
+            self.__user_lines.append(plots.VWLineNode(color=color, maxwidth=max_width, useopacity=not(is_dist_view),
                     blendmode="add", parent=self._data_div))
 
-        x_range = pat_model.pos_range[0][0], pat_model.pos_range[1][0]
-        self._create_y_axis(data_range=x_range, unit="m", hide_rims=True, label_offset=15, inverted=True)
+        self._create_y_axis(data_range=y_range, unit="m", hide_rims=True, label_offset=label_offset, inverted=True)
         self._create_x_axis(data_range=[0, session.duration], unit="s")
-        self.__create_wall_rect()
+        if not is_dist_view:
+            self.__create_wall_rect()
         self._create_data_div()
 
         self.__time_factor = self._data_div.width / vis_params.get_time_duration()
@@ -89,7 +98,10 @@ class MovementPanel(vis_panel.VisPanel):
         time_end = self.__xpos_to_time(self._data_div.width)
         smoothness = self.__calc_smoothness(vis_params.get_smoothness_factor(), time_end-time_start)
 
-        pos_range = pat_model.pos_range
+        pos_range = list(copy.deepcopy(pat_model.pos_range))
+        if self.__is_dist_view:
+            pos_range[0][2] = 0
+            pos_range[1][2] = 2.5
         x_extent = float(pos_range[1][0] - pos_range[0][0])
         y_extent = float(pos_range[1][2] - pos_range[0][2])
         vis_height = self._data_div.height
@@ -102,14 +114,16 @@ class MovementPanel(vis_panel.VisPanel):
 
                     head_position_averaged = user.getHeadPosAvg(cur_time, smoothness)
 
-                    norm_x = 1 - (head_position_averaged[0] - pos_range[0][0]) / x_extent
+                    norm_x = (head_position_averaged[0] - pos_range[0][0]) / x_extent
                     norm_z = (head_position_averaged[2] - pos_range[0][2]) / y_extent
 
-                    vis_y = norm_x * vis_height
-
+                    if self.__is_dist_view:
+                        vis_y = (1 - norm_z) * vis_height
+                        dists.append(2)
+                    else:
+                        vis_y = (1 - norm_x) * vis_height
+                        dists.append(norm_z)
                     points.append((cur_sample_x, vis_y))
-                    dists.append(norm_z)
-
                 userline = self.__user_lines[i]
                 userline.setValues(points, dists)
                 touches = user.getTouches(time_start, time_end)
