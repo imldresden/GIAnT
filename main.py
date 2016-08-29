@@ -19,7 +19,7 @@ class MainDiv(app.MainDiv):
     viewport_change_duration = 0.3
 
     def onInit(self):
-        self.session = pat_model.create_session()
+        self.session = pat_model.create_session(1)
         self.session.load_from_db()
         self.__vis_params = vis_params.VisParams(self.session)
 #        self.elementoutlinecolor="FF0000"

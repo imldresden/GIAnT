@@ -78,24 +78,11 @@ def import_optitrack(session):
         return data
 
     def head_data_to_list(head):
-        return (head.userid,
+        return (session.session_num, session.level_num, head.userid,
                 head.pos[0], head.pos[1], head.pos[2],
                 head.rot[0], head.rot[1], head.rot[2],
                 head.time,
                 head.posPrefixSum[0], head.posPrefixSum[1], head.posPrefixSum[2])
-
-    create_table("head", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
-                         "user TINYINT NOT NULL,"
-                         "x FLOAT,"
-                         "y FLOAT,"
-                         "z FLOAT,"
-                         "pitch FLOAT,"
-                         "yaw FLOAT,"
-                         "roll FLOAT,"
-                         "time FLOAT NOT NULL,"
-                         "x_sum FLOAT,"          # prefix sum for quick calculation of average positions.
-                         "y_sum FLOAT,"
-                         "z_sum FLOAT")
 
     print "Importing optitrack data:"
     print "  Reading csv"
@@ -130,7 +117,8 @@ def import_optitrack(session):
     con = sqlite3.connect("db")
     cur = con.cursor()
     cur.executemany(
-        "INSERT INTO head (user, x, y, z, pitch, yaw, roll, time, x_sum, y_sum, z_sum) VALUES (?,?,?,?,?,?,?,?,?,?,?);", db_list)
+        "INSERT INTO head (session, level, user, x, y, z, pitch, yaw, roll, time, x_sum, y_sum, z_sum) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);",
+        db_list)
     con.commit()
     con.close()
 
@@ -138,22 +126,18 @@ def import_optitrack(session):
 def import_touches(session):
     def tool_to_userid(tool):
         if tool == "Pick":
-            return 0
+            i = 0
         elif tool == "Girder":
-            return 1
+            i = 1
         elif tool == "Lantern":
-            return 2
+            i = 2
         elif tool == "Ladder":
-            return 3
+            i = 3
+        else:
+            return None
+        return session.tool_to_userid[i]
 
     print "Importing touch data:"
-    create_table("touch", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
-                         "user TINYINT NOT NULL,"
-                         "x FLOAT,"
-                         "y FLOAT,"
-                         "time FLOAT NOT NULL,"
-                         "duration FLOAT NOT NULL")
-
 
     print "  Reading csv"
     with open(session.data_dir + "/" + session.touch_filename) as f:
@@ -169,28 +153,52 @@ def import_touches(session):
         userid = tool_to_userid(data[2])
         if userid is None:
             continue
-        touch = [userid, pos[0], pos[1], timestamp, 0.03]
-        if touch[3] > last_time + 0.1:
+        touch = [session.session_num, session.level_num, userid, pos[0], pos[1], timestamp, 0.03]
+        if timestamp > last_time + 0.1:
             # New touch
             db_list.append(touch)  # prepare for upload
         else:
             # Touch continuation
-            touch[4] += touch[3] - last_time
+            touch[6] += timestamp - last_time
             db_list[-1] = touch
         last_time = touch[3]
 
     print "  Writing database"
     con = sqlite3.connect("db")
     cur = con.cursor()
-    cur.executemany("INSERT INTO touch (user, x, y, time, duration) VALUES (?,?,?,?,?);", db_list)
+    cur.executemany("INSERT INTO touch (session, level, user, x, y, time, duration) VALUES (?,?,?,?,?,?,?);", db_list)
     con.commit()
     con.close()
 
 def setup():
-    session = pat_model.create_session()
-    print "---- "+session.optitrack_filename+" ----"
-    import_optitrack(session)
-    import_touches(session)
+    create_table("head", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                         "session TINYINT NOT NULL,"
+                         "level TINYINT NOT NULL,"
+                         "user TINYINT NOT NULL,"
+                         "x FLOAT,"
+                         "y FLOAT,"
+                         "z FLOAT,"
+                         "pitch FLOAT,"
+                         "yaw FLOAT,"
+                         "roll FLOAT,"
+                         "time FLOAT NOT NULL,"
+                         "x_sum FLOAT,"          # prefix sum for quick calculation of average positions.
+                         "y_sum FLOAT,"
+                         "z_sum FLOAT")
+    create_table("touch", "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                          "session TINYINT NOT NULL,"
+                          "level TINYINT NOT NULL,"
+                          "user TINYINT NOT NULL,"
+                          "x FLOAT,"
+                          "y FLOAT,"
+                          "time FLOAT NOT NULL,"
+                          "duration FLOAT NOT NULL")
+    for i in range(2):
+        session = pat_model.create_session(i)
+        print "---- "+session.optitrack_filename+" ----"
+
+        import_optitrack(session)
+        import_touches(session)
 
 setup()
 print "Database setup complete."

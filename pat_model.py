@@ -4,6 +4,7 @@ import time
 import sqlite3
 import math
 from libavg import avg, player
+import glob, os
 
 player.loadPlugin("pyglm")
 
@@ -43,14 +44,19 @@ def line_plane_intersect(line_pt, line_dir, plane_pt, plane_normal):
 
 
 class Session(object):
-    def __init__(self, data_dir, optitrack_filename, touch_filename, video_filename, date,
-            video_start_time, video_time_offset, num_users, user_pitch_offsets):
+    def __init__(self, session_num, level_num, data_dir, optitrack_filename, touch_filename, video_filename, date,
+            video_start_time, video_time_offset, num_users, tool_to_userid, user_pitch_offsets):
+        self.session_num = session_num
+        self.level_num = level_num
         self.data_dir = data_dir
         self.optitrack_filename = optitrack_filename
         self.touch_filename = touch_filename
         self.video_filename = video_filename
         self.date = date
         self.num_users = num_users
+        self.tool_to_userid = tool_to_userid # Maps (Pick, Girder, Lantern, Ladder) to userid.
+        # user_pitch_offsets: The recorded pitch data is incorrect by a constant if the subjects didn't wear the
+        # helmet correctly.
         self.user_pitch_offsets = user_pitch_offsets
 
         time_str = date + " " + video_start_time
@@ -59,8 +65,10 @@ class Session(object):
 
 
     def load_from_db(self):
-        self.start_time = execute_qry("SELECT min(time) FROM head;", True)[0][0]
-        self.duration = execute_qry("SELECT max(time) FROM head;", True)[0][0] - self.start_time
+        self.start_time = execute_qry(
+                "SELECT min(time) FROM head WHERE "+self.__get_level_select()+";", True)[0][0]
+        self.duration = execute_qry(
+                "SELECT max(time) FROM head WHERE "+self.__get_level_select()+";", True)[0][0] - self.start_time
 
         self.__users = []
         for userid in range(0, self.num_users):
@@ -78,14 +86,14 @@ class Session(object):
         pitch_offset = self.user_pitch_offsets[userid]
 
         head_data_list = execute_qry("SELECT user, x, y, z, pitch, yaw, roll, time, x_sum, y_sum, z_sum "
-                          "FROM head WHERE user = " + str(userid) +
+                          "FROM head WHERE user = " + str(userid) + " AND " + self.__get_level_select() +
                           " GROUP BY time ORDER BY time;", True)
         for head_list in head_data_list:
             head_data = self.__head_data_from_list(head_list, pitch_offset)
             user.addHeadData(head_data)
 
         touch_data_list = execute_qry("SELECT user, x, y, time, duration "
-                                     "FROM touch WHERE user = " + str(userid) +
+                                     "FROM touch WHERE user = " + str(userid) + " AND " + self.__get_level_select() +
                                      " GROUP BY time ORDER BY time;", True)
         for touch_list in touch_data_list:
             touch = self.__touch_data_from_list(self, touch_list)
@@ -124,19 +132,32 @@ class Session(object):
         duration = touch_list[4]
         return plots.Touch(userid, pos, timestamp, duration)
 
+    def __get_level_select(self):
+        return "session=" + str(self.session_num) + " AND level=" + str(self.level_num)
 
-def create_session():
+def create_session(level):
+    data_dir = "Study Data/Session 3"
+    os.chdir(data_dir)
+    filenames = glob.glob("optitrack*")
+    os.chdir("../..")
+    optitrack_filename = filenames[level]
+    touch_filename = "touch"+optitrack_filename[9:]
+    tool_to_userid_table = [
+        (0,1,2,3),
+        (1,2,3,0)
+    ]
     return Session(
-        data_dir="Study Data/Session 3",
-        optitrack_filename="optitrack_Beginner's Village15-24_17-03-2016_log.csv",
-        touch_filename="touch_Beginner's Village15-24_17-03-2016_log.csv",
+        session_num=3,
+        level_num=level,
+        data_dir=data_dir,
+        optitrack_filename=optitrack_filename,
+        touch_filename=touch_filename,
         video_filename="2016.03.17-151215_small.mp4",
         date="2016-03-17",
         video_start_time="15:12:15",
         video_time_offset=0.3,
         num_users=4,
-        # Heuristics: The recorded pitch data is incorrect by a constant if the subjects didn't wear the
-        # helmet correctly.
+        tool_to_userid=tool_to_userid_table[level],
         user_pitch_offsets=[
                 math.pi/4,
                 math.pi/12,
