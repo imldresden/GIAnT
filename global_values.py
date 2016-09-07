@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-COLOR_FOREGROUND = "BBBBBB"                         # foreground color used for axis and text
+COLOR_FOREGROUND = "EEEEEE"                         # foreground color used for axis and text
 COLOR_SECONDARY = "888888"                          # second more faint foreground color
 COLOR_BACKGROUND = "222222"                         # background color
 COLOR_HIGHLIGHT = "FF0000"                          # distinctive highlight color

@@ -193,12 +193,13 @@ def setup():
                           "y FLOAT,"
                           "time FLOAT NOT NULL,"
                           "duration FLOAT NOT NULL")
-    for i in range(2):
-        session = pat_model.create_session(i)
-        print "---- "+session.optitrack_filename+" ----"
+    for session_num in (3,4,5):
+        for level in range(2):
+            session = pat_model.create_session(session_num, level)
+            print "---- "+session.optitrack_filename+" ----"
 
-        import_optitrack(session)
-        import_touches(session)
+            import_optitrack(session)
+            import_touches(session)
 
 setup()
 print "Database setup complete."

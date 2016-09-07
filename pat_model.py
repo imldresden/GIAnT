@@ -116,7 +116,7 @@ class Session(object):
                 head_data.setWallViewpoint(avg.Point2D(0, 0))
 
         userid = head_list[0]
-        pos = head_list[1], head_list[2], head_list[3]
+        pos = head_list[1], head_list[2]-0.2, head_list[3]
         rot = head_list[4], head_list[5] + pitch_offset, head_list[6]
         timestamp = head_list[7]
 
@@ -135,32 +135,65 @@ class Session(object):
     def __get_level_select(self):
         return "session=" + str(self.session_num) + " AND level=" + str(self.level_num)
 
-def create_session(level):
-    data_dir = "Study Data/Session 3"
+def create_session(session, level):
+    data_dir = "Study Data/Session "+str(session)
     os.chdir(data_dir)
     filenames = glob.glob("optitrack*")
     os.chdir("../..")
     optitrack_filename = filenames[level]
     touch_filename = "touch"+optitrack_filename[9:]
-    tool_to_userid_table = [
-        (0,1,2,3),
-        (1,2,3,0)
-    ]
+    user_pitch_offsets = [0,0,0,0]
+    video_time_offset = 0.0
+    if session == 3:
+        # Colors: orange, green, blue, purple
+        tool_to_userid_table = [
+            (0, 1, 2, 3),
+            (1, 2, 3, 0)
+        ]
+        if level == 0:
+            user_pitch_offsets = [
+                0,
+                math.pi / 12,
+                0.,
+                0.]
+        elif level == 1:
+            user_pitch_offsets = [
+                math.pi * 6/16,
+                math.pi * 3/16,
+                math.pi * 3/16,
+                math.pi * 3/16]
+        video_time_offset = 0.3
+        video_filename = "2016.03.17-151215_small.mp4"
+    elif session == 4:
+        tool_to_userid_table = [
+            (0, 1, 2, 3),
+            (0, 3, 2, 1)
+        ]
+        video_filename = "2016.03.17-164950.avi"
+        if level == 1:
+            video_time_offset = 5.0
+    elif session == 5:
+        tool_to_userid_table = [
+            (0, 1, 2, 3),
+            (0, 1, 2, 3)
+        ]
+        video_filename = "2016.03.18-152221.avi"
+    else:
+        assert False
+    date = video_filename[:10].replace(".","-")
+    print date
+    video_start_time = video_filename[11:13]+":"+video_filename[13:15]+":"+video_filename[15:17]
     return Session(
-        session_num=3,
+        session_num=session,
         level_num=level,
         data_dir=data_dir,
         optitrack_filename=optitrack_filename,
         touch_filename=touch_filename,
-        video_filename="2016.03.17-151215_small.mp4",
-        date="2016-03-17",
-        video_start_time="15:12:15",
-        video_time_offset=0.3,
+        video_filename=video_filename,
+        date=date,
+        video_start_time=video_start_time,
+        video_time_offset=video_time_offset,
         num_users=4,
         tool_to_userid=tool_to_userid_table[level],
-        user_pitch_offsets=[
-                math.pi/4,
-                math.pi/12,
-                0.,
-                0.]
+        user_pitch_offsets=user_pitch_offsets
     )

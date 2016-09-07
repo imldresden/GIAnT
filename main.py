@@ -19,7 +19,7 @@ class MainDiv(app.MainDiv):
     viewport_change_duration = 0.3
 
     def onInit(self):
-        self.session = pat_model.create_session(1)
+        self.session = pat_model.create_session(3,1)
         self.session.load_from_db()
         self.__vis_params = vis_params.VisParams(self.session)
 #        self.elementoutlinecolor="FF0000"
@@ -112,5 +112,5 @@ def value_to_pixel(value, max_px, interval):
     return (value - interval[0]) / a
 
 
-player.setWindowTitle("PAT")
+player.setWindowTitle("GIAnT")
 app.App().run(MainDiv(), app_resolution="1500x1000")

@@ -21,14 +21,18 @@ class StatsPanel(avg.DivNode):
         colors = [vis_params.get_user_color(i) for i in range(4)]
         pos = avg.Point2D(50,0)
         self.__plot = ParallelCoordPlotNode(pos=pos, size=self.size-pos, obj_colors=colors,
-                attrib_names = ["Movement (meters/min)", "Avg. dist from wall", "Touches/min"],
+                attrib_names = ["Movement (meters/min)", "Avg. dist from wall (meters)", "Touches/min"],
                 parent=self
         )
         # Calc ranges
         dist_travelled, dist_from_wall, num_touches = self.__get_user_data(0, session.duration)
         for i, attr in enumerate((dist_travelled, dist_from_wall, num_touches)):
             interval = 0, max(attr)*2
-            self.__plot.set_attr_interval(i, interval)
+            if i == 2:
+                is_int = True # num_touches
+            else:
+                is_int = False
+            self.__plot.set_attr_interval(i, interval, is_int)
 
         vis_params.subscribe(vis_params.CHANGED, self.__update)
 
@@ -66,6 +70,7 @@ class ParallelCoordPlotAttrib:
         self.min = 0
         self.max = 0
         self.vals = []
+        self.is_int = False
 
 
 class ParallelCoordPlotNode(avg.DivNode):
@@ -90,9 +95,10 @@ class ParallelCoordPlotNode(avg.DivNode):
         assert(self.__num_objs == len(vals))
         self.__attribs[i].vals = vals
 
-    def set_attr_interval(self, i, interval):
+    def set_attr_interval(self, i, interval, is_int):
         self.__attribs[i].min = interval[0]
         self.__attribs[i].max = interval[1]
+        self.__attribs[i].is_int = is_int
 
     def set_objs_visible(self, is_obj_visible):
         assert(self.__num_objs == len(is_obj_visible))
@@ -116,10 +122,10 @@ class ParallelCoordPlotNode(avg.DivNode):
 
             attrib = self.__attribs[i]
             avg.WordsNode(pos=(0, 0), alignment="center", text=attrib.name, parent=axis_node)
-            avg.WordsNode(pos=(0,self.MARGIN[1]), alignment="center", text=self.__format_label(attrib.min),
-                    parent=axis_node)
-            avg.WordsNode(pos=(0,self.height-self.MARGIN[1]), alignment="center", text=self.__format_label(attrib.max),
-                    parent=axis_node)
+            avg.WordsNode(pos=(0,self.MARGIN[1]), alignment="center",
+                    text=self.__format_label(attrib.min, attrib.is_int), parent=axis_node)
+            avg.WordsNode(pos=(0,self.height-self.MARGIN[1]), alignment="center",
+                    text=self.__format_label(attrib.max, attrib.is_int), parent=axis_node)
             self.__axis_nodes.append(axis_node)
 
         axis_height = self.height - self.MARGIN[1]*3
@@ -137,5 +143,8 @@ class ParallelCoordPlotNode(avg.DivNode):
             polyline.active = self.__is_obj_visible[i]
             self.__attrib_nodes.append(polyline)
 
-    def __format_label(self, val):
-        return "{}".format(round(val,2))
+    def __format_label(self, val, is_int):
+        if is_int:
+            return "{}".format(int(val))
+        else:
+            return "{}".format(round(val,2))
