@@ -38,14 +38,14 @@ class MainDiv(app.MainDiv):
         # Visualization panels
         vis_area_size = avg.Point2D(self.width, self.height - menu_height - padding)
         panel_size = avg.Point2D(vis_area_size - (padding, padding)) / 2
-        panel00_pos = (0,0)
-        panel01_pos = (0, panel_size.y + padding)
-        panel10_pos = (panel_size.x + padding, 0)
+        panel00_pos = avg.Point2D(0,0)
+        panel01_pos = avg.Point2D(0, panel_size.y + padding)
+        panel10_pos = avg.Point2D(panel_size.x + padding, 0)
 
-        self.timeline_panel = movement_panel.MovementPanel(pos=panel00_pos, size=panel_size,
+        self.timeline_panel = movement_panel.MovementPanel(pos=panel00_pos, size=panel_size + (0,40),
                 session=self.session, vis_params=self.__vis_params, is_dist_view=False, parent=self)
         self.__show_dist_view = False
-        self.video = video_panel.VideoPanel(pos=panel01_pos, size=panel_size,
+        self.video = video_panel.VideoPanel(pos=panel01_pos+(0,40), size=panel_size - (0,40),
                 filename=self.session.data_dir + "/" + self.session.video_filename,
                 time_offset=self.session.get_video_time_offset(),
                 vis_params=self.__vis_params, parent=self)

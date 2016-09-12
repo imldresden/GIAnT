@@ -19,9 +19,9 @@ class StatsPanel(avg.DivNode):
 
         self.__session = session
         colors = [vis_params.get_user_color(i) for i in range(4)]
-        pos = avg.Point2D(50,0)
+        pos = avg.Point2D(200,0)
         self.__plot = ParallelCoordPlotNode(pos=pos, size=self.size-pos, obj_colors=colors,
-                attrib_names = ["Movement (meters/min)", "Avg. dist from wall (meters)", "Touches/min"],
+                attrib_names = ["Movement<br/>(meters/min)", "Avg. dist from wall<br/>(meters)", "Touches/min"],
                 parent=self
         )
         # Calc ranges
@@ -75,7 +75,7 @@ class ParallelCoordPlotAttrib:
 
 class ParallelCoordPlotNode(avg.DivNode):
 
-    MARGIN = (50,20)
+    MARGIN = (60,20)
 
     def __init__(self, obj_colors, attrib_names, parent, **kwargs):
         super(ParallelCoordPlotNode, self).__init__(**kwargs)
@@ -117,15 +117,15 @@ class ParallelCoordPlotNode(avg.DivNode):
         for i in range(len(self.__attribs)):
             x_pos = axis_x_pos[i]
             axis_node = avg.DivNode(pos=(x_pos, 0), parent=self)
-            avg.LineNode(pos1=(0,self.MARGIN[1]*2), pos2=(0,self.height-self.MARGIN[1]),
+            avg.LineNode(pos1=(0,self.MARGIN[1]*3), pos2=(0,self.height-self.MARGIN[1]*2),
                     color=global_values.COLOR_FOREGROUND, parent=axis_node)
 
             attrib = self.__attribs[i]
             avg.WordsNode(pos=(0, 0), alignment="center", fontsize=global_values.FONT_SIZE, text=attrib.name,
-                    parent=axis_node)
-            avg.WordsNode(pos=(0,self.MARGIN[1]), alignment="center", fontsize=global_values.FONT_SIZE,
+                    linespacing=-4, parent=axis_node)
+            avg.WordsNode(pos=(0,self.MARGIN[1]*2), alignment="center", fontsize=global_values.FONT_SIZE,
                     text=self.__format_label(attrib.min, attrib.is_int), parent=axis_node)
-            avg.WordsNode(pos=(0,self.height-self.MARGIN[1]), alignment="center", fontsize=global_values.FONT_SIZE,
+            avg.WordsNode(pos=(0,self.height-self.MARGIN[1]*2), alignment="center", fontsize=global_values.FONT_SIZE,
                     text=self.__format_label(attrib.max, attrib.is_int), parent=axis_node)
             self.__axis_nodes.append(axis_node)
 
