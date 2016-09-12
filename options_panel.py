@@ -25,7 +25,7 @@ class OptionsPanel(libavg.DivNode):
         icon_size = (15, 15)
         button_size = (30, 30)
         # rect for play button border
-        self.play_rect = libavg.RectNode(pos=(0, 7), size=button_size, parent=self,
+        self.play_rect = libavg.RectNode(pos=(6, 22), size=button_size, parent=self,
                                          strokewidth=1, fillopacity=0, color=global_values.COLOR_FOREGROUND,
                                          sensitive=False)
         # play button
@@ -38,7 +38,7 @@ class OptionsPanel(libavg.DivNode):
                                                avg.ImageNode(href="images/pause.png", pos=icon_h_size, size=icon_size),
                                                checkedDownNode=
                                                avg.ImageNode(href="images/pause.png", pos=icon_h_size, size=icon_size),
-                                               pos=(0, self.play_rect.pos[1]), size=button_size, parent=self)
+                                               pos=self.play_rect.pos, size=button_size, parent=self)
         self.play_button.subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__play_pause(checked))
 
         self.__init_time_bar(duration)
@@ -48,7 +48,7 @@ class OptionsPanel(libavg.DivNode):
         self.__vis_params.subscribe(self.__vis_params.IS_PLAYING, self.__on_play_pause)
 
     def __init_time_bar(self, duration):
-        pos = avg.Point2D(48, 0)
+        pos = avg.Point2D(58, 0)
         size = avg.Point2D(self.width - pos.x - 10, 60)
         self.__time_bar = avg.DivNode(pos=pos, size=size,  parent=self)
 

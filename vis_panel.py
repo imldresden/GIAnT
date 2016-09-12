@@ -97,7 +97,7 @@ class AxisNode(avg.DivNode):
         Custom AxisNode with axis lines, grid lines and labeling.
         :param data_range: The minimum and maximum data range to be displayed
         :param unit: Unit of measurement (time: ms, length: cm)
-        :param hide_rims: Hides first and last ticks if True
+        :param hide_rims: Hides first tick if True
         :param top_axis: Determines if a slimmed x-axis should be displayed at the top instead of the bottom
         :param inverted: If True, values on axis are displayed inverted
         """
@@ -144,8 +144,8 @@ class AxisNode(avg.DivNode):
             is_time = (self.__unit is "s")
             self.__tick_positions = r_pretty(dmin=start, dmax=end, n=5, time=is_time)
             # delete first and last tick except it is min or max of data range
+            self.__tick_positions.pop(len(self.__tick_positions) - 1)
             if self.__hide_rims:
-                self.__tick_positions.pop(len(self.__tick_positions) - 1)
                 self.__tick_positions.pop(0)
 
         # calculate positions of ticks within AxisNode
@@ -195,9 +195,6 @@ class AxisNode(avg.DivNode):
                     tick.pos1 = (pos, - self.TICK_LENGTH)
                 label.pos = (pos, self.TICK_LENGTH/2 + self.__label_offset)
                 label.alignment = "center"
-
-        if self.__auto_tick_positions and not self.__hide_rims:
-            self.__label_nodes[len(self.__label_nodes) - 1].alignment = "right"
 
     def get_tick_posns(self):
         if self.__vertical:
