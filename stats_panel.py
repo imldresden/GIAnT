@@ -19,6 +19,8 @@ class StatsPanel(avg.DivNode):
 
         self.__session = session
         colors = [vis_params.get_user_color(i) for i in range(4)]
+        self.__init_user_legend(colors)
+
         pos = avg.Point2D(200,0)
         self.__plot = ParallelCoordPlotNode(pos=pos, size=self.size-pos, obj_colors=colors,
                 attrib_names = ["Movement<br/>(meters/min)", "Avg. dist from wall<br/>(meters)", "Touches/min"],
@@ -36,6 +38,12 @@ class StatsPanel(avg.DivNode):
 
         vis_params.subscribe(vis_params.CHANGED, self.__update)
 
+    def __init_user_legend(self, colors):
+        for i, color in enumerate(colors):
+            pos = avg.Point2D(20, 8+44*i)
+            avg.RectNode(pos=pos, size=(30,20), color=global_values.COLOR_FOREGROUND, fillcolor=color,
+                    fillopacity=1.0, parent=self)
+            avg.WordsNode(pos=pos+(40,0), fontsize=global_values.FONT_SIZE, text="User "+str(i+1), parent=self)
 
     def __update(self, vis_params):
         start_time = vis_params.get_time_interval()[0]
@@ -138,7 +146,7 @@ class ParallelCoordPlotNode(avg.DivNode):
             for j, attrib in enumerate(self.__attribs):
                 val = float(attrib.vals[i])
                 rel_y_pos = (val-attrib.min) / (attrib.max-attrib.min)
-                y_pos = rel_y_pos * axis_height + self.MARGIN[1]*2
+                y_pos = rel_y_pos * axis_height + self.MARGIN[1]*3
                 posns.append((axis_x_pos[j], y_pos))
             polyline = avg.PolyLineNode(pos=posns, color=color, parent=self)
             polyline.active = self.__is_obj_visible[i]
