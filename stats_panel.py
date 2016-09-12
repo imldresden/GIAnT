@@ -121,10 +121,11 @@ class ParallelCoordPlotNode(avg.DivNode):
                     color=global_values.COLOR_FOREGROUND, parent=axis_node)
 
             attrib = self.__attribs[i]
-            avg.WordsNode(pos=(0, 0), alignment="center", text=attrib.name, parent=axis_node)
-            avg.WordsNode(pos=(0,self.MARGIN[1]), alignment="center",
+            avg.WordsNode(pos=(0, 0), alignment="center", fontsize=global_values.FONT_SIZE, text=attrib.name,
+                    parent=axis_node)
+            avg.WordsNode(pos=(0,self.MARGIN[1]), alignment="center", fontsize=global_values.FONT_SIZE,
                     text=self.__format_label(attrib.min, attrib.is_int), parent=axis_node)
-            avg.WordsNode(pos=(0,self.height-self.MARGIN[1]), alignment="center",
+            avg.WordsNode(pos=(0,self.height-self.MARGIN[1]), alignment="center", fontsize=global_values.FONT_SIZE,
                     text=self.__format_label(attrib.max, attrib.is_int), parent=axis_node)
             self.__axis_nodes.append(axis_node)
 

@@ -31,8 +31,8 @@ class VisPanel(avg.DivNode):
 
         self._data_div = avg.DivNode(pos=(self.__axis_size.x, 0), size=data_div_size, crop=True)
 
-        avg.WordsNode(pos=(10, 10), color=global_values.COLOR_FOREGROUND, text=label, sensitive=False,
-                parent=self._data_div)
+        avg.WordsNode(pos=(10, 8), color=global_values.COLOR_FOREGROUND, text=label, sensitive=False,
+                fontsize=global_values.FONT_SIZE, parent=self._data_div)
 
         vis_params.subscribe(vis_params.CHANGED, self._update_time)
         self._vis_params = vis_params
@@ -173,7 +173,8 @@ class AxisNode(avg.DivNode):
             # create new axis tick, label and grid line
             tick = libavg.LineNode(strokewidth=1, color=global_values.COLOR_FOREGROUND, parent=self)
             self.__ticks[i] = tick
-            self.__label_nodes[i] = libavg.WordsNode(color=global_values.COLOR_FOREGROUND, parent=self)
+            self.__label_nodes[i] = libavg.WordsNode(color=global_values.COLOR_FOREGROUND,
+                    fontsize=global_values.FONT_SIZE, parent=self)
 
             # set label value
             if not self.__top_axis:

@@ -42,35 +42,38 @@ class OptionsPanel(libavg.DivNode):
         self.play_button.subscribe(widget.CheckBox.TOGGLED, lambda checked: self.__play_pause(checked))
 
         self.__init_time_bar(duration)
-        self.__init_smoothness_slider()
+#        self.__init_smoothness_slider()
 
         self.__vis_params.subscribe(self.__vis_params.CHANGED, self.__update_time)
         self.__vis_params.subscribe(self.__vis_params.IS_PLAYING, self.__on_play_pause)
 
     def __init_time_bar(self, duration):
         pos = avg.Point2D(48, 0)
-        size = avg.Point2D(self.width - pos.x - 190, 60)
+        size = avg.Point2D(self.width - pos.x - 10, 60)
         self.__time_bar = avg.DivNode(pos=pos, size=size,  parent=self)
 
-        avg.WordsNode(pos=(0,0), color=global_values.COLOR_FOREGROUND, text="Time range", parent=self.__time_bar)
+        avg.WordsNode(pos=(0,0), color=global_values.COLOR_FOREGROUND, fontsize=global_values.FONT_SIZE,
+                text="Time range", parent=self.__time_bar)
 
-        self.__time_slider = custom_slider.IntervalScrollBar(pos=(0,23), width=size.x,
+        self.__time_slider = custom_slider.IntervalScrollBar(pos=(0,27), width=size.x,
                 range=(0, duration), thumbExtent=duration, parent=self.__time_bar)
         self.__time_slider.subscribe(custom_slider.IntervalScrollBar.THUMB_POS_CHANGED, self.__on_scroll)
 
-        self.__start_label = avg.WordsNode(pos=(0,40), color=global_values.COLOR_FOREGROUND,
-                text="0:00", parent=self.__time_bar)
-        self.__end_label = avg.WordsNode(pos=(size.x,40), color=global_values.COLOR_FOREGROUND,
-                text=helper.format_time(duration, False), alignment="right", parent=self.__time_bar)
+        self.__start_label = avg.WordsNode(pos=(0,48), color=global_values.COLOR_FOREGROUND,
+                text="0:00", fontsize=global_values.FONT_SIZE, parent=self.__time_bar)
+        self.__end_label = avg.WordsNode(pos=(size.x,48), color=global_values.COLOR_FOREGROUND,
+                text=helper.format_time(duration, False), alignment="right", fontsize=global_values.FONT_SIZE,
+                parent=self.__time_bar)
         self.__cur_time_line = avg.LineNode(color=global_values.COLOR_WHITE,
                 sensitive=False, parent=self.__time_bar)
         self.__cur_time_label = avg.WordsNode(pos=(size.x,0), color=global_values.COLOR_FOREGROUND, alignment="right",
-                parent=self.__time_bar)
+                fontsize = global_values.FONT_SIZE, parent=self.__time_bar)
 
     def __init_smoothness_slider(self):
         pos = avg.Point2D(self.width - 180, 0)
 
-        avg.WordsNode(pos=pos+(4,0), color=global_values.COLOR_FOREGROUND, text="Smoothness", parent=self)
+        avg.WordsNode(pos=pos+(4,0), color=global_values.COLOR_FOREGROUND, fontsize=global_values.FONT_SIZE,
+                text="Smoothness", parent=self)
 
         smoothness_range = self.__vis_params.MIN_SMOOTHNESS_FACTOR, self.__vis_params.MAX_SMOOTHNESS_FACTOR
         self.smoothness_slider = widget.Slider(pos=pos+(0,33), width=180, range=smoothness_range, parent=self)
