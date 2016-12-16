@@ -26,8 +26,8 @@ class MovementPanel(vis_panel.VisPanel):
         self.__user_lines = []
         if is_dist_view:
             max_width = 1
-            y_range = pat_model.pos_range[0][2], pat_model.pos_range[1][2]
-            label_offset = 0
+            y_range = [0, 2.4]
+            label_offset = -2
         else:
             max_width = (min(self.width, self.height) / 12)
             y_range = pat_model.pos_range[0][0], pat_model.pos_range[1][0]
@@ -100,7 +100,7 @@ class MovementPanel(vis_panel.VisPanel):
         pos_range = list(copy.deepcopy(pat_model.pos_range))
         if self.__is_dist_view:
             pos_range[0][2] = 0
-            pos_range[1][2] = 2.5
+            pos_range[1][2] = 2.4
         x_extent = float(pos_range[1][0] - pos_range[0][0])
         y_extent = float(pos_range[1][2] - pos_range[0][2])
         vis_height = self._data_div.height
