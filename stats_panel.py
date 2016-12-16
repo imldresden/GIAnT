@@ -95,6 +95,8 @@ class ParallelCoordPlotNode(avg.DivNode):
         for name in attrib_names:
             self.__attribs.append(ParallelCoordPlotAttrib(name))
 
+        self.__line_container = avg.DivNode(pos=(0,self.MARGIN[1]*3), size=(self.width, self.height-self.MARGIN[1]*5),
+                crop=True, parent=self)
         self.__axis_nodes = []
         self.__attrib_nodes = []
         self.__is_obj_visible = [True] * 4
@@ -132,12 +134,12 @@ class ParallelCoordPlotNode(avg.DivNode):
             avg.WordsNode(pos=(0, 0), alignment="center", fontsize=global_values.FONT_SIZE, text=attrib.name,
                     linespacing=-4, parent=axis_node)
             avg.WordsNode(pos=(0,self.MARGIN[1]*2), alignment="center", fontsize=global_values.FONT_SIZE,
-                    text=self.__format_label(attrib.min, attrib.is_int), parent=axis_node)
-            avg.WordsNode(pos=(0,self.height-self.MARGIN[1]*2), alignment="center", fontsize=global_values.FONT_SIZE,
                     text=self.__format_label(attrib.max, attrib.is_int), parent=axis_node)
+            avg.WordsNode(pos=(0,self.height-self.MARGIN[1]*2), alignment="center", fontsize=global_values.FONT_SIZE,
+                    text=self.__format_label(attrib.min, attrib.is_int), parent=axis_node)
             self.__axis_nodes.append(axis_node)
 
-        axis_height = self.height - self.MARGIN[1]*3
+        axis_height = self.height - self.MARGIN[1]*5
 
         # Value polylines
         for i in range(self.__num_objs):
@@ -146,9 +148,9 @@ class ParallelCoordPlotNode(avg.DivNode):
             for j, attrib in enumerate(self.__attribs):
                 val = float(attrib.vals[i])
                 rel_y_pos = (val-attrib.min) / (attrib.max-attrib.min)
-                y_pos = rel_y_pos * axis_height + self.MARGIN[1]*3
+                y_pos = axis_height - rel_y_pos * axis_height
                 posns.append((axis_x_pos[j], y_pos))
-            polyline = avg.PolyLineNode(pos=posns, color=color, parent=self)
+            polyline = avg.PolyLineNode(pos=posns, color=color, parent=self.__line_container)
             polyline.active = self.__is_obj_visible[i]
             self.__attrib_nodes.append(polyline)
 
