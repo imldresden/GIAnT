@@ -135,14 +135,12 @@ class MovementPanel(vis_panel.VisPanel):
             pos = avg.Point2D(0.5, self._data_div.height-16.5)
             size = avg.Point2D(50, 16)
             avg.RectNode(pos=pos, size=size, fillcolor=global_values.COLOR_DARK_GREY, fillopacity=1, parent=self)
-            avg.WordsNode(pos=pos+(25,0), text="WALL", fontsize=12, alignment="center",
-                    parent=self)
+            avg.WordsNode(pos=pos+(25,0), text="WALL", fontsize=12, alignment="center", parent=self)
         else:
             y_min = self._y_axis.value_to_pixel(pat_model.wall_width)
             y_max = self._y_axis.value_to_pixel(0)
             pos = avg.Point2D(40.5, y_min+0.5)
             size = avg.Point2D(16, y_max-y_min)
-
             avg.RectNode(pos=pos, size=size, fillcolor=global_values.COLOR_DARK_GREY, fillopacity=1, parent=self)
             avg.WordsNode(pos=(31,(y_max-y_min)/2+15), angle=-math.pi/2, text="WALL", fontsize=12, alignment="center",
                     parent=self)
