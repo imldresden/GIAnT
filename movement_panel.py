@@ -39,8 +39,7 @@ class MovementPanel(vis_panel.VisPanel):
 
         self._create_y_axis(data_range=y_range, unit="m", hide_rims=True, label_offset=label_offset, inverted=True)
         self._create_x_axis(data_range=[0, session.duration], unit="s")
-        if not is_dist_view:
-            self.__create_wall_rect()
+        self.__create_wall_rect()
         self._create_data_div()
 
         self.__time_factor = self._data_div.width / vis_params.get_time_duration()
@@ -132,14 +131,21 @@ class MovementPanel(vis_panel.VisPanel):
                 userline.setHighlights(touches_x, touches_width)
 
     def __create_wall_rect(self):
-        y_min = self._y_axis.value_to_pixel(pat_model.wall_width)
-        y_max = self._y_axis.value_to_pixel(0)
-        pos = avg.Point2D(40.5, y_min+0.5)
-        size = avg.Point2D(16, y_max-y_min)
+        if self.__is_dist_view:
+            pos = avg.Point2D(0.5, self._data_div.height-16.5)
+            size = avg.Point2D(50, 16)
+            avg.RectNode(pos=pos, size=size, fillcolor=global_values.COLOR_DARK_GREY, fillopacity=1, parent=self)
+            avg.WordsNode(pos=pos+(25,0), text="WALL", fontsize=12, alignment="center",
+                    parent=self)
+        else:
+            y_min = self._y_axis.value_to_pixel(pat_model.wall_width)
+            y_max = self._y_axis.value_to_pixel(0)
+            pos = avg.Point2D(40.5, y_min+0.5)
+            size = avg.Point2D(16, y_max-y_min)
 
-        avg.RectNode(pos=pos, size=size, fillcolor=global_values.COLOR_DARK_GREY, fillopacity=1, parent=self)
-        avg.WordsNode(pos=(31,(y_max-y_min)/2+15), angle=-math.pi/2, text="WALL", fontsize=12, alignment="center",
-                parent=self)
+            avg.RectNode(pos=pos, size=size, fillcolor=global_values.COLOR_DARK_GREY, fillopacity=1, parent=self)
+            avg.WordsNode(pos=(31,(y_max-y_min)/2+15), angle=-math.pi/2, text="WALL", fontsize=12, alignment="center",
+                    parent=self)
 
     def __on_hover(self, event=None):
         """
