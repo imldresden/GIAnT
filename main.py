@@ -113,4 +113,4 @@ def value_to_pixel(value, max_px, interval):
 
 
 player.setWindowTitle("GIAnT")
-app.App().run(MainDiv(), app_resolution="1500x960")
+app.App().run(MainDiv(), app_resolution="1920x1200")
