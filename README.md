@@ -4,7 +4,7 @@ The Group Interaction Analysis Toolkit *GIAnT* is a research tool that visualize
 
 >  Ulrich von Zadow and Raimund Dachselt. 2017. GIAnT: Visualizing Group Interaction at Large Wall Displays. In *Proceedings of the SIGCHI Conference on Human Factors in Computing Systems (CHI '17)*. ACM, New York, NY, USA, DOI: http://dx.doi.org/10.1145/3025453.3026006
 
-Please note that this is a research prototype and therefore provided as is. Still, if you have questions or issues, please contact ulrich.zadow@tu-dresden.de. Also, although it is licensed under a permissive 3-clause BSD license (See the LICENSE file), we would be happy to integrate code provided by others. One good way to do this is to fork using github and provide us with a pull request that we can discuss.
+Please note that this is a research prototype and therefore provided as is. Still, if you have questions or issues, please contact ulrich.zadow@tu-dresden.de. Also, not that it is licensed under the GPL (See the LICENSE file) and we would be happy to integrate code provided by others. One good way to do this is to fork using github and provide us with a pull request that we can discuss.
 
 ## Installing GIAnT
 
