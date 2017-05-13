@@ -26,7 +26,7 @@ class VisParams(avg.Publisher):
     MAX_SMOOTHNESS_FACTOR = 1.
 
     __highlight_time = 0
-    __zoom_strength = 0.1
+    __zoom_strength = 0.15
 
     def __init__(self, session):
         super(VisParams, self).__init__()
