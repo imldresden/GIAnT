@@ -35,6 +35,11 @@ $ make
 $ sudo make install
 ```
 
+## PyGLM
+
+PyGLM is another very small libavg plugin that GIAnT needs. Clone the repository at https://github.com/imldresden/PyGLM and build it according to the instructions there.
+
+
 ## Importing data
 
 GIAnT expects its data to be in an SQLite database and provides a script to generate this database from raw csv files. You will probably need to tweak settings in setup.py and pat_model.py to get it to find your files, and, if necessary, adapt the import to your csv files.
