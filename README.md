@@ -54,8 +54,8 @@ There are currently two csv files per session, formatted as follows:
 * optitrack head data: 
   * timestamp: hh:mm:ss:mil
   * userid
-  * pos: (x,y,z) in meters. (0,0,0) is at the lower left corner of the wall. 
-  * rot: (a,b,c,d) quaternion
+  * pos: (x,y,z) in meters. (0,0,0) is at the lower left corner of the wall. When facing the wall, x points left, y up, z into the wall.
+  * rot: (yaw, pitch, roll) angle in radians. Angles are applied in this order. Origin is facing the wall.
   
 ```csv
 "timestamp","id","pos","rot"
