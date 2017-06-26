@@ -54,7 +54,7 @@ There are currently two csv files per session, formatted as follows:
 * optitrack head data: 
   * timestamp: hh:mm:ss:mil
   * userid
-  * pos: (x,y,z) in meters
+  * pos: (x,y,z) in meters. (0,0,0) is at the lower left corner of the wall. 
   * rot: (a,b,c,d) quaternion
   
 ```csv
