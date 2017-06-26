@@ -23,7 +23,7 @@
 #include <base/ScopeTimer.h>
 #include <graphics/MCTexture.h>
 #include <graphics/VertexArray.h>
-#include <graphics/FilterFill.h>
+#include <graphics/Filterfill.h>
 #include <graphics/GLContextManager.h>
 #include <graphics/Bitmap.h>
 #include <player/Arg.h>
