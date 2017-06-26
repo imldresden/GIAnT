@@ -30,7 +30,7 @@ GIAnT uses a small libavg plugin to display the visualizations which is built us
 
 ```bash
 $ cd GIAnT/plugin
-$ mkdir build
+$ mkdir build && cd build
 $ cmake ..
 $ make
 $ sudo make install
