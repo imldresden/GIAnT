@@ -93,5 +93,5 @@ The timestamp in the video filename is used for synchronization with the motion 
 ## Starting  GIAnT
 
 ```
-./start.py
+$ python main.py
 ```
