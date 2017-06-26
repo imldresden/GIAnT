@@ -12,7 +12,9 @@ Plan some time for the installation, as the toolkit has a number of dependencies
 
 ### Prereqisites.
 
-GIAnT is plattform-independent and based on libavg. It also uses sqlite. 
+GIAnT is plattform-independent and based on libavg.
+We have tested it under Mac and Linux.
+Still, there should be little to no OS-specific code; porting it should be a matter of adjusting the make process and possibly some minor source code changes.
 
 So, first install the development version of libavg as detailed on one of these pages:
 
@@ -26,7 +28,6 @@ Then, install sqlite (https://sqlite.org/). This is an easy process that depends
 
 GIAnT uses a small libavg plugin to display the visualizations which is built using CMake:
 
-
 ```bash
 $ cd GIAnT/plugin
 $ mkdir build
@@ -35,10 +36,14 @@ $ make
 $ sudo make install
 ```
 
-## PyGLM
+### External plugins
 
-PyGLM is another very small libavg plugin that GIAnT needs. Clone the repository at https://github.com/imldresden/PyGLM and build it according to the instructions there.
+GIAnt needs two small external libavg plugins:
 
+* PyGLM: https://github.com/imldresden/PyGLM and
+* HeatMapNode: https://github.com/imldresden/HeatMapNode
+
+Clone both repositories and build them according to the instructions there.
 
 ## Importing data
 
@@ -68,7 +73,7 @@ GIAnt also expects a video file for each session. This video file should be code
 $ avconv -i 2016.03.17-151215-input.mp4 -vcodec h264 -g 1 2016.03.17-151215-output.h264
 ```
 
-The timestamp in the video filename is used for synchronization with the motion and touch data.
+The timestamp in the video filename is used for synchronization with the motion and touch data, so it's best to generate the video file name automatically.
 
 ## Starting  GIAnT
 
