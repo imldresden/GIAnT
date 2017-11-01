@@ -82,10 +82,10 @@ Run the import script:
 $ ./setup.py
 ```
 
-GIAnt also expects a video file for each session. This video file should be coded so that it contains no delta frames, e.g. by running it through ffmpeg or avconv:
+GIAnt also expects a video file for each session. This video file should be coded so that it contains no delta frames, e.g. by running it through ffmpeg or avconv (if GIAnT updates the video at less than interactive rates, you forgot this step):
 
 ```
-$ avconv -i 2016.03.17-151215-input.mp4 -vcodec h264 -g 1 2016.03.17-151215-output.h264
+$ avconv -i 2016.03.17-151215-input.mp4 -vcodec h264 -g 1 2016.03.17-151215-output.mp4
 ```
 
 The timestamp in the video filename is used for synchronization with the motion and touch data, so it's best to generate the video file name automatically.
